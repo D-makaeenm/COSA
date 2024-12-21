@@ -1,2 +1,2 @@
 # Contest Automation System for Algorithms
-Music web với giao diện đơn giản
+Hệ thống tự động hóa cuộc thi Olympic Tin học trong khối không chuyên
