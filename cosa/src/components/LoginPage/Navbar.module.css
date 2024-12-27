@@ -1,0 +1,29 @@
+.navbar{
+    background: linear-gradient(180deg, #28a0e5, #89c6e9);
+    display: flex;
+    flex-direction: row;
+    height: 100px;
+    width: 100%;
+}
+
+.logo img{
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 100%;
+    width: 100%px;
+    scale: 0.9;
+}
+
+.slogan{
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+.slogan p{
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600; /* SemiBold */
+    font-size: 25px;
+    white-space: normal;
+    color: #fff;
+}

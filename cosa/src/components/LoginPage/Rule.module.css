@@ -1,0 +1,16 @@
+.bd_inf_rules{
+    margin: 15px 20px 0 35px;
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.359) 3px 5px 10px 3px;;
+    border-radius: 10px;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.bd_inf_rules:hover{
+    transform: scale(1.01);
+}
+
+.bd_inf_rules h2{
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-left: 40px;
+}
