@@ -13,21 +13,33 @@ function LoginPage() {
         e.preventDefault();
         const username = e.target.username.value;
         const password = e.target.password.value;
-
+    
         try {
+            // Gửi yêu cầu đăng nhập
             const response = await axios.post("http://127.0.0.1:5000/auth/login", {
                 username,
                 password,
             });
-            const token = response.data.access_token; // Lấy token từ phản hồi
-            localStorage.setItem("token", token); // Lưu token vào localStorage
-            alert("Login successful");
-            navigate("/test");
+    
+            const token = response.data.access_token;
+            const role = response.data.role;
+    
+            localStorage.setItem("token", token);
+            localStorage.setItem("username", username);
+            localStorage.setItem("role", role); 
+    
+            if (role === "admin") {
+                navigate("/admin");
+            } else if (role === "student") {
+                navigate("/test");
+            } else if (role === "teacher") {
+                navigate("/teacher");
+            }
         } catch (error) {
             alert(error.response?.data?.error || "Invalid credentials");
         }
     };
-
+    
     return (
         <div className={styles.container}>
             <Navbar />

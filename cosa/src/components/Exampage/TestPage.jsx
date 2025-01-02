@@ -1,54 +1,46 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import Navbar from "../LoginPage/Navbar";
+import Footer from "../LoginPage/Footer";
+import styles from "./TestPage.module.css";
 
 function TestPage() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
+    const [username, setUsername] = useState(""); // State để lưu username
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post("http://127.0.0.1:5000/auth/register", {
-                username,
-                password,
-            });
-            setMessage(response.data.message); // Hiển thị thông báo từ backend
-            setUsername("");
-            setPassword("");
-        } catch (error) {
-            setMessage(error.response?.data?.error || "An error occurred");
+    // Lấy username từ localStorage khi component được render
+    useEffect(() => {
+        const storedUsername = localStorage.getItem("username"); // Lấy từ localStorage
+        if (storedUsername) {
+            setUsername(storedUsername); // Cập nhật state username
         }
+    }, []);
+
+
+    const handleLogout = () => {
+        localStorage.removeItem("username"); // Xóa username khỏi localStorage
+        localStorage.removeItem("token"); // Xóa token nếu có
+        window.location.href = "/login"; // Chuyển hướng về trang đăng nhập
     };
 
     return (
-        <div>
-            <h1>Welcome to the Test Page!</h1>
-            <p>This is the page you see after successful login.</p>
-            
-            <form onSubmit={handleRegister}>
-                <div>
-                    <label>Username:</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
+        <div className={styles.container}>
+            <Navbar />
+            <div className={styles.test}>
+                <div className={styles.bd_exam}>
+                    exam here
                 </div>
-                <div>
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                <div className={styles.bd_inf_user}>
+                    <div className={styles.bd_inf_user_card}>
+                        <p className={styles.p}>Thông tin tài khoản</p>
+                        <div className={styles.username}>
+                            <p>Xin chào {username}</p>
+                        </div>
+                        <button onClick={handleLogout} className={styles.logout}>
+                            Đăng xuất
+                        </button>
+                    </div>
                 </div>
-                <button type="submit">Register</button>
-            </form>
-
-            {message && <p>{message}</p>}
+            </div>
+            <Footer />
         </div>
     );
 }

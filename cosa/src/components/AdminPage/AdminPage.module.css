@@ -1,0 +1,76 @@
+.container{
+    width: 100%;
+    height: 100%;
+    background-color: #fcf8ed;
+    display: flex;
+    flex-direction: column;
+}
+
+.mainpage{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.main{
+    display: flex;
+    width: 100%;
+    background-color: #fcf8ed;
+    flex-direction: column;
+}
+
+.admin_navbar{
+    background-color: #fcf8ed;
+    display: flex;
+    flex-direction: row;
+    height: 60px;
+    width: 100%;
+}
+
+.logo img{
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 100%;
+    width: 100%;
+    scale: 0.9;
+}
+
+.slogan{
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+.slogan p{
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600; /* SemiBold */
+    font-size: 22px;
+    white-space: normal;
+    color: #000000;
+    margin-left: 10px;
+}
+.username{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 20px;
+}
+.username p{
+    margin-right: 5px;
+}
+.username button{
+    font-size: 15px;
+    padding: 7px 20px;
+    border: transparent;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    background: #ff4f14;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.username button:hover{
+    background-color: #f7ab92;
+
+}

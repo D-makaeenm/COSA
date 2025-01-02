@@ -16,7 +16,7 @@
     display: flex;
     flex: 3;
     flex-direction: column;
-    background-color: #ffdaf398;
+    background-color: #FAF3E0;
 }
 
 .bd_inf_slg p{
@@ -31,7 +31,7 @@
 .bd_lg_form{
     display: flex;
     width: 280px;
-    background-color: #ffdaf398;
+    background-color: #FAF3E0;
     justify-content: center;
 }
 
@@ -84,6 +84,7 @@
     border-radius: 0.5rem;
     text-transform: uppercase;
     transition: ease 0.5s;
+    cursor: pointer;
 }
 
 .lg_form_submit:hover{
