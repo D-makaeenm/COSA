@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
+# Bảng `users`
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -10,9 +11,9 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum('student', 'teacher', 'admin'), default='student')
-    created_at = db.Column(db.DateTime, default=db.func.now())  # Đúng kiểu DateTime
-    updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
-    delete_at = db.Column(db.DateTime, nullable=True)  # Sửa thành DateTime và cho phép NULL
+    created_at = db.Column(db.DateTime, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=db.func.now())
+    delete_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -29,7 +30,18 @@ class User(db.Model):
             'updated_at': self.updated_at,
             'delete_at': self.delete_at
         }
-# Bảng `exams`: Quản lý đề thi
+
+# Bảng `students`
+class Student(db.Model):
+    __tablename__ = 'students'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), db.ForeignKey('users.username'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    student_class = db.Column(db.String(50), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+# Bảng `exams`
 class Exam(db.Model):
     __tablename__ = 'exams'
 
@@ -38,52 +50,82 @@ class Exam(db.Model):
     description = db.Column(db.Text, nullable=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Liên kết với `users`
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.Enum('scheduled', 'ongoing', 'completed'), default='scheduled')
+    created_at = db.Column(db.DateTime, default=db.func.now())
+    updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
-# Bảng `grading_criteria`: Tiêu chí chấm điểm
+# Bảng `exam_tasks`
+class ExamTask(db.Model):
+    __tablename__ = 'exam_tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
+    task_title = db.Column(db.String(255), nullable=False)
+    task_description = db.Column(db.Text, nullable=False)
+    max_score = db.Column(db.Float, nullable=False)
+    execution_time_limit = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+# Bảng `grading_criteria`
 class GradingCriteria(db.Model):
     __tablename__ = 'grading_criteria'
 
     id = db.Column(db.Integer, primary_key=True)
-    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)  # Liên kết với `exams`
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
     criteria_name = db.Column(db.String(255), nullable=False)
-    weight = db.Column(db.Float, nullable=False)
+    max_score = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
-# Bảng `submissions`: Quản lý bài nộp
+# Bảng `submissions`
 class Submission(db.Model):
     __tablename__ = 'submissions'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Liên kết với `users`
-    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)  # Liên kết với `exams`
-    file_path = db.Column(db.String(255), nullable=False)  # Đường dẫn file
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id'), nullable=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)  # Lưu đường dẫn file
     submitted_at = db.Column(db.DateTime, default=db.func.now())
-    execution_time = db.Column(db.Float, nullable=True)  # Thời gian thực thi
+    execution_time = db.Column(db.Float, nullable=True)
+    score = db.Column(db.Float, nullable=True)
+    is_graded = db.Column(db.Boolean, default=False)
 
-# Bảng `scores`: Quản lý điểm số
+# Bảng `scores`
 class Score(db.Model):
     __tablename__ = 'scores'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Liên kết với `users`
-    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)  # Liên kết với `exams`
-    scores = db.Column(db.String(255), nullable=False)  # Điểm dạng JSON/văn bản
-    graded_at = db.Column(db.DateTime, default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
+    scores = db.Column(db.Integer, nullable=False)  # Tổng điểm (không dùng JSON)
+    graded_at = db.Column(db.DateTime, nullable=True)
 
-# Bảng `error_logs`: Chi tiết lỗi trong bài nộp
+# Bảng `testcases`
+class Testcase(db.Model):
+    __tablename__ = 'testcases'
+
+    id = db.Column(db.Integer, primary_key=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
+    input = db.Column(db.Text, nullable=False)
+    expected_output = db.Column(db.Text, nullable=False)
+    execution_time = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+# Bảng `error_logs`
 class ErrorLog(db.Model):
     __tablename__ = 'error_logs'
 
     id = db.Column(db.Integer, primary_key=True)
-    submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id'), nullable=False)  # Liên kết với `submissions`
-    line_number = db.Column(db.Integer, nullable=True)  # Dòng bị lỗi
-    error_message = db.Column(db.Text, nullable=False)  # Thông báo lỗi
+    submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id'), nullable=False)
+    line_number = db.Column(db.Integer, nullable=True)
+    error_message = db.Column(db.Text, nullable=False)
 
-# Bảng `notifications`: Thông báo cho thí sinh
+# Bảng `notifications`
 class Notification(db.Model):
     __tablename__ = 'notifications'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Liên kết với `users`
-    message = db.Column(db.Text, nullable=False)  # Nội dung thông báo
-    created_at = db.Column(db.DateTime, default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=True)

@@ -45,6 +45,7 @@ function SideBar() {
                         padding: isCollapsed ? "10px 0" : "10px 0 10px 10px",
                         margin: isCollapsed ? "auto" : "10px"
                     }}
+                    onClick={() => navigate("/admin/createUser")}
                 >
                     <FontAwesomeIcon icon={icons.user} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Tạo tài khoản</span>}

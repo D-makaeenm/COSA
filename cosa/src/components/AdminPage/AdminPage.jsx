@@ -6,6 +6,7 @@ import { Outlet } from "react-router-dom";
 
 function AdminPage() {
     const [username, setUsername] = useState("");
+    
 
     // Lấy username từ localStorage khi component được render
     useEffect(() => {
@@ -39,7 +40,7 @@ function AdminPage() {
                             <button onClick={handleLogout}>Logout</button>
                         </div>
                     </nav>
-                    <Outlet />
+                    <Outlet/>
                 </div>
                 
             </div>

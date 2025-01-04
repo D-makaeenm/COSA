@@ -5,6 +5,7 @@ from models import db
 from flask_jwt_extended import JWTManager
 from routes import register_routes
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
 

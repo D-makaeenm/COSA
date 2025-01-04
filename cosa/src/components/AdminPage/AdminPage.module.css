@@ -17,6 +17,7 @@
     width: 100%;
     background-color: #fcf8ed;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .admin_navbar{
