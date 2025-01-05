@@ -6,7 +6,7 @@
     /* Đảm bảo padding không ảnh hưởng tới chiều cao */
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: #f4f4f4;
 }
 
 /* Thanh cuộn (dành cho trình duyệt WebKit như Chrome, Edge, Safari) */

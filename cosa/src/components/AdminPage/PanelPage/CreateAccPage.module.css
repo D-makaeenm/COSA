@@ -6,7 +6,7 @@
     /* Đảm bảo padding không ảnh hưởng tới chiều cao */
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: #f4f4f4;
 }
 
 /* Thanh cuộn (dành cho trình duyệt WebKit như Chrome, Edge, Safari) */
@@ -35,4 +35,107 @@
 /* Thanh cuộn ở trạng thái active (khi nhấn) */
 .main_container::-webkit-scrollbar-thumb:active {
     background-color: #e57c04;
+}
+
+.second_container{
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: row;
+    padding: 16px;
+}
+
+.main_form{
+    background-color: #ffffff;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 600px;
+    border-radius: 8px;
+    padding: 15px;
+    border: solid 2px #e8eaed;
+}
+
+.panel_button{
+    background-color: rgb(255, 255, 255);
+    width: 240px;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    border: solid 2px #e8eaed;
+    margin-left: 10px;
+    padding: 5px;
+}
+
+.panel_button_title{
+    display: flex;
+    margin-left: 10px;
+    align-items: center;
+}
+.panel_button_title p{
+    color: black;
+}
+
+.panel_button_type{
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+}
+.panel_button_type div{
+    padding: 3px 0 3px 0;
+    border-radius: 8px;
+    width: 200px;
+    border: solid 2px #e7e8eb;
+    display: flex;
+    justify-content: center;
+    background-color: #fafafa;
+    color: #000000;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+.panel_button_type div:hover{
+    background-color: #dedede;
+    border: solid 2px #000000;
+}
+.panel_button_type div p {
+    margin: 5px 0 5px 0;
+}
+
+.outlet_account{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    background-color: #ffffff;
+}
+.outlet_account div{
+    display: flex;
+    padding: 10px;
+    background-color: #fafafa;
+    border-radius: 5px;
+    width: 100px;
+    justify-content: center;
+    align-items: center;
+    border: solid 2px #e7e8eb;
+    cursor: pointer;
+}
+.outlet_account div p{
+    margin: 0;
+}
+.outlet_account div:hover{
+    background-color: #dedede;
+    border: solid 2px #000000;
+}
+
+.create_form{
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    margin-top: 20px;
+    border-radius: 6px;
+    border: solid 2px #e7e8eb;
+    padding: 0 10px 0 10px;
 }

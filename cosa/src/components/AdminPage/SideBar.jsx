@@ -39,6 +39,7 @@ function SideBar() {
                     <FontAwesomeIcon icon={icons.house} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Trang chủ</span>}
                 </div>
+
                 <div
                     style={{
                         justifyContent: isCollapsed ? "center" : "flex-start",
@@ -50,6 +51,7 @@ function SideBar() {
                     <FontAwesomeIcon icon={icons.user} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Tạo tài khoản</span>}
                 </div>
+                
                 <div
                     style={{
                         justifyContent: isCollapsed ? "center" : "flex-start",

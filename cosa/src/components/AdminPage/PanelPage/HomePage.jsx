@@ -32,7 +32,6 @@ function HomePage() {
                 }
             })
             .then((response) => {
-                console.log("API Response:", response.data); // Kiểm tra dữ liệu trả về
                 setContestData(response.data.info); // Đảm bảo đúng cấu trúc
             })
             .catch((error) => {

@@ -9,6 +9,10 @@ import { Navigate } from 'react-router-dom';
 
 // Danh sách các routes
 const routes = [
+    // {
+    //     path: '',
+    //     element: <Navigate to="/login" replace />,
+    // },
     {
         path: '/login', // Trang đăng nhập
         element: <LoginPage />,

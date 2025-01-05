@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Kích hoạt CORS
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://192.168.1.2:3000"]}})
 
 # Khởi tạo cơ sở dữ liệu và JWT
 db.init_app(app)

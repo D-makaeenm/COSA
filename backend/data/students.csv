@@ -1,0 +1,4 @@
+[{"id":1, "username":"admin", "name":"Duy", "student_class":""},
+ {"id":2, "username":"teacher1", "name":"Cao", "student_class":""},
+ {"id":3, "username":"student1", "name":"Hoa", "student_class":"56KMT"},
+ {"id":4, "username":"student2", "name":"Nguy\u1ec7t", "student_class":"56KMT"}]

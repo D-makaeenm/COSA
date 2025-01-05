@@ -11,9 +11,9 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum('student', 'teacher', 'admin'), default='student')
-    created_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=db.func.now())  # Mặc định giá trị là thời gian hiện tại
     updated_at = db.Column(db.DateTime, nullable=True, onupdate=db.func.now())
-    delete_at = db.Column(db.DateTime, nullable=True)
+    delete_at = db.Column(db.DateTime, nullable=True, default=None)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -54,6 +54,15 @@ class Exam(db.Model):
     status = db.Column(db.Enum('scheduled', 'ongoing', 'completed'), default='scheduled')
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'status': self.status,
+            'start_time': self.start_time,
+            'end_time': self.end_time,
+        }
 
 # Bảng `exam_tasks`
 class ExamTask(db.Model):
@@ -83,13 +92,14 @@ class Submission(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id'), nullable=True)
+    exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id'), nullable=False)  # Bắt buộc
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)  # Lưu đường dẫn file
+    file_path = db.Column(db.String(255), nullable=False)
     submitted_at = db.Column(db.DateTime, default=db.func.now())
     execution_time = db.Column(db.Float, nullable=True)
     score = db.Column(db.Float, nullable=True)
     is_graded = db.Column(db.Boolean, default=False)
+
 
 # Bảng `scores`
 class Score(db.Model):
@@ -98,8 +108,9 @@ class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
-    scores = db.Column(db.Integer, nullable=False)  # Tổng điểm (không dùng JSON)
+    scores = db.Column(db.Float, nullable=False)  # Đổi thành Float
     graded_at = db.Column(db.DateTime, nullable=True)
+
 
 # Bảng `testcases`
 class Testcase(db.Model):

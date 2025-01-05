@@ -1,0 +1,4 @@
+[{"id":1, "user_id":4, "message":"B\u00e0i thi c\u1ee7a b\u1ea1n \u0111\u00e3 \u0111\u01b0\u1ee3c ch\u1ea5m. \u0110i\u1ec3m: 9/10.", "created_at":"2025-01-02 14:00:00"},
+ {"id":2, "user_id":5, "message":"B\u00e0i thi c\u1ee7a b\u1ea1n \u0111\u00e3 \u0111\u01b0\u1ee3c ch\u1ea5m. \u0110i\u1ec3m: 6/10.", "created_at":"2025-01-04 09:00:00"},
+ {"id":3, "user_id":4, "message":"B\u00e0i thi c\u1ee7a b\u1ea1n \u0111\u00e3 \u0111\u01b0\u1ee3c ch\u1ea5m. \u0110i\u1ec3m: 9/10.", "created_at":"2025-01-02 14:00:00"},
+ {"id":4, "user_id":5, "message":"B\u00e0i thi c\u1ee7a b\u1ea1n \u0111\u00e3 \u0111\u01b0\u1ee3c ch\u1ea5m. \u0110i\u1ec3m: 10/10.", "created_at":"2025-01-04 09:00:00"}]
