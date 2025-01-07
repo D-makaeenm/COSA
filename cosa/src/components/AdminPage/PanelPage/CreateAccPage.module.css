@@ -44,16 +44,6 @@
     padding: 16px;
 }
 
-.main_form{
-    background-color: #ffffff;
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    height: 600px;
-    border-radius: 8px;
-    padding: 15px;
-    border: solid 2px #e8eaed;
-}
 
 .panel_button{
     background-color: rgb(255, 255, 255);
@@ -104,38 +94,13 @@
     margin: 5px 0 5px 0;
 }
 
-.outlet_account{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 30px;
+.main_form{
     background-color: #ffffff;
-}
-.outlet_account div{
     display: flex;
-    padding: 10px;
-    background-color: #fafafa;
-    border-radius: 5px;
-    width: 100px;
-    justify-content: center;
-    align-items: center;
-    border: solid 2px #e7e8eb;
-    cursor: pointer;
-}
-.outlet_account div p{
-    margin: 0;
-}
-.outlet_account div:hover{
-    background-color: #dedede;
-    border: solid 2px #000000;
-}
-
-.create_form{
-    display: flex;
+    flex: 1;
     flex-direction: column;
-    background-color: #ffffff;
-    margin-top: 20px;
-    border-radius: 6px;
-    border: solid 2px #e7e8eb;
-    padding: 0 10px 0 10px;
+    height: 600px;
+    border-radius: 8px;
+    padding: 15px;
+    border: solid 2px #e8eaed;
 }

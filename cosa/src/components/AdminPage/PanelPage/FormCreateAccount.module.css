@@ -1,0 +1,49 @@
+
+.outlet_account{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap: 30px;
+    background-color: #ffffff;
+}
+.pt{
+    font-size: 18px;
+    margin: 10px 0 10px 10px;
+}
+.outlet_account1{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap: 30px;
+    background-color: #ffffff;
+    flex: 1;
+    max-height: 45px;
+}
+.outlet_account1 div{
+    display: flex;
+    padding: 10px;
+    background-color: #fafafa;
+    border-radius: 5px;
+    width: 100px;
+    justify-content: center;
+    align-items: center;
+    border: solid 2px #e7e8eb;
+    cursor: pointer;
+}
+.outlet_account1 div p{
+    margin: 0;
+}
+.outlet_account1 div:hover{
+    background-color: #dedede;
+    border: solid 2px #000000;
+}
+
+.create_form{
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    margin-top: 20px;
+    border-radius: 6px;
+    border: solid 2px #e7e8eb;
+    padding: 0 10px 0 10px;
+}

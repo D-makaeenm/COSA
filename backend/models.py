@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
+# Trong này là tất cả các bảng được ánh xạ trong database ra
 # Bảng `users`
 class User(db.Model):
     __tablename__ = 'users'
@@ -140,3 +141,22 @@ class Notification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=True)
+
+class Teacher(db.Model):
+    __tablename__ = 'teachers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), db.ForeignKey('users.username'), nullable=False, unique=True)  # Khóa ngoại tham chiếu tới bảng users
+    name = db.Column(db.String(100), nullable=False)  # Tên đầy đủ của giáo viên
+    department = db.Column(db.String(100), nullable=True)  # Bộ môn hoặc khoa (có thể NULL)
+    created_at = db.Column(db.DateTime, default=db.func.now())  # Thời điểm tạo
+
+class Admin(db.Model):
+    __tablename__ = 'admins'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), db.ForeignKey('users.username'), nullable=False, unique=True)  # Khóa ngoại tham chiếu tới bảng users
+    name = db.Column(db.String(100), nullable=False)  # Tên của admin
+    phone = db.Column(db.String(15), nullable=True)  # Số điện thoại (có thể NULL)
+    email = db.Column(db.String(255), nullable=True, unique=True)  # Email (có thể NULL, đảm bảo unique)
+    created_at = db.Column(db.DateTime, default=db.func.now())  # Thời điểm tạo
