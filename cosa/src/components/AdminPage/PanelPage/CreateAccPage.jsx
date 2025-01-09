@@ -1,19 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./CreateAccPage.module.css";
+import axios from "axios";
 import { Outlet, useNavigate } from "react-router-dom";
 
 function CreateAccPage() {
     const navigate = useNavigate();
+    const [accountCounts, setAccountCounts] = useState({
+        admin: 0,
+        teacher: 0,
+        student: 0,
+    });
 
-    const handleAdminNavigate = () => {
-        navigate("list/list-admin");
+    // Hàm gọi API để lấy số lượng tài khoản
+    const fetchAccountCounts = async () => {
+        try {
+            const response = await axios.get("http://localhost:5000/admin/account-counts", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            setAccountCounts(response.data);
+        } catch (error) {
+            console.error("Failed to fetch account counts:", error.response?.data || error.message);
+        }
     };
-    const handleTeacherNavigate = () => {
-        navigate("list/list-teacher");
-    };
-    const handleStudentNavigate = () => {
-        navigate("list/list-student");
-    };
+
+    // Gọi hàm khi component được render
+    useEffect(() => {
+        fetchAccountCounts();
+    }, []);
 
     return (
         <div className={styles.main_container}>
@@ -29,14 +44,14 @@ function CreateAccPage() {
                         <p>Danh sách tài khoản</p>
                     </div>
                     <div className={styles.panel_button_type}>
-                        <div onClick={handleAdminNavigate}>
-                            <p>Admin: {/* Thêm số lượng tài khoản */}</p>
+                        <div onClick={() => navigate("list-admin")}>
+                            <p>Admin: {accountCounts.admin} tài khoản</p>
                         </div>
-                        <div onClick={handleTeacherNavigate}>
-                            <p>Giáo Viên: {/*Số lượng*/}</p>
+                        <div onClick={() => navigate("list-teacher")}>
+                            <p>Giáo Viên: {accountCounts.teacher} tài khoản</p>
                         </div>
-                        <div onClick={handleStudentNavigate}>
-                            <p>Thí sinh: {/*Số lượng*/}</p>
+                        <div onClick={() => navigate("list-student")}>
+                            <p>Thí sinh: {accountCounts.student} tài khoản</p>
                         </div>
                     </div>
                 </div>

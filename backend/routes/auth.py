@@ -1,52 +1,96 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
-from flask_jwt_extended import create_access_token,jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from services.user_service import (
+    create_student_account,
+    create_teacher_account,
+    create_admin_account,
+)
+from models import User
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint("auth", __name__)
 
-@auth_bp.route('/register', methods=['POST'])
-@jwt_required()  # Yêu cầu JWT token
-def register():
-    # Lấy ID người dùng từ JWT token
+# Login Endpoint
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    # Truy vấn user
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid username or password!"}), 401
+
+    # Tạo access token
+    access_token = create_access_token(identity=user.id, expires_delta=False)
+    return jsonify({"access_token": access_token, "role": user.role}), 200
+
+
+# Endpoint: Tạo tài khoản student
+@auth_bp.route("/register-student", methods=["POST"])
+@jwt_required()
+def register_student():
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
 
-    # Kiểm tra quyền hạn (chỉ admin mới được phép tạo tài khoản)
-    if not current_user or current_user.role != 'admin':
-        return jsonify({'error': 'Only admin can create new accounts!'}), 403
+    # Chỉ admin mới được phép tạo tài khoản
+    if not current_user or current_user.role != "admin":
+        return jsonify({"error": "Admin access only"}), 403
 
-    # Lấy thông tin từ yêu cầu
+    # Lấy dữ liệu từ request
     data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    role = data.get('role', 'student')  # Mặc định role là 'student'
+    username = data.get("username")
+    password = data.get("password")
+    name = data.get("name")
+    student_class = data.get("student_class")
+    department = data.get("department")
 
-    if not username or not password or not role:
-        return jsonify({'error': 'Username, password, and role are required!'}), 400
+    # Gọi service
+    result, status_code = create_student_account(username, password, name, student_class, department)
+    return jsonify(result), status_code
 
-    # Kiểm tra username đã tồn tại
-    if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists!'}), 400
+@auth_bp.route("/register-teacher", methods=["POST"])
+@jwt_required()
+def register_teacher():
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
 
-    # Mã hóa mật khẩu và tạo người dùng
-    new_user = User(username=username, role=role)
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
+    # Chỉ admin mới được phép tạo tài khoản
+    if not current_user or current_user.role != "admin":
+        return jsonify({"error": "Admin access only"}), 403
 
-    return jsonify({'message': 'User registered successfully!'}), 201
-
-@auth_bp.route('/login', methods=['POST'])
-def login():
+    # Lấy dữ liệu từ request
     data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get("username")
+    password = data.get("password")
+    name = data.get("name")
+    department = data.get("department")
+    phone = data.get("phone")
 
-    user = User.query.filter_by(username=username).first()
+    # Gọi service
+    result, status_code = create_teacher_account(username, password, name, department, phone)
+    return jsonify(result), status_code
 
-    if not user or not user.check_password(password):
-        return jsonify({'error': 'Invalid username or password!'}), 401
+# Endpoint: Tạo tài khoản admin
+@auth_bp.route("/register-admin", methods=["POST"])
+@jwt_required()
+def register_admin():
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
 
-    access_token = create_access_token(identity=user.id, expires_delta=False)
+    # Chỉ admin mới được phép tạo tài khoản
+    if not current_user or current_user.role != "admin":
+        return jsonify({"error": "Admin access only"}), 403
 
-    return jsonify({'access_token': access_token, 'role': user.role}), 200
+    # Lấy dữ liệu từ request
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    name = data.get("name")
+    phone = data.get("phone")
+    email = data.get("email")
+
+    # Gọi service
+    result, status_code = create_admin_account(username, password, name, phone, email)
+    return jsonify(result), status_code
+

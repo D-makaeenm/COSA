@@ -37,10 +37,23 @@ class Student(db.Model):
     __tablename__ = 'students'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), db.ForeignKey('users.username'), nullable=False)
+    username = db.Column(db.String(50), db.ForeignKey('users.username'), nullable=False, unique=True)
     name = db.Column(db.String(100), nullable=False)
-    student_class = db.Column(db.String(50), nullable=True)
+    student_class = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
+    department = db.Column(db.String(100), nullable=False)
+
+    def to_dict(self):
+        """Chuyển dữ liệu thành dạng dictionary."""
+        return {
+            "id": self.id,
+            "username": self.username,
+            "name": self.name,
+            "student_class": self.student_class,
+            "created_at": self.created_at,
+            "department": self.department
+        }
+
 
 # Bảng `exams`
 class Exam(db.Model):
@@ -150,6 +163,7 @@ class Teacher(db.Model):
     name = db.Column(db.String(100), nullable=False)  # Tên đầy đủ của giáo viên
     department = db.Column(db.String(100), nullable=True)  # Bộ môn hoặc khoa (có thể NULL)
     created_at = db.Column(db.DateTime, default=db.func.now())  # Thời điểm tạo
+    phone = db.Column(db.String(15), nullable=True)
 
 class Admin(db.Model):
     __tablename__ = 'admins'

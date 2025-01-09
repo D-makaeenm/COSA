@@ -1,4 +1,5 @@
-[{"id":1, "username":"admin", "name":"Duy", "student_class":""},
- {"id":2, "username":"teacher1", "name":"Cao", "student_class":""},
- {"id":3, "username":"student1", "name":"Hoa", "student_class":"56KMT"},
- {"id":4, "username":"student2", "name":"Nguy\u1ec7t", "student_class":"56KMT"}]
+[{"id":3, "username":"student1", "name":"Nguy\u1ec5n Minh Hoa", "student_class":"56KMT", "created_at":"2025-01-01 01:31:00", "department":"\u0110i\u1ec7n t\u1eed"},
+ {"id":4, "username":"student2", "name":"D\u01b0\u01a1ng Th\u1ecb Nguy\u1ec7t", "student_class":"56KMT", "created_at":"2025-01-01 01:32:00", "department":"\u0110i\u1ec7n t\u1eed"},
+ {"id":5, "username":"student3", "name":"Nguy\u1ec5n V\u0103n B", "student_class":"K56KTD", "created_at":"2025-01-09 17:26:09", "department":"\u0110i\u1ec7n"},
+ {"id":6, "username":"student4", "name":"Nguy\u1ec5n Th\u1ecb C", "student_class":"56DTVT.01", "created_at":"2025-01-09 17:28:14", "department":"\u0110i\u1ec7n t\u1eed"},
+ {"id":7, "username":"student5", "name":"ABC", "student_class":"57KTD", "created_at":"2025-01-09 22:45:23", "department":"\u0110i\u1ec7n"}]

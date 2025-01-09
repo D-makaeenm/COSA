@@ -5,9 +5,16 @@ import HomePage from './components/AdminPage/PanelPage/HomePage';
 import Reports from './components/AdminPage/PanelPage/Reports';
 import NotFoundPage from "./components/NotFoundPage/NotFoundPage";
 import CreateAccPage from './components/AdminPage/PanelPage/CreateAccPage';
-import ListAccountPage from './components/AdminPage/PanelPage/ListAccountPage';
 import FormCreateAccount from './components/AdminPage/PanelPage/FormCreateAccount';
 import Admin from './components/AdminPage/PanelPage/FormCreateAccount/Admin';
+import Teacher from './components/AdminPage/PanelPage/FormCreateAccount/Teacher';
+import Student from './components/AdminPage/PanelPage/FormCreateAccount/Student';
+import ListAdmin from './components/AdminPage/PanelPage/ListAccount/ListAdmin';
+import ListTeacher from './components/AdminPage/PanelPage/ListAccount/ListTeacher';
+import ListStudent from './components/AdminPage/PanelPage/ListAccount/ListStudent';
+import EditAdmin from './components/AdminPage/PanelPage/FormEditAccount/EditAdmin';
+import EditTeacher from './components/AdminPage/PanelPage/FormEditAccount/EditTeacher';
+import EditStudent from './components/AdminPage/PanelPage/FormEditAccount/EditStudent';
 import { Navigate } from 'react-router-dom';
 
 // Danh sách các routes
@@ -45,24 +52,50 @@ const routes = [
                 element: <CreateAccPage />,
                 children: [
                     {
-                        path: '', // Điều hướng mặc định từ /admin/createUser
+                        path: '',
                         element: <FormCreateAccount />,
                         children: [
                             {
-                                path: 'form-admin', // Danh sách tài khoản giáo viên
+                                path: '',
+                                element: <Navigate to="form-admin" replace />,
+                            },
+                            {
+                                path: 'form-admin',
                                 element: <Admin />,
+                            },
+                            {
+                                path: 'form-teacher',
+                                element: <Teacher />,
+                            },
+                            {
+                                path: 'form-student',
+                                element: <Student />,
                             },
                         ],
                     },
                     {
-                        path: 'list', // Danh sách tài khoản admin
-                        element: <ListAccountPage />,
-                        children: [
-                            {
-                                path: 'list-admin', // Điều hướng mặc định từ /admin/createUser
-                                element: <Admin />,
-                            },
-                        ],
+                        path: 'list-admin', // Danh sách tài khoản admin
+                        element: <ListAdmin />,
+                    },
+                    {
+                        path: 'list-teacher', // Danh sách tài khoản admin
+                        element: <ListTeacher />,
+                    },
+                    {
+                        path: 'list-student', // Danh sách tài khoản admin
+                        element: <ListStudent />,
+                    },
+                    {
+                        path: 'edit-account-admin',
+                        element: <EditAdmin />,
+                    },
+                    {
+                        path: 'edit-account-teacher',
+                        element: <EditTeacher />,
+                    },
+                    {
+                        path: 'edit-account-student',
+                        element: <EditStudent />,
                     },
                 ],
             },
