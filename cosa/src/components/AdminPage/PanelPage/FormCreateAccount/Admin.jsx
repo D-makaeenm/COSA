@@ -1,8 +1,11 @@
 import React from "react";
+import { useOutletContext } from "react-router-dom";
 import styles from "./Form.module.css";
 import axios from "axios";
 
 function Admin() {
+    const { fetchAccountCounts } = useOutletContext(); // Nhận context từ FormCreateAccount
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -10,7 +13,7 @@ function Admin() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/auth/register-admin", // Địa chỉ endpoint backend
+                "http://localhost:5000/auth/register-admin",
                 data,
                 {
                     headers: {
@@ -19,11 +22,12 @@ function Admin() {
                 }
             );
 
-            // Xử lý thành công
             alert(response.data.message || "Admin account created successfully!");
             e.target.reset();
+
+            // Gọi lại fetchAccountCounts để cập nhật số lượng tài khoản
+            await fetchAccountCounts();
         } catch (error) {
-            // Xử lý lỗi
             const errorMessage =
                 error.response?.data?.error || "Something went wrong. Please try again.";
             alert(errorMessage);

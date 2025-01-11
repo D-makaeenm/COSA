@@ -1,4 +1,4 @@
-from models import Exam, Submission, User
+from models import Exam, Submission, User, db, Admin, Teacher, Score, Student
 from sqlalchemy import func
 
 def get_latest_contest():
@@ -7,8 +7,24 @@ def get_latest_contest():
 
 def get_contest_summary(contest):
     """Tổng hợp thông tin tổng quan về cuộc thi."""
-    total_students = User.query.filter_by(role='student').filter(User.delete_at.is_(None)).count()
-    total_submissions = Submission.query.filter_by(exam_id=contest.id).count()
+
+    total_students = db.session.query(User).join(
+        Submission, Submission.user_id == User.id  # Liên kết bảng User và Submission
+    ).filter(
+        Submission.exam_id == contest.id,  # Lọc theo exam_id
+        User.role == 'student',            # Lọc chỉ sinh viên
+        User.delete_at.is_(None)          # Lọc sinh viên chưa bị xóa
+    ).distinct().count()
+    
+    # total_submissions = Submission.query.filter_by(exam_id=contest.id).count()
+    total_submissions = db.session.query(Submission).join(
+        Exam, Submission.exam_id == Exam.id  # Join giữa Submission và Exam
+    ).filter(
+        Exam.id == contest.id  # Lọc theo contest.id
+    ).count()
+    print("contest id là: ", contest.id)
+
+    
     graded_submissions = Submission.query.filter(
         Submission.exam_id == contest.id, 
         Submission.is_graded == 1
@@ -61,4 +77,100 @@ def get_latest_contest_summary():
     return {
         "info": contest_info,
         "progress": progress
+    }
+
+from sqlalchemy import func, case
+
+def get_exams(page=1, per_page=10, sort_by='start_time', order='desc', status=None):
+    """
+    Truy vấn danh sách các cuộc thi từ database với các tùy chọn lọc, phân trang và sắp xếp.
+    Bao gồm thông tin:
+    - Tình trạng cuộc thi
+    - Số lượng thí sinh của từng cuộc thi
+    - Người tạo kỳ thi (từ bảng admins hoặc teachers)
+    """
+    query = Exam.query
+
+    # Lọc theo trạng thái (nếu có)
+    if status:
+        query = query.filter(Exam.status == status)
+
+    # Join với Submission, Admins và Teachers
+    query = query.outerjoin(Submission, Submission.exam_id == Exam.id) \
+             .outerjoin(User, User.id == Exam.created_by) \
+             .outerjoin(Admin, Admin.username == User.username) \
+             .outerjoin(Teacher, Teacher.username == User.username) \
+             .add_columns(
+                 Exam.id,
+                 Exam.title,
+                 Exam.status,
+                 func.count(Submission.user_id.distinct()).label("total_students"),  # Số lượng thí sinh
+                 func.count(Submission.id).label("total_submissions"),  # Số bài nộp
+                 func.sum(func.if_(Submission.is_graded == 1, 1, 0)).label("graded_submissions"),  # Số bài đã chấm
+                 func.coalesce(Admin.name, Teacher.name).label("creator_name")  # Lấy tên từ Admin hoặc Teacher
+             ).group_by(Exam.id, Admin.name, Teacher.name)
+
+
+    # Sắp xếp
+    if order == 'asc':
+        query = query.order_by(getattr(Exam, sort_by).asc())
+    else:
+        query = query.order_by(getattr(Exam, sort_by).desc())
+
+    # Phân trang
+    exams = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return exams
+
+def get_exam_details(exam_id):
+    """
+    Lấy thông tin kỳ thi và danh sách thí sinh.
+    """
+    # Lấy thông tin kỳ thi
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        return None
+
+    # Lấy tên người tạo
+    creator = (
+        db.session.query(User.username, Admin.name, Teacher.name)
+        .outerjoin(Admin, Admin.username == User.username)
+        .outerjoin(Teacher, Teacher.username == User.username)
+        .filter(User.id == exam.created_by)
+        .first()
+    )
+    creator_name = creator[1] or creator[2] or "Không rõ"
+
+    # Lấy danh sách thí sinh, điểm và xếp hạng
+    scores = (
+        db.session.query(
+            User.username,
+            Student.name,
+            Student.student_class,
+            Student.department,
+            Score.scores,
+            func.rank().over(order_by=Score.scores.desc()).label("rank")
+        )
+        .join(Score, Score.user_id == User.id)
+        .join(Student, Student.username == User.username)
+        .filter(Score.exam_id == exam_id, Score.scores.isnot(None))
+        .order_by(Score.scores.desc())
+        .all()
+    )
+
+    # Định dạng kết quả
+    return {
+        "title": exam.title,
+        "creator_name": creator_name,
+        "participants": [
+            {
+                "username": score.username,
+                "name": score.name,
+                "student_class": score.student_class,
+                "department": score.department,
+                "score": score.scores,
+                "rank": score.rank,
+            }
+            for score in scores
+        ],
     }

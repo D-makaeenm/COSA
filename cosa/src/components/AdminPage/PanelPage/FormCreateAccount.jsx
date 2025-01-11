@@ -1,9 +1,10 @@
 import React from "react";
 import styles from "./FormCreateAccount.module.css"
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useOutletContext } from "react-router-dom";
 
 function FormCreateAccount() {
     const navigate = useNavigate();
+    const context = useOutletContext();
 
     const handleFormAdmin = () => {
         navigate("form-admin");
@@ -26,7 +27,7 @@ function FormCreateAccount() {
                 </div>
             </div>
             <div className={styles.create_form}>
-                <Outlet />
+                <Outlet context={context} />
             </div>
         </div>
     );

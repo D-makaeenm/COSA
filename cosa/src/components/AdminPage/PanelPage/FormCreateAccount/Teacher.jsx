@@ -1,8 +1,10 @@
 import React from "react";
-import styles from "./Form.module.css"
+import styles from "./Form.module.css";
 import axios from "axios";
+import { useOutletContext } from "react-router-dom";
 
 function Teacher() {
+    const { fetchAccountCounts } = useOutletContext(); // Lấy context từ Outlet
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,8 +23,11 @@ function Teacher() {
             );
 
             // Xử lý thành công
-            alert(response.data.message || "Admin account created successfully!");
+            alert(response.data.message || "Teacher account created successfully!");
             e.target.reset();
+
+            // Gọi lại fetchAccountCounts để cập nhật số lượng tài khoản
+            await fetchAccountCounts();
         } catch (error) {
             // Xử lý lỗi
             const errorMessage =

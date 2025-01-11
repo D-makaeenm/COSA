@@ -11,7 +11,6 @@ function CreateAccPage() {
         student: 0,
     });
 
-    // Hàm gọi API để lấy số lượng tài khoản
     const fetchAccountCounts = async () => {
         try {
             const response = await axios.get("http://localhost:5000/admin/account-counts", {
@@ -25,7 +24,6 @@ function CreateAccPage() {
         }
     };
 
-    // Gọi hàm khi component được render
     useEffect(() => {
         fetchAccountCounts();
     }, []);
@@ -37,7 +35,8 @@ function CreateAccPage() {
             </div>
             <div className={styles.second_container}>
                 <div className={styles.main_form}>
-                    <Outlet />
+                    {/* Truyền context qua Outlet */}
+                    <Outlet context={{ fetchAccountCounts, navigate }} />
                 </div>
                 <div className={styles.panel_button}>
                     <div className={styles.panel_button_title}>

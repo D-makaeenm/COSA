@@ -1,8 +1,10 @@
 import React from "react";
-import styles from "./Form.module.css"
+import styles from "./Form.module.css";
 import axios from "axios";
+import { useOutletContext } from "react-router-dom";
 
 function Student() {
+    const { fetchAccountCounts } = useOutletContext(); // Lấy context từ Outlet
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,8 +23,11 @@ function Student() {
             );
 
             // Xử lý thành công
-            alert(response.data.message || "Admin account created successfully!");
+            alert(response.data.message || "Student account created successfully!");
             e.target.reset();
+
+            // Gọi lại fetchAccountCounts để cập nhật số lượng tài khoản
+            await fetchAccountCounts();
         } catch (error) {
             // Xử lý lỗi
             const errorMessage =
@@ -49,7 +54,7 @@ function Student() {
                             <label htmlFor="name">Họ và tên</label>
                             <input id="name" name="name" type="text" placeholder="Nhập Họ tên" required />
 
-                            <label htmlFor="phone">Khoa</label>
+                            <label htmlFor="department">Khoa</label>
                             <input
                                 id="department"
                                 name="department"
@@ -58,7 +63,7 @@ function Student() {
                                 required
                             />
 
-                            <label htmlFor="class">Lớp</label>
+                            <label htmlFor="student_class">Lớp</label>
                             <input
                                 id="student_class"
                                 name="student_class"

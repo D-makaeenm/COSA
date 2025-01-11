@@ -1,3 +1,3 @@
-[{"id":1, "username":"teacher1", "name":"Nguy\u1ec5n Gi\u00e1o AB", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-04 18:06:45", "phone":"0123456780"},
- {"id":2, "username":"teacher2", "name":"Nguy\u1ec5n V\u0103n B", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-07 22:18:10", "phone":"0123456789"},
- {"id":3, "username":"teacher3", "name":"Nguy\u1ec5n Gi\u00e1o Ba", "department":"C\u01a1 kh\u00ed", "created_at":"2025-01-09 22:32:10", "phone":"0333333333"}]
+[{"id":1, "username":"teacher1", "name":"Gi\u00e1o Vi\u00ean A", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-11 17:33:05", "phone":"0123123123"},
+ {"id":2, "username":"teacher2", "name":"Gi\u00e1o Vi\u00ean B", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-11 17:33:30", "phone":"0456456456"},
+ {"id":3, "username":"teacher3", "name":"Gi\u00e1o Vi\u00ean C", "department":"\u0110i\u1ec7n", "created_at":"2025-01-11 17:33:51", "phone":"0789789789"}]

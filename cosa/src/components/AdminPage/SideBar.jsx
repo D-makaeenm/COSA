@@ -57,7 +57,7 @@ function SideBar() {
                         justifyContent: isCollapsed ? "center" : "flex-start",
                         padding: isCollapsed ? "10px 0" : "10px 0 10px 10px",
                         margin: isCollapsed ? "auto" : "10px"
-                    }}
+                    }} onClick={() => navigate("/admin/list-contest")}
                 >
                     <FontAwesomeIcon icon={icons.list} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Danh sách cuộc thi</span>}

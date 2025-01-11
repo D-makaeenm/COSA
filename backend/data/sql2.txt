@@ -51,7 +51,7 @@ CREATE TABLE `scores` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `exam_id` int NOT NULL,
-  `scores` int NOT NULL,
+  `scores` float DEFAULT NULL,
   `graded_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
@@ -59,6 +59,7 @@ CREATE TABLE `scores` (
   CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `students` (
   `id` int NOT NULL AUTO_INCREMENT,

@@ -15,6 +15,8 @@ import ListStudent from './components/AdminPage/PanelPage/ListAccount/ListStuden
 import EditAdmin from './components/AdminPage/PanelPage/FormEditAccount/EditAdmin';
 import EditTeacher from './components/AdminPage/PanelPage/FormEditAccount/EditTeacher';
 import EditStudent from './components/AdminPage/PanelPage/FormEditAccount/EditStudent';
+import ListContest from './components/AdminPage/PanelPage/ListContest/ListContest';
+import ContestInfo from './components/AdminPage/PanelPage/ListContest/ContestInfo';
 import { Navigate } from 'react-router-dom';
 
 // Danh sách các routes
@@ -42,6 +44,16 @@ const routes = [
             {
                 path: 'home', // Sub-route /admin/home
                 element: <HomePage />,
+            },
+            {
+                path: 'list-contest',
+                element: <ListContest />,
+                children: [
+                    {
+                        path: 'contests/:id', // Route con để hiển thị chi tiết từng contest
+                        element: <ContestInfo />
+                    }
+                ]
             },
             {
                 path: 'reports', // Sub-route /admin/reports
