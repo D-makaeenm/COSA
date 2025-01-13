@@ -17,6 +17,7 @@ import EditTeacher from './components/AdminPage/PanelPage/FormEditAccount/EditTe
 import EditStudent from './components/AdminPage/PanelPage/FormEditAccount/EditStudent';
 import ListContest from './components/AdminPage/PanelPage/ListContest/ListContest';
 import ContestInfo from './components/AdminPage/PanelPage/ListContest/ContestInfo';
+import AddContest from './components/AdminPage/PanelPage/AddContest/AddContest';
 import { Navigate } from 'react-router-dom';
 
 // Danh sách các routes
@@ -52,6 +53,10 @@ const routes = [
                     {
                         path: 'contests/:id', // Route con để hiển thị chi tiết từng contest
                         element: <ContestInfo />
+                    },
+                    {
+                        path: 'add-contest', // Route con để hiển thị chi tiết từng contest
+                        element: <AddContest />
                     }
                 ]
             },

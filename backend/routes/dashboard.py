@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import User, Exam  # Bổ sung Exam
-from services.exam_service import get_latest_contest_summary
+from services.exam_service import get_latest_contest_summary, get_latest_exams
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -56,3 +56,15 @@ def statistics():
         "totalStudents": total_students,
         "totalTeachers": total_teachers
     }), 200
+
+@dashboard_bp.route('/get-latest-exams', methods=['GET'])
+@jwt_required()
+def latest_exams():
+    """
+    API để lấy 5 cuộc thi mới nhất.
+    """
+    try:
+        exams = get_latest_exams()
+        return jsonify(exams)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

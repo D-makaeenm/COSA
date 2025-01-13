@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from "./HomePage.module.css";
 import icons from "../../FontAwesome/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import SubmissionProgressChart from "./SubmissionProgressChart";
+import SubmissionProgressChart from "./Chart/SubmissionProgressChart";
+import ExamChart from "./Chart/ExamChart";
 import axios from "axios";
 
 function HomePage() {
@@ -99,6 +100,9 @@ function HomePage() {
             </div>
             <div>
                 <SubmissionProgressChart />
+            </div>
+            <div>
+                < ExamChart />
             </div>
         </div>
     );

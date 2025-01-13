@@ -20,9 +20,11 @@ function ListContest() {
     const location = useLocation();
 
     useEffect(() => {
-        // Kiểm tra nếu URL chứa "contests/:id", chuyển sang chế độ chi tiết
         if (location.pathname.includes("/contests/")) {
             setShowDetails(true);
+        }
+        else if (location.pathname.includes("add-contest")) {
+            setShowDetails(true); // Ẩn danh sách và hiển thị form tạo mới
         } else {
             setShowDetails(false);
         }
@@ -70,12 +72,18 @@ function ListContest() {
         navigate(`/admin/list-contest/contests/${contestId}`);
     };
 
+    const handleAddContestClick = () => {
+        navigate("add-contest");
+    };
 
     return (
         <div className={styles.main_container}>
             {!showDetails && (
                 <div>
-                    <h1>Danh sách các cuộc thi</h1>
+                    <div className={styles.h1}>
+                        <h1>Danh sách các cuộc thi</h1>
+                        <div className={styles.addContest} onClick={handleAddContestClick}><FontAwesomeIcon icon={icons.circleplus} /></div>
+                    </div>
                     <div className={styles.second_container}>
                         {contests.map((contest) => (
                             <div

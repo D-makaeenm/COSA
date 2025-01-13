@@ -50,6 +50,14 @@
     border: solid 2px #dee1e8;
     background-color: #fafafa;
 }
+.form_left select{
+    border-radius: 6px;
+    height: 30px;
+    width: 300px;
+    padding-left: 14px;
+    border: solid 2px #dee1e8;
+    background-color: #fafafa;
+}
 .form_right{
     background-color: #ffffff;
     display: flex;

@@ -79,3 +79,22 @@
     flex-direction: row;
     justify-content: space-between;
 }
+
+.h1{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.addContest{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s ease;
+    color: green;
+    margin: 0 10px 0 10px;
+    font-size: 28px;
+}
+.addContest:hover{
+    color: rgb(57, 190, 57);
+}

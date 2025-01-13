@@ -174,3 +174,19 @@ def get_exam_details(exam_id):
             for score in scores
         ],
     }
+
+def get_latest_exams(limit=5):
+    """
+    Lấy danh sách các cuộc thi mới nhất.
+    """
+    query = Exam.query.order_by(Exam.created_at.desc()).limit(limit)
+    exams = query.all()
+    return [
+        {
+            "title": exam.title,
+            "status": exam.status,
+            "created_at": exam.created_at,
+            "end_time": exam.end_time
+        }
+        for exam in exams
+    ]

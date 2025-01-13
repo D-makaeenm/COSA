@@ -1,4 +1,4 @@
-import { faArrowRight, faCoffee, faUser, faHouse, faEye, faChartSimple, faArrowLeft, faList, faCircle, faFileAlt, faCheckCircle, faUserCircle, faX, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faCoffee, faUser, faHouse, faEye, faChartSimple, faArrowLeft, faList, faCircle, faFileAlt, faCheckCircle, faUserCircle, faX, faPen, faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faReact } from "@fortawesome/free-brands-svg-icons";
 import { faSmile } from "@fortawesome/free-regular-svg-icons";
 
@@ -18,7 +18,8 @@ const icons = {
   checkcircle: faCheckCircle,
   usercircle: faUserCircle,
   delete: faX,
-  edit: faPen
+  edit: faPen,
+  circleplus: faCirclePlus
 };
 
 export default icons;

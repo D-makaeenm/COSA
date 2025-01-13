@@ -53,3 +53,4 @@ def get_exam_info(exam_id):
         return jsonify(exam_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
