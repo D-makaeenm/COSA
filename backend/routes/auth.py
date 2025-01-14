@@ -23,7 +23,7 @@ def login():
 
     # Tạo access token
     access_token = create_access_token(identity=user.id, expires_delta=False)
-    return jsonify({"access_token": access_token, "role": user.role}), 200
+    return jsonify({"access_token": access_token, "role": user.role, "id": user.id}), 200
 
 
 # Endpoint: Tạo tài khoản student
@@ -42,11 +42,12 @@ def register_student():
     username = data.get("username")
     password = data.get("password")
     name = data.get("name")
-    student_class = data.get("student_class")
-    department = data.get("department")
+    phone = data.get("phone")
+    email = data.get("email")
+    exam_id = data.get("exam_id")
 
     # Gọi service
-    result, status_code = create_student_account(username, password, name, student_class, department)
+    result, status_code = create_student_account(username, password, name, phone, email, exam_id)
     return jsonify(result), status_code
 
 @auth_bp.route("/register-teacher", methods=["POST"])
@@ -64,11 +65,11 @@ def register_teacher():
     username = data.get("username")
     password = data.get("password")
     name = data.get("name")
-    department = data.get("department")
     phone = data.get("phone")
+    email = data.get("email")
 
     # Gọi service
-    result, status_code = create_teacher_account(username, password, name, department, phone)
+    result, status_code = create_teacher_account(username, password, name, phone, email)
     return jsonify(result), status_code
 
 # Endpoint: Tạo tài khoản admin

@@ -1,3 +1,0 @@
-[{"id":1, "username":"teacher1", "name":"Gi\u00e1o Vi\u00ean A", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-11 17:33:05", "phone":"0123123123"},
- {"id":2, "username":"teacher2", "name":"Gi\u00e1o Vi\u00ean B", "department":"\u0110i\u1ec7n t\u1eed", "created_at":"2025-01-11 17:33:30", "phone":"0456456456"},
- {"id":3, "username":"teacher3", "name":"Gi\u00e1o Vi\u00ean C", "department":"\u0110i\u1ec7n", "created_at":"2025-01-11 17:33:51", "phone":"0789789789"}]

@@ -66,10 +66,10 @@ function ListTeacher() {
                     <tr>
                         <th>ID</th>
                         <th>Username</th>
-                        <th>Họ Và Tên</th>
-                        <th>Khoa</th>
-                        <th>Số Điện Thoại</th>
-                        <th>Ngày Tạo</th>
+                        <th>Họ và tên</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Ngày tạo</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -79,8 +79,8 @@ function ListTeacher() {
                             <td>{teacher.id}</td>
                             <td>{teacher.username}</td>
                             <td>{teacher.name}</td>
-                            <td>{teacher.department}</td>
                             <td>{teacher.phone}</td>
+                            <td>{teacher.email}</td>
                             <td>{new Date(teacher.created_at).toLocaleString()}</td>
                             <td>
                                 <div>

@@ -15,14 +15,17 @@ function AddContest() {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.post(
-                "http://localhost:5000/api/exams",
+            const id = localStorage.getItem("id");
+            console.log("id dix:", id);
+            await axios.post(
+                "http://localhost:5000/management/exams/create",
                 {
                     title,
                     description,
                     start_time: startTime,
                     end_time: endTime,
-                    status, // Gửi trạng thái lên backend
+                    status,
+                    id: id,
                 },
                 {
                     headers: {

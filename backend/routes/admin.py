@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from services.user_service import get_account_counts, get_admins, get_teachers, get_students, update_student, delete_student, delete_teacher, update_teacher, delete_admin, update_admin
-from models import Admin, Teacher, Student
 
 
 admin_bp = Blueprint('admin', __name__)
@@ -94,11 +93,11 @@ def edit_teacher():
     username = data.get("username")
     name = data.get("name")
     phone = data.get("phone")
-    department = data.get("department")
+    email = data.get("email")
     password = data.get("password")  # Lấy mật khẩu từ request (nếu có)
 
     # Gọi service để xử lý cập nhật
-    result, status_code = update_teacher(username, name, phone, department, password)
+    result, status_code = update_teacher(username, name, phone, email, password)
     return jsonify(result), status_code
 
 @admin_bp.route('/list-student', methods=['GET'])
@@ -116,16 +115,21 @@ def edit_student():
     """
     API: Chỉnh sửa thông tin sinh viên.
     """
-    data = request.json
-    username = data.get("username")
-    name = data.get("name")
-    student_class = data.get("student_class")
-    department = data.get("department")
-    password = data.get("password")  # Lấy mật khẩu từ request (nếu có)
+    try:
+        data = request.json
+        username = data.get("username")
+        name = data.get("name")
+        phone = data.get("phone")
+        email = data.get("email")
+        password = data.get("password")  # Lấy mật khẩu từ request (nếu có)
+        exam_id = data.get("exam_id")
 
-    # Gọi service để xử lý cập nhật
-    result, status_code = update_student(username, name, student_class, department, password)
-    return jsonify(result), status_code
+        # Gọi service để xử lý cập nhật
+        result, status_code = update_student(username, name, phone, email, password, exam_id)
+        return jsonify(result), status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @admin_bp.route('/delete-student', methods=['DELETE'])
 @jwt_required()

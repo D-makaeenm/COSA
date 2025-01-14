@@ -1,4 +1,4 @@
-from models import User, Admin, Teacher, Student, db
+from models import User, db, Exam, ExamParticipant
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func, asc, text
 from datetime import datetime
@@ -6,34 +6,54 @@ from datetime import datetime
 current_utc_time = datetime.utcnow()
 
 # Hàm tạo tài khoản student
-def create_student_account(username, password, name, student_class, department):
-    """Tạo tài khoản student mới."""
+def create_student_account(username, password, name, phone, email, exam_id):
+    """Tạo tài khoản student mới và gắn vào kỳ thi."""
     try:
         # Kiểm tra username đã tồn tại
         if User.query.filter_by(username=username).first():
             return {"error": "Username already exists"}, 400
 
+        # Kiểm tra kỳ thi có tồn tại không
+        exam = Exam.query.get(exam_id)
+        if not exam:
+            return {"error": "Exam not found"}, 404
+
+        # Tạo tài khoản sinh viên mới
         hashed_password = generate_password_hash(password)
-
-        new_user = User(username=username, password=hashed_password, role="student")
+        new_user = User(
+            username=username,
+            password=hashed_password,
+            role="student",
+            name=name,
+            phone=phone,
+            email=email,
+        )
         db.session.add(new_user)
+        db.session.flush()  # Đẩy dữ liệu vào session để lấy ID mà không commit
 
-        db.session.flush()
+        # Gắn sinh viên vào kỳ thi
+        exam_participant = ExamParticipant(
+            exam_id=exam_id,
+            user_id=new_user.id  # Sử dụng ID từ flush
+        )
+        db.session.add(exam_participant)
 
-        student = Student(username=username, name=name, student_class=student_class, department=department)
-        db.session.add(student)
-
+        # Commit toàn bộ dữ liệu
         db.session.commit()
 
-        return {"message": "Student account created successfully"}, 201
+        return {
+            "message": "Student account created successfully",
+            "user_id": new_user.id,
+            "exam_id": exam_id,
+        }, 201
 
     except Exception as e:
-        db.session.rollback()
+        db.session.rollback()  # Hoàn tác nếu có lỗi
         return {"error": str(e)}, 500
 
 
 # Hàm tạo tài khoản teacher
-def create_teacher_account(username, password, name, department, phone):
+def create_teacher_account(username, password, name, phone, email):
     """Tạo tài khoản teacher mới."""
     try:
         if User.query.filter_by(username=username).first():
@@ -41,13 +61,8 @@ def create_teacher_account(username, password, name, department, phone):
 
         hashed_password = generate_password_hash(password)
 
-        new_user = User(username=username, password=hashed_password, role="teacher")
+        new_user = User(username=username, password=hashed_password, role="teacher", name=name, phone=phone, email=email)
         db.session.add(new_user)
-
-        db.session.flush()
-
-        teacher = Teacher(username=username, name=name, department=department, phone=phone)
-        db.session.add(teacher)
 
         db.session.commit()
 
@@ -63,18 +78,11 @@ def create_admin_account(username, password, name, phone, email):
     try:
         if User.query.filter_by(username=username).first():
             return {"error": "Username already exists"}, 400
-        if Admin.query.filter_by(email=email).first():
-            return {"error": "Email already exists"}, 400
 
         hashed_password = generate_password_hash(password)
 
-        new_user = User(username=username, password=hashed_password, role="admin")
+        new_user = User(username=username, password=hashed_password, role="admin", name=name, phone=phone, email=email)
         db.session.add(new_user)
-
-        db.session.flush()
-
-        admin = Admin(username=username, name=name, phone=phone, email=email)
-        db.session.add(admin)
 
         db.session.commit()
 
@@ -106,13 +114,13 @@ def get_account_counts():
 
 def get_admins():
     """
-    Lấy danh sách tất cả admin từ bảng admins và liên kết với thông tin từ bảng users.
+    Lấy danh sách tất cả admin từ bảng `users`.
     """
     admins = (
-        db.session.query(Admin, User)
-        .join(User, Admin.username == User.username)
+        db.session.query(User)
+        .filter(User.role == 'admin')  # Lọc các tài khoản có vai trò admin
         .filter(User.delete_at.is_(None))  # Chỉ lấy những tài khoản chưa bị xóa
-        .order_by(asc(Admin.id))
+        .order_by(asc(User.id))  # Sắp xếp theo ID tăng dần
         .all()
     )
 
@@ -123,67 +131,56 @@ def get_admins():
             "name": admin.name,
             "phone": admin.phone,
             "email": admin.email,
-            "created_at": user.created_at,  # Thông tin từ bảng users
+            "created_at": admin.created_at,
         }
-        for admin, user in admins
+        for admin in admins
     ]
+
 
 def update_admin(username, name, phone, email, password=None):
     """
     Cập nhật thông tin admin (và mật khẩu nếu được cung cấp).
     """
-    admin = Admin.query.filter_by(username=username).first()
+    admin = User.query.filter_by(username=username, role='admin', delete_at=None).first()
     if not admin:
         return {"error": "Admin not found"}, 404
 
-    # Cập nhật thông tin sinh viên
+    # Cập nhật thông tin admin
     admin.name = name
     admin.phone = phone
     admin.email = email
 
     # Cập nhật mật khẩu nếu được cung cấp
     if password:
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return {"error": "User not found"}, 404
-        user.password = generate_password_hash(password)
+        admin.password = generate_password_hash(password)
 
     db.session.commit()
 
     return {"message": "Admin updated successfully!"}, 200
 
+
 def delete_admin(username):
     """
     Gắn cờ xóa mềm cho tài khoản Admin bằng cách đặt giá trị delete_at.
     """
-    # Tìm sinh viên theo username
-    admin = Admin.query.filter_by(username=username).first()
+    admin = User.query.filter_by(username=username, role='admin').first()
     if not admin:
         return {"error": "Admin not found"}, 404
 
-    # Tìm tài khoản người dùng liên quan
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return {"error": "User not found"}, 404
-
-    # Đặt giá trị delete_at
-    sql = text("UPDATE users SET delete_at = CURRENT_TIMESTAMP WHERE username = :username")
-    db.session.execute(sql, {"username": username})
+    admin.delete_at = db.func.now()
     db.session.commit()
-
 
     return {"message": "Admin account deleted successfully!"}, 200
 
 
+
 def get_teachers():
     """
-    Lấy danh sách tất cả giáo viên từ bảng teachers và liên kết với thông tin từ bảng users.
+    Lấy danh sách tất cả giáo viên từ bảng users.
     """
     teachers = (
-        db.session.query(Teacher, User)
-        .join(User, Teacher.username == User.username)
-        .filter(User.delete_at.is_(None))  # Chỉ lấy những tài khoản chưa bị xóa
-        .order_by(asc(Teacher.id))
+        User.query.filter_by(role='teacher', delete_at=None)
+        .order_by(User.id)
         .all()
     )
 
@@ -192,67 +189,57 @@ def get_teachers():
             "id": teacher.id,
             "username": teacher.username,
             "name": teacher.name,
-            "department": teacher.department,
             "phone": teacher.phone,
-            "created_at": user.created_at,  # Thông tin từ bảng users
+            "email": teacher.email,
+            "created_at": teacher.created_at,
         }
-        for teacher, user in teachers
+        for teacher in teachers
     ]
 
-def update_teacher(username, name, phone, department, password=None):
+
+def update_teacher(username, name, phone, email, password=None):
     """
     Cập nhật thông tin giáo viên (và mật khẩu nếu được cung cấp).
     """
-    teacher = Teacher.query.filter_by(username=username).first()
-    if not teacher:
-        return {"error": "teacher not found"}, 404
-
-    # Cập nhật thông tin sinh viên
-    teacher.name = name
-    teacher.phone = phone
-    teacher.department = department
-
-    # Cập nhật mật khẩu nếu được cung cấp
-    if password:
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return {"error": "User not found"}, 404
-        user.password = generate_password_hash(password)
-
-    db.session.commit()
-
-    return {"message": "teacher updated successfully!"}, 200
-
-def delete_teacher(username):
-    """
-    Gắn cờ xóa mềm cho tài khoản giaos vien bằng cách đặt giá trị delete_at.
-    """
-    # Tìm sinh viên theo username
-    teacher = Teacher.query.filter_by(username=username).first()
+    teacher = User.query.filter_by(username=username, role='teacher', delete_at=None).first()
     if not teacher:
         return {"error": "Teacher not found"}, 404
 
-    # Tìm tài khoản người dùng liên quan
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return {"error": "User not found"}, 404
+    # Cập nhật thông tin giáo viên
+    teacher.name = name
+    teacher.phone = phone
+    teacher.email = email
 
-    # Đặt giá trị delete_at
-    sql = text("UPDATE users SET delete_at = CURRENT_TIMESTAMP WHERE username = :username")
-    db.session.execute(sql, {"username": username})
+    # Cập nhật mật khẩu nếu được cung cấp
+    if password:
+        teacher.password = generate_password_hash(password)
+
+    db.session.commit()
+
+    return {"message": "Teacher updated successfully!"}, 200
+
+
+def delete_teacher(username):
+    """
+    Gắn cờ xóa mềm cho tài khoản giáo viên bằng cách đặt giá trị delete_at.
+    """
+    teacher = User.query.filter_by(username=username, role='teacher').first()
+    if not teacher:
+        return {"error": "Teacher not found"}, 404
+
+    teacher.delete_at = db.func.now()
     db.session.commit()
 
     return {"message": "Teacher account deleted successfully!"}, 200
 
+
 def get_students():
     """
-    Lấy danh sách tất cả thí sinh từ bảng students và liên kết với thông tin từ bảng users.
+    Lấy danh sách tất cả sinh viên từ bảng users.
     """
     students = (
-        db.session.query(Student, User)
-        .join(User, Student.username == User.username)
-        .filter(User.delete_at.is_(None))  # Chỉ lấy những tài khoản chưa bị xóa
-        .order_by(asc(Student.id))
+        User.query.filter_by(role='student', delete_at=None)
+        .order_by(User.id)
         .all()
     )
 
@@ -261,54 +248,75 @@ def get_students():
             "id": student.id,
             "username": student.username,
             "name": student.name,
-            "student_class": student.student_class,
-            "department": student.department,
-            "created_at": user.created_at,  # Thông tin từ bảng users
+            "phone": student.phone,
+            "email": student.email,
+            "created_at": student.created_at,
         }
-        for student, user in students
+        for student in students
     ]
 
-def update_student(username, name, student_class, department, password=None):
+
+def update_student(username, name, phone, email, password=None, exam_id=None):
     """
     Cập nhật thông tin sinh viên (và mật khẩu nếu được cung cấp).
     """
-    student = Student.query.filter_by(username=username).first()
-    if not student:
-        return {"error": "Student not found"}, 404
+    try:
+        # Lấy thông tin sinh viên từ bảng User
+        student = User.query.filter_by(username=username, role='student', delete_at=None).first()
+        if not student:
+            return {"error": "Student not found"}, 404
 
-    # Cập nhật thông tin sinh viên
-    student.name = name
-    student.student_class = student_class
-    student.department = department
+        # Cập nhật thông tin sinh viên
+        student.name = name
+        student.phone = phone
+        student.email = email
 
-    # Cập nhật mật khẩu nếu được cung cấp
-    if password:
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return {"error": "User not found"}, 404
-        user.password = generate_password_hash(password)
+        # Cập nhật mật khẩu nếu được cung cấp
+        if password:
+            student.password = generate_password_hash(password)
 
-    db.session.commit()
+        # Nếu có exam_id, cập nhật kỳ thi cho sinh viên
+        if exam_id:
+            # Kiểm tra kỳ thi có tồn tại không
+            exam = Exam.query.get(exam_id)
+            if not exam:
+                return {"error": "Exam not found"}, 404
 
-    return {"message": "Student updated successfully!"}, 200
+            # Kiểm tra xem sinh viên đã tham gia kỳ thi này chưa
+            participant = ExamParticipant.query.filter_by(user_id=student.id, exam_id=exam_id).first()
+
+            if participant:
+                # Nếu đã có và không bị xóa mềm, không cần thêm mới
+                if participant.delete_at is None:
+                    return {"message": "Student is already participating in this exam!"}, 200
+                else:
+                    # Nếu đã bị xóa mềm, cập nhật lại
+                    participant.delete_at = None
+            else:
+                # Thêm bản ghi mới vào bảng ExamParticipant
+                new_participation = ExamParticipant(exam_id=exam_id, user_id=student.id)
+                db.session.add(new_participation)
+
+        # Lưu các thay đổi vào database
+        db.session.commit()
+
+        return {"message": "Student updated successfully!"}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
+
+
+
 
 def delete_student(username):
     """
-    Gắn cờ xóa mềm cho tài khoản thí sinh bằng cách đặt giá trị delete_at.
+    Gắn cờ xóa mềm cho tài khoản sinh viên bằng cách đặt giá trị delete_at.
     """
-    # Tìm sinh viên theo username
-    student = Student.query.filter_by(username=username).first()
+    student = User.query.filter_by(username=username, role='student').first()
     if not student:
         return {"error": "Student not found"}, 404
 
-    # Tìm tài khoản người dùng liên quan
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return {"error": "User not found"}, 404
-
-    # Đặt giá trị delete_at
-    sql = text("UPDATE users SET delete_at = CURRENT_TIMESTAMP WHERE username = :username")
-    db.session.execute(sql, {"username": username})
+    student.delete_at = db.func.now()
     db.session.commit()
 
     return {"message": "Student account deleted successfully!"}, 200

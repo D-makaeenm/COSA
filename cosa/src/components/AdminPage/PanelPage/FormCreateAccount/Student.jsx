@@ -92,22 +92,23 @@ function Student() {
                             <label htmlFor="name">Họ và tên</label>
                             <input id="name" name="name" type="text" placeholder="Nhập Họ tên" required />
 
-                            <label htmlFor="department">Khoa</label>
+                            <label htmlFor="phone">Số điện thoại</label>
                             <input
-                                id="department"
-                                name="department"
-                                type="text"
-                                placeholder="Nhập tên Khoa"
-                                required
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                pattern="^\d{10,15}$"
+                                placeholder="Nhập số điện thoại (10-15 số)"
+                                
                             />
 
-                            <label htmlFor="student_class">Lớp</label>
+                            <label htmlFor="email">Email</label>
                             <input
-                                id="student_class"
-                                name="student_class"
-                                type="text"
-                                placeholder="Nhập tên Lớp"
-                                required
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="example@domain.com"
+                            
                             />
                         </div>
                     </div>

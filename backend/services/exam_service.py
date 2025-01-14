@@ -1,5 +1,6 @@
-from models import Exam, Submission, User, db, Admin, Teacher, Score, Student
-from sqlalchemy import func
+from models import Exam, Submission, User, db, Score, ExamParticipant
+from sqlalchemy import func, and_
+from datetime import datetime
 
 def get_latest_contest():
     """Lấy thông tin cuộc thi gần nhất."""
@@ -8,28 +9,31 @@ def get_latest_contest():
 def get_contest_summary(contest):
     """Tổng hợp thông tin tổng quan về cuộc thi."""
 
-    total_students = db.session.query(User).join(
-        Submission, Submission.user_id == User.id  # Liên kết bảng User và Submission
-    ).filter(
-        Submission.exam_id == contest.id,  # Lọc theo exam_id
-        User.role == 'student',            # Lọc chỉ sinh viên
-        User.delete_at.is_(None)          # Lọc sinh viên chưa bị xóa
-    ).distinct().count()
+    total_students = (
+        db.session.query(ExamParticipant)
+        .join(User, ExamParticipant.user_id == User.id)  # Kết nối với bảng User
+        .filter(
+            ExamParticipant.exam_id == contest.id,  # Lọc theo contest ID
+            ExamParticipant.delete_at.is_(None),    # Loại bỏ các bản ghi bị xóa mềm
+            User.role == 'student',                 # Chỉ lấy thí sinh
+            User.delete_at.is_(None)                # Bỏ qua tài khoản bị xóa mềm
+        )
+        .distinct()
+        .count()
+    )
     
-    # total_submissions = Submission.query.filter_by(exam_id=contest.id).count()
-    total_submissions = db.session.query(Submission).join(
-        Exam, Submission.exam_id == Exam.id  # Join giữa Submission và Exam
-    ).filter(
-        Exam.id == contest.id  # Lọc theo contest.id
-    ).count()
-    print("contest id là: ", contest.id)
+    total_submissions = (
+        db.session.query(Submission).filter(Submission.exam_id == contest.id).count()
+    )
 
+    graded_submissions = (
+        db.session.query(Submission).filter(Submission.exam_id == contest.id,Submission.is_graded == 1).count()
+    )
     
-    graded_submissions = Submission.query.filter(
-        Submission.exam_id == contest.id, 
-        Submission.is_graded == 1
-    ).count()
-    creator = User.query.filter(User.id == contest.created_by, User.delete_at.is_(None)).first()
+    creator = (
+        db.session.query(User).filter(User.id == contest.created_by,User.delete_at.is_(None)).first()
+    )
+     
 
     return {
         "title": contest.title,
@@ -37,7 +41,7 @@ def get_contest_summary(contest):
         "total_students": total_students,
         "total_submissions": total_submissions,
         "graded_submissions": graded_submissions,
-        "creator": creator.username if creator else "Unknown"
+        "creator": creator.name if creator else "Unknown"
     }
 
 def get_submission_progress(contest):
@@ -79,43 +83,41 @@ def get_latest_contest_summary():
         "progress": progress
     }
 
-from sqlalchemy import func, case
-
 def get_exams(page=1, per_page=10, sort_by='start_time', order='desc', status=None):
     """
     Truy vấn danh sách các cuộc thi từ database với các tùy chọn lọc, phân trang và sắp xếp.
-    Bao gồm thông tin:
-    - Tình trạng cuộc thi
-    - Số lượng thí sinh của từng cuộc thi
-    - Người tạo kỳ thi (từ bảng admins hoặc teachers)
     """
-    query = Exam.query
+    query = (
+        db.session.query(
+            Exam.id,
+            Exam.title,
+            Exam.status,
+            func.count(ExamParticipant.user_id.distinct()).label("total_students"),  # Số lượng thí sinh
+            func.count(Submission.id).label("total_submissions"),  # Số bài nộp
+            func.sum(
+                func.if_(Submission.is_graded == 1, 1, 0)
+            ).label("graded_submissions"),  # Số bài đã chấm
+            User.name.label("creator_name")  # Tên người tạo kỳ thi
+        )
+        .outerjoin(Submission, Submission.exam_id == Exam.id)  # Kết nối với bảng Submission
+        .outerjoin(
+            ExamParticipant,
+            and_(ExamParticipant.exam_id == Exam.id, ExamParticipant.delete_at.is_(None))
+        )  # Kết nối với bảng ExamParticipant và bỏ qua các dòng bị xóa
+        .join(User, User.id == Exam.created_by)  # Kết nối với bảng User để lấy thông tin người tạo
+        .group_by(Exam.id, User.name)  # Nhóm theo ID kỳ thi và tên người tạo
+    )
 
     # Lọc theo trạng thái (nếu có)
     if status:
         query = query.filter(Exam.status == status)
 
-    # Join với Submission, Admins và Teachers
-    query = query.outerjoin(Submission, Submission.exam_id == Exam.id) \
-             .outerjoin(User, User.id == Exam.created_by) \
-             .outerjoin(Admin, Admin.username == User.username) \
-             .outerjoin(Teacher, Teacher.username == User.username) \
-             .add_columns(
-                 Exam.id,
-                 Exam.title,
-                 Exam.status,
-                 func.count(Submission.user_id.distinct()).label("total_students"),  # Số lượng thí sinh
-                 func.count(Submission.id).label("total_submissions"),  # Số bài nộp
-                 func.sum(func.if_(Submission.is_graded == 1, 1, 0)).label("graded_submissions"),  # Số bài đã chấm
-                 func.coalesce(Admin.name, Teacher.name).label("creator_name")  # Lấy tên từ Admin hoặc Teacher
-             ).group_by(Exam.id, Admin.name, Teacher.name)
-
-
     # Sắp xếp
-    if order == 'asc':
-        query = query.order_by(getattr(Exam, sort_by).asc())
+    sort_column = getattr(Exam, sort_by, None)
+    if sort_column:
+        query = query.order_by(sort_column.asc() if order == 'asc' else sort_column.desc())
     else:
-        query = query.order_by(getattr(Exam, sort_by).desc())
+        raise ValueError(f"Invalid sort column: {sort_by}")
 
     # Phân trang
     exams = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -124,54 +126,57 @@ def get_exams(page=1, per_page=10, sort_by='start_time', order='desc', status=No
 
 def get_exam_details(exam_id):
     """
-    Lấy thông tin kỳ thi và danh sách thí sinh.
+    Lấy thông tin kỳ thi và danh sách thí sinh (bao gồm cả những người chưa nộp bài).
     """
     # Lấy thông tin kỳ thi
     exam = Exam.query.get(exam_id)
     if not exam:
         return None
 
-    # Lấy tên người tạo
+    # Lấy tên người tạo kỳ thi
     creator = (
-        db.session.query(User.username, Admin.name, Teacher.name)
-        .outerjoin(Admin, Admin.username == User.username)
-        .outerjoin(Teacher, Teacher.username == User.username)
-        .filter(User.id == exam.created_by)
+        db.session.query(User.name)
+        .filter(User.id == exam.created_by, User.delete_at.is_(None))
         .first()
     )
-    creator_name = creator[1] or creator[2] or "Không rõ"
+    creator_name = creator.name if creator else "Không rõ"
 
-    # Lấy danh sách thí sinh, điểm và xếp hạng
-    scores = (
+    # Lấy danh sách thí sinh từ bảng ExamParticipant
+    participants = (
         db.session.query(
             User.username,
-            Student.name,
-            Student.student_class,
-            Student.department,
-            Score.scores,
-            func.rank().over(order_by=Score.scores.desc()).label("rank")
+            User.name,
+            User.email,
+            User.phone,
+            func.coalesce(Score.scores, 0).label("score"),  # Điểm, nếu chưa có sẽ là 0
+            func.rank().over(order_by=Score.scores.desc()).label("rank")  # Xếp hạng dựa trên điểm
         )
-        .join(Score, Score.user_id == User.id)
-        .join(Student, Student.username == User.username)
-        .filter(Score.exam_id == exam_id, Score.scores.isnot(None))
-        .order_by(Score.scores.desc())
+        .join(ExamParticipant, ExamParticipant.user_id == User.id)  # Kết nối bảng ExamParticipant và User
+        .outerjoin(Score, and_(Score.user_id == User.id, Score.exam_id == exam_id))  # Kết nối bảng Score (nếu có)
+        .filter(
+            ExamParticipant.exam_id == exam_id,  # Lọc theo exam_id
+            User.role == 'student',             # Chỉ lấy thí sinh
+            ExamParticipant.delete_at.is_(None)            # Bỏ qua tài khoản bị xóa
+        )
+        .order_by(Score.scores.desc())  # Sắp xếp theo điểm số giảm dần
         .all()
     )
 
     # Định dạng kết quả
     return {
         "title": exam.title,
+        "status": exam.status,
         "creator_name": creator_name,
         "participants": [
             {
-                "username": score.username,
-                "name": score.name,
-                "student_class": score.student_class,
-                "department": score.department,
-                "score": score.scores,
-                "rank": score.rank,
+                "username": participant.username,
+                "name": participant.name,
+                "email": participant.email,
+                "phone": participant.phone,
+                "score": participant.score,
+                "rank": participant.rank if participant.score > 0 else "Chưa thi",  # Xếp hạng hoặc trạng thái "Chưa thi"
             }
-            for score in scores
+            for participant in participants
         ],
     }
 
@@ -190,3 +195,85 @@ def get_latest_exams(limit=5):
         }
         for exam in exams
     ]
+
+def searh_user(id):
+    """
+    Tìm username
+    """
+    user_id = User.query.filter_by(id=id).first()
+    return {"username": user_id}
+
+def create_new_exam(data, user):
+    """
+    Xử lý logic tạo một cuộc thi mới.
+    """
+    # Kiểm tra quyền hạn (chỉ admin được tạo cuộc thi)
+    if not user or user.role != 'admin':
+        raise ValueError("Admin access required")
+
+    # Lấy các trường cần thiết từ dữ liệu
+    title = data.get('title')
+    description = data.get('description')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
+    status = data.get('status', 'scheduled')  # Mặc định là "scheduled" nếu không cung cấp
+
+    # Kiểm tra dữ liệu đầu vào
+    if not title or not start_time or not end_time:
+        raise ValueError("Missing required fields")
+
+    # Chuyển đổi thời gian từ chuỗi sang datetime
+    try:
+        start_time = datetime.strptime(start_time, "%Y-%m-%dT%H:%M")
+        end_time = datetime.strptime(end_time, "%Y-%m-%dT%H:%M")
+    except ValueError:
+        raise ValueError("Invalid datetime format. Expected 'YYYY-MM-DDTHH:MM'")
+
+    # Kiểm tra logic thời gian
+    if start_time >= end_time:
+        raise ValueError("Start time must be before end time")
+
+    # Tạo cuộc thi mới
+    new_exam = Exam(
+        title=title,
+        description=description,
+        start_time=start_time,
+        end_time=end_time,
+        status=status,
+        created_by=user.id
+    )
+
+    # Lưu vào database
+    db.session.add(new_exam)
+    db.session.commit()
+
+    # Trả về phản hồi thành công
+    return {
+        "message": "Exam created successfully",
+        "exam_id": new_exam.id
+    }
+
+def remove_participant_from_exam(exam_id, username):
+    try:
+        # Tìm user_id từ username
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return {"error": "User not found"}, 404
+
+        # Tìm participant từ exam_id và user_id
+        participant = ExamParticipant.query.filter_by(
+            exam_id=exam_id,
+            user_id=user.id,
+            delete_at=None
+        ).first()
+        if not participant:
+            return {"error": "Participant not found or already deleted"}, 404
+
+        # Gắn cờ xóa
+        participant.delete_at = db.func.now()
+        db.session.commit()
+
+        return {"message": "Participant removed successfully"}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500

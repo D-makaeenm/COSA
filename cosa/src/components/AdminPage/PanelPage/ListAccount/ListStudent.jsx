@@ -68,8 +68,8 @@ function ListStudent() {
                         <th>ID</th>
                         <th>Username</th>
                         <th>Họ và tên</th>
-                        <th>Lớp</th>
-                        <th>Khoa</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
                         <th>Ngày tạo</th>
                         <th>Actions</th>
                     </tr>
@@ -80,13 +80,13 @@ function ListStudent() {
                             <td>{student.id}</td>
                             <td>{student.username}</td>
                             <td>{student.name}</td>
-                            <td>{student.student_class}</td>
-                            <td>{student.department}</td>
+                            <td>{student.phone}</td>
+                            <td>{student.email}</td>
                             <td>{new Date(student.created_at).toLocaleString()}</td>
                             <td>
                                 <div>
-                                    <button className={styles.btnEdit} onClick={() => handleEditClick(student)}><FontAwesomeIcon icon={icons.edit} className={styles.iconcustom}/></button>
-                                    <button className={styles.btnDelete} onClick={() => handleDelete(student.username)}><FontAwesomeIcon icon={icons.delete} className={styles.iconcustom}/></button>
+                                    <button className={styles.btnEdit} onClick={() => handleEditClick(student)}><FontAwesomeIcon icon={icons.edit} className={styles.iconcustom} /></button>
+                                    <button className={styles.btnDelete} onClick={() => handleDelete(student.username)}><FontAwesomeIcon icon={icons.delete} className={styles.iconcustom} /></button>
                                 </div>
                             </td>
                         </tr>

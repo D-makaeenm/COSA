@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../FormCreateAccount/Form.module.css";
 import axios from "axios";
@@ -7,12 +7,14 @@ function EditStudent() {
     const { state } = useLocation();
     const student = state?.student;
     const navigate = useNavigate();
+    const [contests, setContests] = useState([]);
+    const [examId, setExamId] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
-        
+
         if (!data.password) {
             delete data.password;
         }
@@ -30,13 +32,32 @@ function EditStudent() {
 
             alert(response.data.message || "Account editing successfully!");
             e.target.reset();
-            navigate("/admin/createUser/list-student"); 
+            navigate("/admin/createUser/list-student");
         } catch (error) {
             const errorMessage =
                 error.response?.data?.error || "Something went wrong. Please try again.";
             alert(errorMessage);
         }
     };
+
+
+    useEffect(() => {
+        const fetchContests = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get("http://localhost:5000/management/exams", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setContests(response.data.data); // Gán dữ liệu từ API
+            } catch (error) {
+                console.error("Lỗi khi lấy danh sách cuộc thi:", error);
+            }
+        };
+
+        fetchContests();
+    }, []);
 
     return (
         <div className={styles.div_create_account}>
@@ -56,6 +77,20 @@ function EditStudent() {
 
                             <label htmlFor="password">Password</label>
                             <input id="password" name="password" type="password" placeholder="Password" /> {/*Cái này có cho sửa*/}
+                            <label htmlFor="contest">Cuộc thi</label>
+                            <select
+                                id="contest"
+                                name="exam_id"
+                                value={examId}
+                                onChange={(e) => setExamId(e.target.value)}
+                            >
+                                <option value="">Chọn cuộc thi</option>
+                                {contests.map((contest) => (
+                                    <option key={contest.id} value={contest.id}>
+                                        {contest.title} ({contest.status})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className={styles.form_right}>
@@ -69,24 +104,25 @@ function EditStudent() {
                                 required
                             />
 
-                            <label htmlFor="department">Khoa</label>
+                            <label htmlFor="phone">Số điện thoại</label>
                             <input
-                                id="department"
-                                name="department"
-                                type="text"
-                                placeholder="Nhập tên Khoa"
-                                defaultValue={student?.department || ""}
-                                required
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                pattern="^\d{10,15}$"
+                                placeholder="Nhập số điện thoại (10-15 số)"
+                                defaultValue={student?.phone || ""}
+                                
                             />
 
-                            <label htmlFor="student_class">Lớp</label>
+                            <label htmlFor="email">Email</label>
                             <input
-                                id="student_class"
-                                name="student_class"
-                                type="text"
-                                placeholder="Nhập tên Lớp"
-                                defaultValue={student?.student_class || ""}
-                                required
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="example@domain.com"
+                                defaultValue={student?.email || ""}
+                                
                             />
                         </div>
                     </div>

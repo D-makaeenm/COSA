@@ -40,3 +40,15 @@ td div button{
     border: none;
     cursor: pointer;
 }
+.remove_button {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.remove_button:hover {
+    background-color: #d9363e;
+}

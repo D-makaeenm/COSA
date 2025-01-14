@@ -8,7 +8,7 @@ import { useNavigate, Outlet, useLocation } from "react-router-dom";
 const statusTranslation = {
     completed: "Hoàn thành",
     ongoing: "Đang diễn ra",
-    upcoming: "Sắp diễn ra"
+    scheduled: "Sắp diễn ra"
 };
 
 function ListContest() {
@@ -112,7 +112,7 @@ function ListContest() {
                                     </p>
                                     <p>
                                         <FontAwesomeIcon icon={icons.usercircle} style={{ color: "purple" }} />{" "}
-                                        Người tạo: {contest.creator || "Không rõ"}
+                                        Người tạo: {contest.creator_name || "Không rõ"}
                                     </p>
                                 </div>
                             </div>

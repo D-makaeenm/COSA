@@ -80,13 +80,13 @@ function EditTeacher() {
                                 required
                             />
 
-                            <label htmlFor="department">Khoa</label>
+                            <label htmlFor="email">Email</label>
                             <input
-                                id="department"
-                                name="department"
-                                type="text"
-                                placeholder="Nhập tên Khoa"
-                                defaultValue={teacher?.department || ""}
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="example@domain.com"
+                                defaultValue={teacher?.email || ""}
                                 required
                             />
                         </div>

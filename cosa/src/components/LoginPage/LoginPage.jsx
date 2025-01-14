@@ -23,10 +23,13 @@ function LoginPage() {
     
             const token = response.data.access_token;
             const role = response.data.role;
+            const id = response.data.id;
     
             localStorage.setItem("token", token);
             localStorage.setItem("username", username);
             localStorage.setItem("role", role); 
+            localStorage.setItem("id", id );
+            console.log("id:", id);
     
             if (role === "admin") {
                 navigate("/admin");

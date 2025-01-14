@@ -31,6 +31,33 @@ function ContestInfo() {
         return <p>{error}</p>;
     }
 
+    const handleRemoveParticipant = async (username) => {
+        if (!window.confirm(`Bạn có chắc chắn muốn xóa thí sinh ${username} khỏi cuộc thi?`)) {
+            return;
+        }
+    
+        try {
+            const token = localStorage.getItem("token");
+            await axios.post(
+                "http://localhost:5000/management/exams/remove-participant",
+                {
+                    exam_id: id, // ID của cuộc thi
+                    username: username, // ID của sinh viên
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            alert(`Thí sinh ${username} đã bị xóa khỏi cuộc thi.`);
+            const response = await axios.get(`http://localhost:5000/management/exams/${id}`);
+            setContestInfo(response.data);
+        } catch (error) {
+            alert(error.response?.data?.error || "Có lỗi xảy ra!");
+        }
+    };
+    
     return (
         <div className={styles.info_container}>
             <div>
@@ -42,10 +69,11 @@ function ContestInfo() {
                     <tr>
                         <th>Username</th>
                         <th>Họ và tên</th>
-                        <th>Lớp</th>
-                        <th>Khoa</th>
+                        <th>Điện thoại</th>
+                        <th>Email</th>
                         <th>Số điểm</th>
                         <th>Thứ hạng</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,10 +81,18 @@ function ContestInfo() {
                         <tr key={index}>
                             <td>{participant.username}</td>
                             <td>{participant.name}</td>
-                            <td>{participant.student_class}</td>
-                            <td>{participant.department}</td>
+                            <td>{participant.phone}</td>
+                            <td>{participant.email}</td>
                             <td>{participant.score}</td>
                             <td>{participant.rank}</td>
+                            <td>
+                                <button
+                                    onClick={() => handleRemoveParticipant(participant.username)}
+                                    className={styles.remove_button}
+                                >
+                                    Xóa
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

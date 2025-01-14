@@ -64,12 +64,12 @@ function Teacher() {
                                 required
                             />
 
-                            <label htmlFor="department">Khoa</label>
+                            <label htmlFor="email">Email</label>
                             <input
-                                id="department"
-                                name="department"
-                                type="text"
-                                placeholder="Nhập tên Khoa"
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="example@domain.com"
                                 required
                             />
                         </div>

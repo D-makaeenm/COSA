@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, request
-from services.exam_service import get_exams, get_exam_details
+from flask_jwt_extended import jwt_required
+from services.exam_service import get_exams, get_exam_details, create_new_exam, remove_participant_from_exam
+from models import User
 
 exam_bp = Blueprint('exam_bp', __name__)
 
@@ -54,3 +56,52 @@ def get_exam_info(exam_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+@exam_bp.route('/exams/create', methods=['POST'])
+@jwt_required()
+def create_exam():
+    """
+    Route để tạo một cuộc thi mới.
+    """
+    try:
+        data = request.json
+
+        # Lấy thông tin ID của người dùng từ request
+        user_id = data.get("id")
+        if not user_id:
+            raise ValueError("User ID is required")
+
+        # Tìm người dùng trong cơ sở dữ liệu
+        user = User.query.get(user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        # Gọi service để xử lý logic tạo cuộc thi
+        result = create_new_exam(data, user)
+
+        # Trả về kết quả
+        return jsonify(result), 201
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@exam_bp.route('/exams/remove-participant', methods=['POST'])
+@jwt_required()
+def remove_participant():
+    """
+    API: Gắn cờ xóa thí sinh khỏi cuộc thi.
+    """
+    try:
+        data = request.json
+        exam_id = data.get("exam_id")
+        username = data.get("username")
+
+        if not exam_id or not username:
+            return jsonify({"error": "Missing exam_id or user_id"}), 400
+
+        # Gọi service để xử lý
+        result, status_code = remove_participant_from_exam(exam_id, username)
+        return jsonify(result), status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
