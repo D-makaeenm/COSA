@@ -1,5 +1,5 @@
 from models import Exam, Submission, User, db, Score, ExamParticipant
-from sqlalchemy import func, and_
+from sqlalchemy import func, case, distinct, and_
 from datetime import datetime
 
 def get_latest_contest():
@@ -89,21 +89,19 @@ def get_exams(page=1, per_page=10, sort_by='start_time', order='desc', status=No
     """
     query = (
         db.session.query(
-            Exam.id,
-            Exam.title,
-            Exam.status,
-            func.count(ExamParticipant.user_id.distinct()).label("total_students"),  # Số lượng thí sinh
-            func.count(Submission.id).label("total_submissions"),  # Số bài nộp
-            func.sum(
-                func.if_(Submission.is_graded == 1, 1, 0)
-            ).label("graded_submissions"),  # Số bài đã chấm
+            Exam.id.label("id"),
+            Exam.title.label("title"),
+            Exam.status.label("status"),
+            func.count(distinct(ExamParticipant.user_id)).label("total_students"),  # Đếm số thí sinh
+            func.count(distinct(Submission.id)).label("total_submissions"),  # Đếm số bài nộp
+            func.count(distinct(case((Submission.is_graded == 1, Submission.id)))).label("graded_submissions"),  # Đếm bài đã chấm
             User.name.label("creator_name")  # Tên người tạo kỳ thi
         )
         .outerjoin(Submission, Submission.exam_id == Exam.id)  # Kết nối với bảng Submission
         .outerjoin(
             ExamParticipant,
-            and_(ExamParticipant.exam_id == Exam.id, ExamParticipant.delete_at.is_(None))
-        )  # Kết nối với bảng ExamParticipant và bỏ qua các dòng bị xóa
+            and_(ExamParticipant.exam_id == Exam.id, ExamParticipant.delete_at.is_(None))  # Kết nối với bảng ExamParticipant và bỏ qua dòng bị xóa
+        )
         .join(User, User.id == Exam.created_by)  # Kết nối với bảng User để lấy thông tin người tạo
         .group_by(Exam.id, User.name)  # Nhóm theo ID kỳ thi và tên người tạo
     )
@@ -166,6 +164,8 @@ def get_exam_details(exam_id):
     return {
         "title": exam.title,
         "status": exam.status,
+        "start_time": exam.start_time,
+        "end_time": exam.end_time,
         "creator_name": creator_name,
         "participants": [
             {
@@ -277,3 +277,48 @@ def remove_participant_from_exam(exam_id, username):
     except Exception as e:
         db.session.rollback()
         return {"error": str(e)}, 500
+    
+def update_exam(exam_id, data):
+    """
+    Cập nhật thông tin cuộc thi.
+    
+    """
+    
+    # Tìm cuộc thi
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        raise ValueError("Không tìm thấy cuộc thi.")
+    
+    # Cập nhật thông tin từ dữ liệu request
+    title = data.get("title")
+    description = data.get("description")
+    start_time = data.get("start_time")
+    end_time = data.get("end_time")
+    status = data.get("status")
+    
+    if not title or not start_time or not end_time:
+        raise ValueError("Thiếu các trường cần thiết: title, start_time hoặc end_time.")
+    
+    try:
+        # Chuyển đổi thời gian từ chuỗi sang datetime
+        start_time = datetime.strptime(start_time, "%Y-%m-%dT%H:%M")
+        end_time = datetime.strptime(end_time, "%Y-%m-%dT%H:%M")
+    except ValueError:
+        raise ValueError("Định dạng thời gian không hợp lệ. Mong đợi 'YYYY-MM-DDTHH:MM'.")
+    
+    # Kiểm tra logic thời gian
+    if start_time >= end_time:
+        raise ValueError("Thời gian bắt đầu phải trước thời gian kết thúc.")
+    
+    # Cập nhật thông tin cuộc thi
+    exam.title = title
+    exam.description = description
+    exam.start_time = start_time
+    exam.end_time = end_time
+    exam.status = status
+    exam.updated_at = datetime.utcnow()  # Cập nhật thời gian sửa đổi
+    
+    # Lưu vào database
+    db.session.commit()
+    
+    return {"message": "Cập nhật thông tin cuộc thi thành công."}

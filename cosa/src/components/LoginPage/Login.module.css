@@ -6,70 +6,150 @@
     flex-direction: column;
 }
 
-.body_lg{
+.login_area{
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card{
+    background-color: #fff;
+    width: 800px;
+    height: 460px;
+    border-radius: 30px;
+    padding: 40px;
     display: flex;
     flex-direction: row;
+    box-shadow: 15px 15px 12px rgba(0, 0, 0, 0.075);
+    border: solid 2px #e7e7e7;
+    gap: 20px;
+}
+.insidepadding{
+    background-color: antiquewhite;
+    width: 100%;
+    height: 100%;
+}
+.trai{
     flex: 1;
-}
-
-.bd_inf{
+    background: linear-gradient(135deg, #5bb4e7, #63b3e1, #72bce7, #85c5ea, #9acce8, #b3d7ec, #cae6f6);
     display: flex;
-    flex: 3;
+    align-items: center;
     flex-direction: column;
-    background-color: #FAF3E0;
+    border-radius: 20px;
 }
-
-.bd_inf_slg p{
+.phai{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.title{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.p1{
     font-family: "Dancing Script", serif;
     font-optical-sizing: auto;
     font-style: normal;
     font-size: 48px;
-    margin: 0;
+    font-weight: bold;
+    margin: 20px 0 10px 0;
     text-align: center;
+    color: #ffffff;
 }
-
-.bd_lg_form{
+.p2{
+    font-size: 24px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 5px;
+}
+.p3{
+    font-size: 18px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 5px;
+}
+.logo{
     display: flex;
-    width: 280px;
-    background-color: #FAF3E0;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
+    width: 100%;
+    margin-top: 30px;
+}
+@font-face {
+    font-family: 'Flux Regular';
+    src: url('../../assets/fonts/FluxRegular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+.logo p{
+    color: #ffffff;
+    font-size: 56px;
+    font-weight: bold;
+    font-family: 'Flux Regular', Arial, sans-serif;
+    margin-right: 5px;
+}
+.logo img{
+    width: 180px;
+    height: 180px;
 }
 
 .login_form{
-    background-color: #fff;
-    margin-top: 30px;
     padding: 1rem;
-    height: 250px;
-    max-width: 350px;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    height: 100%;
 }
+.header_form{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+}
+.header_form img{
+    width: 30px;
+    height: 30px;
+}
+.header_form p{
+    font-size: 24px;
+    margin-left: 5px;
+    font-weight: 750;
+}
+
 .lg_form_title{
-    margin: 15px 0 15px 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+    margin: 5px 0 15px 0;
+    font-size: 1.3em;
+    font-weight: 700;
     text-align: center;
     color: #000;
+    letter-spacing: 2px;
 }
 .lg_form_input_container{
     position: relative;
-}
-.lg_form_input_container input, .login_form button{
+    margin-top: 90px;
     outline: none;
-    border: 1px solid #e5e7eb;
-    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .lg_form_input_container input{
+    line-height: 40px;
+    padding-left: 10px;
+    font-size: 14px;
     background-color: #fff;
-    padding: 0.8rem;
-    font-size: 0.875rem;
-    line-height: 1rem;
     width: auto;
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 .lg_form_submit{
+    margin-top: 18px;
     display: block;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
@@ -90,4 +170,12 @@
 .lg_form_submit:hover{
     background-color: #6760f6;
     scale: 1.01;
+}
+.statusLogin{
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+}
+.statusLogin span{
+    color: rgb(52, 199, 26);
 }

@@ -1,5 +1,5 @@
 import LoginPage from './components/LoginPage/LoginPage';
-import TestPage from './components/Exampage/TestPage';
+import TestPage from './components/StudentPage/TestPage';
 import AdminPage from './components/AdminPage/AdminPage';
 import HomePage from './components/AdminPage/PanelPage/HomePage';
 import Reports from './components/AdminPage/PanelPage/Reports';
@@ -18,6 +18,10 @@ import EditStudent from './components/AdminPage/PanelPage/FormEditAccount/EditSt
 import ListContest from './components/AdminPage/PanelPage/ListContest/ListContest';
 import ContestInfo from './components/AdminPage/PanelPage/ListContest/ContestInfo';
 import AddContest from './components/AdminPage/PanelPage/AddContest/AddContest';
+import EditContest from './components/AdminPage/PanelPage/EditContest/EditContest';
+import Questions from './components/StudentPage/Question/Question';
+import ExamQuestion from './components/StudentPage/ExamQuestion/ExamQuestion';
+import RuleAndStart from './components/StudentPage/Rule/RuleAndStart';
 import { Navigate } from 'react-router-dom';
 
 // Danh sách các routes
@@ -31,8 +35,31 @@ const routes = [
         element: <LoginPage />,
     },
     {
-        path: '/test', // Trang test
-        element: <TestPage />,
+        path: '/student', // Trang test
+        children: [
+            {
+                path: '', // Điều hướng mặc định từ /admin
+                element: <Navigate to="start" replace />,
+            },
+            {
+                path: "start",
+                element: <TestPage />,
+                children: [
+                    {
+                        path: "",
+                        element: <RuleAndStart />,
+                    },
+                    {
+                        path: "exam/:examId/questions",
+                        element: <Questions />,
+                    },
+                    {
+                        path: "exam/:examId/questions/:questionId",
+                        element: <ExamQuestion />,
+                    },
+                ]
+            },
+        ],
     },
     {
         path: '/admin', // AdminPage
@@ -51,12 +78,16 @@ const routes = [
                 element: <ListContest />,
                 children: [
                     {
-                        path: 'contests/:id', // Route con để hiển thị chi tiết từng contest
+                        path: 'contests/:id',
                         element: <ContestInfo />
                     },
                     {
-                        path: 'add-contest', // Route con để hiển thị chi tiết từng contest
+                        path: 'add-contest',
                         element: <AddContest />
+                    },
+                    {
+                        path: 'edit-contest/:id',
+                        element: <EditContest />
                     }
                 ]
             },

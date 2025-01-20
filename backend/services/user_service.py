@@ -2,6 +2,8 @@ from models import User, db, Exam, ExamParticipant
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func, asc, text
 from datetime import datetime
+from flask_jwt_extended import get_jwt_identity
+
 
 current_utc_time = datetime.utcnow()
 
@@ -306,8 +308,6 @@ def update_student(username, name, phone, email, password=None, exam_id=None):
         return {"error": str(e)}, 500
 
 
-
-
 def delete_student(username):
     """
     Gắn cờ xóa mềm cho tài khoản sinh viên bằng cách đặt giá trị delete_at.
@@ -320,3 +320,18 @@ def delete_student(username):
     db.session.commit()
 
     return {"message": "Student account deleted successfully!"}, 200
+
+
+def get_account_name(username):
+    """
+    Lấy tên đầy đủ (name) từ username hiện tại.
+    """
+    user = User.query.filter_by(username=username).first()  # Truy vấn user theo username
+    if not user:
+        return None  # Không tìm thấy user
+
+    # Trả về thông tin user dưới dạng dictionary
+    return {
+        "username": user.username,
+        "name": user.name
+    }

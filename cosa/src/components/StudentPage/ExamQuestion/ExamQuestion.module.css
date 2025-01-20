@@ -1,0 +1,36 @@
+.questions{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+}
+.container{
+    background-color: #fff;
+    border-radius: 8px;
+    height: 100%;
+    padding: 10px;
+}
+.btndiv{
+    display: flex;
+    justify-content: center;
+}
+.submitButton{
+    background-color: rgb(150, 52, 255);
+    border: solid 2px #bcbcbc;
+    width: 100px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.4s ease;
+    color: #fff;
+    font-size: 16px;
+    margin-top: 20px;
+}
+.submitButton:hover{
+    background-color: rgb(220, 162, 255);
+    color: #000;
+    border: solid 2px #505050;
+}
+h4{
+    margin: 10px 0 10px 0;
+}

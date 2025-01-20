@@ -1,0 +1,85 @@
+.body_lg{
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.bd_inf{
+    display: flex;
+    flex: 3;
+    flex-direction: column;
+    background-color: #FAF3E0;
+}
+
+.bd_inf_slg p{
+    font-family: "Dancing Script", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-size: 48px;
+    margin: 0;
+    text-align: center;
+}
+
+.bd_lg_form{
+    display: flex;
+    width: 280px;
+    background-color: #FAF3E0;
+    justify-content: center;
+}
+
+.login_form{
+    background-color: #fff;
+    margin-top: 30px;
+    padding: 1rem;
+    height: 250px;
+    max-width: 350px;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.lg_form_title{
+    margin: 15px 0 15px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    color: #000;
+}
+.lg_form_input_container{
+    position: relative;
+}
+.lg_form_input_container input, .login_form button{
+    outline: none;
+    border: 1px solid #e5e7eb;
+    margin: 8px 0;
+}
+
+.lg_form_input_container input{
+    background-color: #fff;
+    padding: 0.8rem;
+    font-size: 0.875rem;
+    line-height: 1rem;
+    width: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.lg_form_submit{
+    display: block;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    background-color: #4F46E5;
+    color: #ffffff;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    width: 100%;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+    transition: ease 0.5s;
+    cursor: pointer;
+}
+
+.lg_form_submit:hover{
+    background-color: #6760f6;
+    scale: 1.01;
+}

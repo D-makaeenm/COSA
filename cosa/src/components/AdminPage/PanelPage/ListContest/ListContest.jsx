@@ -20,15 +20,15 @@ function ListContest() {
     const location = useLocation();
 
     useEffect(() => {
-        if (location.pathname.includes("/contests/")) {
+        if (location.pathname.includes("/contests/") || location.pathname.includes("edit-contest")) {
             setShowDetails(true);
-        }
-        else if (location.pathname.includes("add-contest")) {
+        } else if (location.pathname.includes("add-contest")) {
             setShowDetails(true); // Ẩn danh sách và hiển thị form tạo mới
         } else {
             setShowDetails(false);
         }
     }, [location.pathname]);
+    
 
     useEffect(() => {
         const token = localStorage.getItem("token");

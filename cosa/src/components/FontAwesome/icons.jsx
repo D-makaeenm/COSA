@@ -19,7 +19,8 @@ const icons = {
   usercircle: faUserCircle,
   delete: faX,
   edit: faPen,
-  circleplus: faCirclePlus
+  circleplus: faCirclePlus,
+  pen: faPen
 };
 
 export default icons;

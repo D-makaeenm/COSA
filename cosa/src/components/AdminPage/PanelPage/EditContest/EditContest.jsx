@@ -1,30 +1,66 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import styles from "./AddContest.module.css";
+import { useParams } from "react-router-dom"; // Lấy id từ URL
+import styles from "./EditContest.module.css";
 
-function AddContest() {
+function EditContest() {
+    const { id } = useParams(); // Lấy id của cuộc thi từ URL
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
-    const [status, setStatus] = useState("scheduled"); // Trạng thái mặc định là "scheduled"
+    const [status, setStatus] = useState("scheduled");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+
+    // Tải thông tin cuộc thi khi mở trang
+    useEffect(() => {
+        const fetchContestDetails = async () => {
+            setLoading(true);
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get(
+                    `http://localhost:5000/management/exams/${id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                const { title, description, start_time, end_time, status } =
+                    response.data;
+
+                // Đổ dữ liệu từ API vào form
+                setTitle(title);
+                setDescription(description);
+                setStartTime(start_time.slice(0, 16)); // Lấy datetime-local hợp lệ
+                setEndTime(end_time.slice(0, 16)); // Lấy datetime-local hợp lệ
+                setStatus(status);
+            } catch (error) {
+                setMessage(
+                    error.response?.data?.error || "Không thể tải thông tin cuộc thi"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchContestDetails();
+    }, [id]);
 
     const handleSubmit = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const id = localStorage.getItem("id");
-            await axios.post(
-                "http://localhost:5000/management/exams/create",
+            await axios.put(
+                `http://localhost:5000/management/exams/edit/${id}`,
                 {
                     title,
                     description,
                     start_time: startTime,
                     end_time: endTime,
                     status,
-                    id: id,
                 },
                 {
                     headers: {
@@ -32,9 +68,11 @@ function AddContest() {
                     },
                 }
             );
-            setMessage("Cuộc thi được tạo thành công!");
+            setMessage("Thông tin cuộc thi đã được sửa thành công!");
         } catch (error) {
-            setMessage(error.response?.data?.error || "Có lỗi xảy ra!");
+            setMessage(
+                error.response?.data?.error || "Có lỗi xảy ra khi sửa cuộc thi!"
+            );
         } finally {
             setLoading(false);
         }
@@ -42,7 +80,7 @@ function AddContest() {
 
     return (
         <div className={styles.info_container}>
-            <h1>Tạo mới cuộc thi</h1>
+            <h1>Sửa thông tin cuộc thi</h1>
             <div className={styles.form}>
                 <div className={styles.title}>
                     <label>Tiêu đề:</label>
@@ -85,7 +123,7 @@ function AddContest() {
                 </div>
                 <div className={styles.button}>
                     <button onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Tạo cuộc thi"}
+                        {loading ? "Đang xử lý..." : "Sửa đổi"}
                     </button>
                 </div>
                 {message && <p>{message}</p>}
@@ -94,4 +132,4 @@ function AddContest() {
     );
 }
 
-export default AddContest;
+export default EditContest;

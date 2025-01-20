@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./Rule.module.css";
 
+
 function Rules() {
     return (
         <div className={styles.bd_inf_rules}>
@@ -17,12 +18,12 @@ function Rules() {
                     <ol>
                         <li>Về thiết bị và phần mềm:</li>
                         <ul>
-                            <li>Ban tổ chức cung cấp máy tính cài đặt môi trường lập trình (Code::Blocks, Dev-C++, PyCharm, hoặc IDE tương ứng).</li>
-                            <li>Thí sinh/đội thi không được phép mang theo tài liệu, thiết bị hỗ trợ (điện thoại, máy tính bảng, USB, v.v.).</li>
+                            <li>Ban tổ chức cung cấp máy tính cài đặt môi trường lập trình.</li>
+                            <li>Thí sinh thi không được phép mang theo tài liệu, thiết bị hỗ trợ (điện thoại, máy tính bảng, USB, v.v.).</li>
                         </ul>
                         <li>Về bài thi</li>
                         <ul>
-                            <li>Thí sinh/đội thi phải nộp bài trực tiếp qua hệ thống chấm tự động của ban tổ chức.</li>
+                            <li>Thí sinh thi phải nộp bài trực tiếp qua hệ thống chấm tự động của ban tổ chức.</li>
                             <li>Mỗi bài thi được chấm điểm theo số lượng test case đúng.</li>
                             <li>Kết quả cuối cùng được tính dựa trên tổng điểm và thời gian hoàn thành.</li>
                         </ul>

@@ -52,3 +52,27 @@ td div button{
 .remove_button:hover {
     background-color: #d9363e;
 }
+.header{
+    display: flex;
+    flex-direction: column;
+}
+.author{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+.title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.editContest{
+    margin-left: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: rgb(0, 174, 0);
+    transition: 0.3s ease;
+}
+.editContest:hover{
+    color: rgb(2, 142, 2);
+}

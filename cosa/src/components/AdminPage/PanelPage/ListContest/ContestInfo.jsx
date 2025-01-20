@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import icons from "../../../FontAwesome/icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./ContestInfo.module.css";
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { useNavigate } from "react-router-dom";
 
 function ContestInfo() {
     const { id } = useParams(); // Lấy id từ URL
     const [contestInfo, setContestInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
+    const formatDateTime = (dateTimeString) => {
+        const date = new Date(dateTimeString);
+        return format(date, "HH:mm:ss EEEE dd/MM/yyyy", { locale: vi });
+    };
 
     useEffect(() => {
         // Gọi API để lấy dữ liệu
@@ -35,7 +46,7 @@ function ContestInfo() {
         if (!window.confirm(`Bạn có chắc chắn muốn xóa thí sinh ${username} khỏi cuộc thi?`)) {
             return;
         }
-    
+
         try {
             const token = localStorage.getItem("token");
             await axios.post(
@@ -57,12 +68,23 @@ function ContestInfo() {
             alert(error.response?.data?.error || "Có lỗi xảy ra!");
         }
     };
-    
+
+    const handleEditContestClick = () => {
+        navigate(`/admin/list-contest/edit-contest/${id}`); // Điều hướng đến trang sửa thông tin cuộc thi
+    };
+
     return (
         <div className={styles.info_container}>
-            <div>
-                <h1>{contestInfo.title}</h1>
-                <p>Người tạo: {contestInfo.creator_name}</p>
+            <div className={styles.header}>
+                <div className={styles.title}>
+                    <h1>{contestInfo.title}</h1>
+                    <div className={styles.editContest} onClick={handleEditContestClick}><FontAwesomeIcon icon={icons.pen} /></div>
+                </div>
+                <div className={styles.author}>
+                    <p>Người tạo: {contestInfo.creator_name}</p>
+                    <p>Thời gian bắt đầu: {formatDateTime(contestInfo.start_time)}</p>
+                    <p>Thời gian kết thúc: {formatDateTime(contestInfo.end_time)}</p>
+                </div>
             </div>
             <table className={styles.table}>
                 <thead>
