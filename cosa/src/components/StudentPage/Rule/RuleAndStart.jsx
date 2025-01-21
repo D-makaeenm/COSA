@@ -8,14 +8,13 @@ function RuleAndStart() {
     const navigate = useNavigate();
     const [exam, setExam] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+    const [remainingTime, setRemainingTime] = useState(0);
 
     useEffect(() => {
         const fetchUserInfoAndExam = async () => {
             try {
                 const token = localStorage.getItem("token");
 
-                // Lấy thông tin cuộc thi đang diễn ra
                 const examResponse = await axios.get(
                     "http://127.0.0.1:5000/student/ongoing-exam",
                     {
@@ -24,10 +23,17 @@ function RuleAndStart() {
                         },
                     }
                 );
+
                 setExam(examResponse.data);
+
+                const startTime = new Date(examResponse.data.start_time);
+                const endTime = new Date(examResponse.data.end_time);
+                const totalSeconds = Math.max((endTime - startTime) / 1000, 0);
+
+                setRemainingTime(totalSeconds);
             } catch (error) {
                 console.error("Error fetching data:", error);
-                setExam(null); // Không có cuộc thi nào đang diễn ra
+                setExam(null);
             } finally {
                 setLoading(false);
             }
@@ -41,7 +47,10 @@ function RuleAndStart() {
             alert("Không có cuộc thi nào đang diễn ra!");
             return;
         }
-        navigate(`exam/${exam.id}/questions`);
+
+        navigate(`exam/${exam.id}/questions`, {
+            state: { remainingTime }, // Truyền thời gian qua state
+        });
     };
 
     if (loading) return <p>Đang tải dữ liệu...</p>;

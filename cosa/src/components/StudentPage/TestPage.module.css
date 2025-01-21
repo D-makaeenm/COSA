@@ -103,7 +103,17 @@
 }
 .timeout{
     display: flex;
+    flex-direction: column;
+    margin-top: 20px;
     justify-content: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border: solid 2px #b1b1b1;
+    border-radius: 8px;
+}
+.timeout p{
+    text-align: center;
+    margin: 5px 0 5px 0;
 }
 .btnback{
     display: flex;
@@ -121,4 +131,10 @@
 }
 .btnback:hover{
     background-color: #54ca62;
+}
+.afterStart{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

@@ -3,8 +3,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.student_service import (
     get_ongoing_exam_service,
     get_exam_questions_service,
-    submit_exam_task_service
+    submit_exam_task_service,
+    start_exam_service
 )
+from datetime import datetime, timedelta
 
 student_bp = Blueprint('student_bp', __name__)
 
@@ -41,6 +43,20 @@ def submit_exam_task(exam_id):
         current_user_id = get_jwt_identity()
         data = request.json
         result = submit_exam_task_service(current_user_id, exam_id, data)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@student_bp.route('/start-exam', methods=['POST'])
+@jwt_required()
+def start_exam():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.json
+        exam_id = data.get("exam_id")
+        result = start_exam_service(current_user_id, exam_id)
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React from "react";
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
-import axios from "axios";
 import styles from './ExamQuestion.module.css';
 
 function ExamQuestion() {

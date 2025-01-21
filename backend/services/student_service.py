@@ -1,6 +1,6 @@
 from models import User, Exam, ExamParticipant, ExamTask, Submission, db
 from sqlalchemy import and_, func
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def get_ongoing_exam_service(user_id):
     """
@@ -120,3 +120,30 @@ def grade_submission(code, exam_task):
         return score, execution_time, None
     except Exception as e:
         return 0, None, str(e)
+
+
+def start_exam_service(user_id, exam_id):
+    participation = ExamParticipant.query.filter_by(
+        user_id=user_id, exam_id=exam_id, delete_at=None
+    ).first()
+    if not participation:
+        raise ValueError("You are not registered for this exam")
+
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        raise ValueError("Exam not found")
+
+    if not participation.start_time:
+        participation.start_time = datetime.utcnow()
+        db.session.commit()
+
+    # Tính thời gian đếm ngược (giây)
+    exam_duration_seconds = (exam.end_time - exam.start_time).total_seconds()
+
+    return {
+        "remaining_time_seconds": max(
+            exam_duration_seconds - (datetime.utcnow() - participation.start_time).total_seconds(),
+            0,
+        ),
+        "exam_duration_seconds": exam_duration_seconds,
+    }
