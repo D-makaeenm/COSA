@@ -34,8 +34,8 @@ function EditContest() {
                 // Đổ dữ liệu từ API vào form
                 setTitle(title);
                 setDescription(description);
-                setStartTime(start_time.slice(0, 16)); // Lấy datetime-local hợp lệ
-                setEndTime(end_time.slice(0, 16)); // Lấy datetime-local hợp lệ
+                setStartTime(new Date(start_time).toISOString().slice(0, 16)); // Lấy datetime-local hợp lệ
+                setEndTime(new Date(end_time).toISOString().slice(0, 16)); // Lấy datetime-local hợp lệ
                 setStatus(status);
             } catch (error) {
                 setMessage(

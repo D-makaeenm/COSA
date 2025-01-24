@@ -27,15 +27,17 @@ function HomePage() {
 
         // Gọi API để lấy thông tin cuộc thi gần nhất
         axios
-            .get("http://localhost:5000/dashboard/latest-contest-summary", {
+            .get("http://127.0.0.1:5000/dashboard/latest-contest-summary", {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             })
             .then((response) => {
+                console.log("Token:", token);
                 setContestData(response.data.info); // Đảm bảo đúng cấu trúc
             })
             .catch((error) => {
+                console.log("Token:", token);
                 console.error("Error fetching contest info:", error.response || error.message);
             });
 

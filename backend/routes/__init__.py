@@ -4,7 +4,9 @@ from routes.dashboard import dashboard_bp  # Thêm route dashboard nếu có
 from routes.admin import admin_bp
 from routes.exam import exam_bp
 from routes.user import user_bp
+from routes.submission import submission_bp
 from routes.student import student_bp
+from routes.notification import notification_bp
 
 
 # Hàm đăng ký routes
@@ -16,4 +18,5 @@ def register_routes(app):
     app.register_blueprint(exam_bp, url_prefix='/management')
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(student_bp, url_prefix='/student')
-
+    app.register_blueprint(submission_bp, url_prefix='/submission')
+    app.register_blueprint(notification_bp, url_prefix='/notification')

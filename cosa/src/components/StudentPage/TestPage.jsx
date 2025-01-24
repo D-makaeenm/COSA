@@ -6,9 +6,30 @@ import axios from "axios";
 
 function TestPage() {
     const [userInfo, setUserInfo] = useState({ username: "", name: "" });
+    const [currentScore, setCurrentScore] = useState(
+        localStorage.getItem("currentScore") !== null
+            ? parseInt(localStorage.getItem("currentScore"))
+            : null
+    );
+    const [isLoadingScore, setIsLoadingScore] = useState(false);
+
+    const [remainingTime, setRemainingTime] = useState(
+        parseInt(localStorage.getItem("remainingTime")) || 0
+    );
+
+    const updateScore = (score) => {
+        setCurrentScore(score);
+        localStorage.setItem("currentScore", score);
+        alert("Bạn đã hoàn thành bài thi, điểm của bạn là: " + score);
+        setIsLoadingScore(false);
+    };
+
+    const setLoadingScore = (loading) => {
+        setIsLoadingScore(loading);
+    };
 
     useEffect(() => {
-        const fetchUserInfoAndExam = async () => {
+        const fetchUserInfo = async () => {
             try {
                 const token = localStorage.getItem("token");
                 const username = localStorage.getItem("username");
@@ -17,7 +38,6 @@ function TestPage() {
                     throw new Error("Username is not found in localStorage");
                 }
 
-                // Lấy thông tin người dùng
                 const userResponse = await axios.post(
                     "http://127.0.0.1:5000/user/get_username",
                     { username },
@@ -33,36 +53,39 @@ function TestPage() {
             }
         };
 
-        fetchUserInfoAndExam();
+        fetchUserInfo();
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("username");
         localStorage.removeItem("token");
+        localStorage.removeItem("remainingTime");
+        localStorage.removeItem("currentScore");
         window.location.href = "/login";
     };
 
     const location = useLocation();
-    const [remainingTime, setRemainingTime] = useState(
-        location.state?.remainingTime || 0
-    );
 
     useEffect(() => {
-        // Khi `location.state.remainingTime` thay đổi, cập nhật ngay
         if (location.state?.remainingTime) {
             setRemainingTime(location.state.remainingTime);
+            localStorage.setItem("remainingTime", location.state.remainingTime);
         }
     }, [location.state?.remainingTime]);
 
     useEffect(() => {
-        if (remainingTime > 0) {
+        if (remainingTime > 0 && currentScore === null) {
             const timer = setInterval(() => {
-                setRemainingTime((prev) => prev - 1);
+                setRemainingTime((prev) => {
+                    const newTime = prev - 1;
+                    localStorage.setItem("remainingTime", newTime);
+                    return newTime;
+                });
             }, 1000);
 
             return () => clearInterval(timer);
         }
-    }, [remainingTime]);
+    }, [remainingTime, currentScore]);
 
     const formatTime = (timeInSeconds) => {
         const minutes = Math.floor(timeInSeconds / 60);
@@ -75,7 +98,13 @@ function TestPage() {
             <Navbar />
             <div className={styles.test}>
                 <div className={styles.bd_exam}>
-                    <Outlet context={{ remainingTime }} />
+                    <Outlet
+                        context={{
+                            remainingTime,
+                            updateScore,
+                            setLoadingScore,
+                        }}
+                    />
                 </div>
                 <div className={styles.bd_inf_user}>
                     <div className={styles.bd_inf_user_card}>
@@ -88,10 +117,16 @@ function TestPage() {
                         </button>
                     </div>
                     <div className={styles.afterStart}>
-                        <div className={styles.btnback}>Trở lại câu hỏi</div>
                         <div className={styles.timeout}>
                             <p>Thời gian còn lại</p>
                             <p>{formatTime(remainingTime)}</p>
+                        </div>
+                        <div>
+                            {isLoadingScore ? (
+                                <p>Đang chấm...</p>
+                            ) : (
+                                <p>Điểm hiện tại: {currentScore !== null ? currentScore : "Chưa có"}</p>
+                            )}
                         </div>
                     </div>
                 </div>

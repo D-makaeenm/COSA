@@ -3,3 +3,5 @@ flask-sqlalchemy
 flask-jwt-extended
 werkzeug
 pymysql
+flask_cors
+cryptography
