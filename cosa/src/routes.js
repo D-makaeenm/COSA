@@ -23,6 +23,7 @@ import Questions from './components/StudentPage/Question/Question';
 import ExamQuestion from './components/StudentPage/ExamQuestion/ExamQuestion';
 import RuleAndStart from './components/StudentPage/Rule/RuleAndStart';
 import { Navigate } from 'react-router-dom';
+import ContestDetails from './components/AdminPage/PanelPage/EditContest/ContestDetails';
 
 // Danh sách các routes
 const routes = [
@@ -88,6 +89,10 @@ const routes = [
                     {
                         path: 'edit-contest/:id',
                         element: <EditContest />
+                    },
+                    {
+                        path: 'edit-contest-detail/:id',
+                        element: <ContestDetails />
                     }
                 ]
             },

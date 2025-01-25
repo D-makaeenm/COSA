@@ -7,6 +7,7 @@ import styles from "./ContestInfo.module.css";
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useNavigate } from "react-router-dom";
+import { Tooltip } from 'react-tooltip'
 
 function ContestInfo() {
     const { id } = useParams(); // Lấy id từ URL
@@ -73,12 +74,24 @@ function ContestInfo() {
         navigate(`/admin/list-contest/edit-contest/${id}`); // Điều hướng đến trang sửa thông tin cuộc thi
     };
 
+    const handleEditContestDetailsClick = () => {
+        navigate(`/admin/list-contest/edit-contest-detail/${id}`);
+    };
+
     return (
         <div className={styles.info_container}>
             <div className={styles.header}>
                 <div className={styles.title}>
                     <h1>{contestInfo.title}</h1>
-                    <div className={styles.editContest} onClick={handleEditContestClick}><FontAwesomeIcon icon={icons.pen} /></div>
+                    <div id="edit-contest" className={styles.editContest} onClick={handleEditContestClick}>
+                        <FontAwesomeIcon icon={icons.pen} />
+                    </div>
+                    <Tooltip anchorId="edit-contest" content="Edit Contest" />
+
+                    <div id="contest-details" className={styles.editContest} onClick={handleEditContestDetailsClick}>
+                        <FontAwesomeIcon icon={icons.info} />
+                    </div>
+                    <Tooltip anchorId="contest-details" content="Edit Contest Details" />
                 </div>
                 <div className={styles.author}>
                     <p>Người tạo: {contestInfo.creator_name}</p>

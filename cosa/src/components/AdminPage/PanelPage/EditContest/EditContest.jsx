@@ -80,51 +80,53 @@ function EditContest() {
 
     return (
         <div className={styles.info_container}>
-            <h1>Sửa thông tin cuộc thi</h1>
+            <h1>Sửa thông tin cơ bản cuộc thi</h1>
             <div className={styles.form}>
-                <div className={styles.title}>
-                    <label>Tiêu đề:</label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                    />
-                </div>
-                <div className={styles.description}>
-                    <label>Mô tả:</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    ></textarea>
-                </div>
-                <div className={styles.start_time}>
-                    <label>Thời gian bắt đầu:</label>
-                    <input
-                        type="datetime-local"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                    />
-                </div>
-                <div className={styles.end_time}>
-                    <label>Thời gian kết thúc:</label>
-                    <input
-                        type="datetime-local"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                    />
-                </div>
-                <div className={styles.status}>
-                    <label>Trạng thái:</label>
-                    <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                </div>
-                <div className={styles.button}>
-                    <button onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Sửa đổi"}
-                    </button>
+                <div className={styles.basicIn}>
+                    <div className={styles.title}>
+                        <label>Tiêu đề:</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                        />
+                    </div>
+                    <div className={styles.description}>
+                        <label>Mô tả:</label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        ></textarea>
+                    </div>
+                    <div className={styles.start_time}>
+                        <label>Thời gian bắt đầu:</label>
+                        <input
+                            type="datetime-local"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                        />
+                    </div>
+                    <div className={styles.end_time}>
+                        <label>Thời gian kết thúc:</label>
+                        <input
+                            type="datetime-local"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                    <div className={styles.status}>
+                        <label>Trạng thái:</label>
+                        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div className={styles.button}>
+                        <button onClick={handleSubmit} disabled={loading}>
+                            {loading ? "Đang xử lý..." : "Sửa đổi"}
+                        </button>
+                    </div>
                 </div>
                 {message && <p>{message}</p>}
             </div>

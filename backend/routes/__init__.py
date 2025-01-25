@@ -7,7 +7,7 @@ from routes.user import user_bp
 from routes.submission import submission_bp
 from routes.student import student_bp
 from routes.notification import notification_bp
-
+from routes.grading import grading_criteria_bp
 
 # Hàm đăng ký routes
 def register_routes(app):
@@ -20,3 +20,4 @@ def register_routes(app):
     app.register_blueprint(student_bp, url_prefix='/student')
     app.register_blueprint(submission_bp, url_prefix='/submission')
     app.register_blueprint(notification_bp, url_prefix='/notification')
+    app.register_blueprint(grading_criteria_bp, url_prefix='/grading-criteria')

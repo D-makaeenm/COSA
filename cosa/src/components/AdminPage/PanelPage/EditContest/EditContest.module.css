@@ -100,3 +100,129 @@
 .button button:hover{
     background-color: rgb(83, 80, 228);
 }
+
+
+
+
+
+.detailInfo_container{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
+}
+.exam_tasks_container, .grading_criteria_container, .testcases_container{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e8eaed;
+    border-radius: 8px;
+}
+
+.formDetails{
+    padding: 10px;
+    border-radius: 8px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+.formDetails label{
+    font-weight: bolder;
+    font-size: 16px;
+}
+.exam_tasks_container h5, p{
+    margin: 0;
+}
+.grading_criteria_container h5, p{
+    margin: 0;
+}
+.exam_tasks_title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.exam_tasks_title div{
+    height: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    color: #00df0b;
+}
+.taskItem, .criteriaItem, .testcaseItem{
+    margin-top: 10px;
+    padding: 10px 0 10px 0;
+    border-top: solid 2px #43d5af;
+}
+.edit_taskItem, .edit_criteriaItem, .edit_testcaseItem{
+    display: flex;
+    flex-direction: column;
+}
+.edit_taskItem input,textarea{
+    margin: 10px 0 10px 0;
+    max-width: 381.5px;
+}
+.edit_criteriaItem input,textarea{
+    margin: 10px 0 10px 0;
+    max-width: 381.5px;
+}
+.edit_testcaseItem input,textarea{
+    margin: 10px 0 10px 0;
+    max-width: 381.5px;
+}
+.button2{
+    display: flex;
+    justify-content: center;
+}
+.button2 button{
+    border: solid 1px #8d8d8d;
+    border-radius: 7px;
+    padding: 3px;
+    width: 50px;
+    background-color: rgb(57, 255, 57);
+    color: #000000;
+    cursor: pointer;
+    transition: 0.4s ease;
+}
+.button2 button:hover{
+    background-color: rgb(41, 166, 233);
+    color: #ffffff;
+}
+.button3{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    margin: 5px 0 0 0;
+}
+.button3_del, .button3_edit{
+    cursor: pointer;
+    border-radius: 4px;
+    width: 40px;
+    padding: 3px 0 3px 0;
+    border: solid 1px #b1b1b1;
+}
+.button3_edit{
+    background-color: rgb(255, 214, 138);
+}
+.button3_del{
+    background-color: rgb(255, 136, 136);
+}
+
+.grading_criteria_title, .testcases_title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.grading_criteria_title div{
+    height: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    color: #00df0b;
+}
+
+.testcases_title div{
+    height: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    color: #00df0b;
+}
+
