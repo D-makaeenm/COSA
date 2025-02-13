@@ -335,3 +335,49 @@ def get_account_name(username):
         "username": user.username,
         "name": user.name
     }
+
+def get_students_not_in_exam(exam_id):
+    """
+    Lấy danh sách sinh viên chưa tham gia hoặc đã bị xóa mềm khỏi cuộc thi cụ thể.
+    """
+    # Lấy tất cả user là student
+    all_students = (
+        User.query.filter_by(role='student', delete_at=None)
+        .order_by(User.id)
+        .all()
+    )
+
+    # Lấy danh sách user_id đã tham gia kỳ thi (bao gồm cả xóa mềm)
+    participants = ExamParticipant.query.filter_by(exam_id=exam_id).all()
+    participant_dict = {
+        participant.user_id: participant.delete_at for participant in participants
+    }
+
+    # Lọc danh sách sinh viên chưa tham gia hoặc bị xóa mềm
+    not_in_exam_students = []
+    for student in all_students:
+        if student.id not in participant_dict:
+            # Thí sinh chưa tham gia cuộc thi
+            not_in_exam_students.append({
+                "id": student.id,
+                "username": student.username,
+                "name": student.name,
+                "phone": student.phone,
+                "email": student.email,
+                "created_at": student.created_at,
+                "status": "not_participated"  # Trạng thái thí sinh chưa tham gia
+            })
+        elif participant_dict[student.id] is not None:
+            # Thí sinh bị xóa mềm
+            not_in_exam_students.append({
+                "id": student.id,
+                "username": student.username,
+                "name": student.name,
+                "phone": student.phone,
+                "email": student.email,
+                "created_at": student.created_at,
+                "status": "soft_deleted"  # Trạng thái thí sinh bị xóa mềm
+            })
+
+    return not_in_exam_students
+

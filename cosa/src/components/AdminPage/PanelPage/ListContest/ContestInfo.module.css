@@ -8,6 +8,7 @@
 .table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
 .table th,
@@ -68,11 +69,21 @@ td div button{
 }
 .editContest{
     margin-left: 20px;
-    font-size: 28px;
+    font-size: 22px;
     cursor: pointer;
     color: rgb(0, 174, 0);
     transition: 0.3s ease;
 }
 .editContest:hover{
     color: rgb(2, 142, 2);
+}
+.btnback{
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.4s ease-in-out;
+    width: fit-content;
+    border-bottom: 1px solid transparent;
+}
+.btnback:hover{
+    border-bottom: 1px solid black;
 }

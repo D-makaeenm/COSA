@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from services.user_service import get_account_counts, get_admins, get_teachers, get_students, update_student, delete_student, delete_teacher, update_teacher, delete_admin, update_admin
+from services.user_service import get_account_counts, get_admins, get_teachers, get_students, update_student, delete_student, delete_teacher, update_teacher, delete_admin, update_admin, get_students_not_in_exam
 
 
 admin_bp = Blueprint('admin', __name__)
@@ -147,3 +147,14 @@ def delete_student_endpoint():
     result, status_code = delete_student(username)
     return jsonify(result), status_code
 
+@admin_bp.route('/list-student/<int:exam_id>', methods=['GET'])
+@jwt_required()
+def list_students_not_in_exam(exam_id):
+    """
+    API: Lấy danh sách sinh viên chưa tham gia kỳ thi cụ thể.
+    """
+    try:
+        students = get_students_not_in_exam(exam_id)
+        return jsonify(students), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

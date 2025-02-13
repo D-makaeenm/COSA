@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Outlet, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import icons from "../../../FontAwesome/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./ContestInfo.module.css";
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { useNavigate } from "react-router-dom";
-import { Tooltip } from 'react-tooltip'
 
 function ContestInfo() {
     const { id } = useParams(); // Lấy id từ URL
@@ -15,33 +9,28 @@ function ContestInfo() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-
-    const formatDateTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
-        return format(date, "HH:mm:ss EEEE dd/MM/yyyy", { locale: vi });
-    };
+    const location = useLocation();
 
     useEffect(() => {
-        // Gọi API để lấy dữ liệu
-        axios
-            .get(`http://localhost:5000/management/exams/${id}`)
-            .then((response) => {
+        const fetchContestInfo = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/management/exams/${id}`);
                 setContestInfo(response.data);
-                setLoading(false);
-            })
-            .catch((err) => {
+                setError(null);
+            } catch (err) {
                 setError(err.response?.data?.error || "Không thể tải dữ liệu");
+            } finally {
                 setLoading(false);
-            });
-    }, [id]);
-
-    if (loading) {
-        return <p>Đang tải dữ liệu...</p>;
-    }
-
-    if (error) {
-        return <p>{error}</p>;
-    }
+            }
+        };
+    
+        if (location.state?.reload) {
+            fetchContestInfo(); // Gọi lại API để cập nhật
+            navigate(location.pathname, { replace: true }); // Xóa state sau khi xử lý
+        } else {
+            fetchContestInfo();
+        }
+    }, [id, location.state, location.pathname, navigate]);
 
     const handleRemoveParticipant = async (username) => {
         if (!window.confirm(`Bạn có chắc chắn muốn xóa thí sinh ${username} khỏi cuộc thi?`)) {
@@ -71,67 +60,36 @@ function ContestInfo() {
     };
 
     const handleEditContestClick = () => {
-        navigate(`/admin/list-contest/edit-contest/${id}`); // Điều hướng đến trang sửa thông tin cuộc thi
+        navigate(`/admin/list-contest/edit-contest/${id}`);
     };
 
     const handleEditContestDetailsClick = () => {
         navigate(`/admin/list-contest/edit-contest-detail/${id}`);
     };
 
+    const handleAddStudenttoContest = () => {
+        navigate(`/admin/list-contest/contests/${id}/add-student`);
+    };
+
+    if (loading) {
+        return <p>Đang tải dữ liệu...</p>;
+    }
+
+    if (error) {
+        return <p>{error}</p>;
+    }
+
     return (
         <div className={styles.info_container}>
-            <div className={styles.header}>
-                <div className={styles.title}>
-                    <h1>{contestInfo.title}</h1>
-                    <div id="edit-contest" className={styles.editContest} onClick={handleEditContestClick}>
-                        <FontAwesomeIcon icon={icons.pen} />
-                    </div>
-                    <Tooltip anchorId="edit-contest" content="Edit Contest" />
-
-                    <div id="contest-details" className={styles.editContest} onClick={handleEditContestDetailsClick}>
-                        <FontAwesomeIcon icon={icons.info} />
-                    </div>
-                    <Tooltip anchorId="contest-details" content="Edit Contest Details" />
-                </div>
-                <div className={styles.author}>
-                    <p>Người tạo: {contestInfo.creator_name}</p>
-                    <p>Thời gian bắt đầu: {formatDateTime(contestInfo.start_time)}</p>
-                    <p>Thời gian kết thúc: {formatDateTime(contestInfo.end_time)}</p>
-                </div>
-            </div>
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Họ và tên</th>
-                        <th>Điện thoại</th>
-                        <th>Email</th>
-                        <th>Số điểm</th>
-                        <th>Thứ hạng</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {contestInfo.participants.map((participant, index) => (
-                        <tr key={index}>
-                            <td>{participant.username}</td>
-                            <td>{participant.name}</td>
-                            <td>{participant.phone}</td>
-                            <td>{participant.email}</td>
-                            <td>{participant.score}</td>
-                            <td>{participant.rank}</td>
-                            <td>
-                                <button
-                                    onClick={() => handleRemoveParticipant(participant.username)}
-                                    className={styles.remove_button}
-                                >
-                                    Xóa
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <Outlet
+                context={{
+                    contestInfo,
+                    handleRemoveParticipant,
+                    handleEditContestClick,
+                    handleEditContestDetailsClick,
+                    handleAddStudenttoContest,
+                }}
+            />
         </div>
     );
 }

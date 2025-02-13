@@ -1,9 +1,6 @@
-[{"id":1, "exam_id":1, "criteria_name":"\u0110\u00fang t\u1ea5t c\u1ea3 test case", "max_score":9.0, "description":"Th\u00ed sinh \u0111\u1ea1t \u0111i\u1ec3m n\u00e0y n\u1ebfu ch\u01b0\u01a1ng tr\u00ecnh \u0111\u00fang t\u1ea5t c\u1ea3 test case."},
- {"id":2, "exam_id":1, "criteria_name":"\u0110i\u1ec3m c\u1ed9ng cho th\u1eddi gian ch\u1ea1y t\u1ed1t", "max_score":1.0, "description":"Th\u00ed sinh \u0111\u01b0\u1ee3c c\u1ed9ng th\u00eam \u0111i\u1ec3m n\u00e0y n\u1ebfu th\u1eddi gian ch\u1ea1y b\u1eb1ng ho\u1eb7c nhanh h\u01a1n y\u00eau c\u1ea7u."},
- {"id":3, "exam_id":1, "criteria_name":"\u0110\u00fang 2 test case", "max_score":6.0, "description":"Th\u00ed sinh \u0111\u00fang 2 test case s\u1ebd \u0111\u01b0\u1ee3c 6 \u0111i\u1ec3m."},
- {"id":4, "exam_id":1, "criteria_name":"\u0110\u00fang 1 test case", "max_score":3.0, "description":"Th\u00ed sinh \u0111\u00fang 1 test case s\u1ebd \u0111\u01b0\u1ee3c 3 \u0111i\u1ec3m."},
- {"id":5, "exam_id":1, "criteria_name":"S\u1eed d\u1ee5ng \u0111\u00fang input", "max_score":0.0, "description":"Th\u00ed sinh s\u1ebd b\u1ecb tr\u1eeb h\u1ebft \u0111i\u1ec3m n\u1ebfu kh\u00f4ng s\u1eed d\u1ee5ng \u0111\u00fang input."},
- {"id":6, "exam_id":2, "criteria_name":"\u0110\u00fang t\u1ea5t c\u1ea3 test case", "max_score":9.0, "description":"Th\u00ed sinh \u0111\u1ea1t \u0111i\u1ec3m n\u00e0y n\u1ebfu ch\u01b0\u01a1ng tr\u00ecnh \u0111\u00fang t\u1ea5t c\u1ea3 test case."},
- {"id":7, "exam_id":2, "criteria_name":"\u0110i\u1ec3m c\u1ed9ng cho th\u1eddi gian ch\u1ea1y t\u1ed1t", "max_score":1.0, "description":"Th\u00ed sinh \u0111\u01b0\u1ee3c c\u1ed9ng th\u00eam \u0111i\u1ec3m n\u00e0y n\u1ebfu th\u1eddi gian ch\u1ea1y b\u1eb1ng ho\u1eb7c nhanh h\u01a1n y\u00eau c\u1ea7u."},
- {"id":8, "exam_id":2, "criteria_name":"\u0110\u00fang 1 test case", "max_score":4.5, "description":"Th\u00ed sinh \u0111\u00fang 1 test case s\u1ebd \u0111\u01b0\u1ee3c 4.5 \u0111i\u1ec3m."},
- {"id":9, "exam_id":2, "criteria_name":"S\u1eed d\u1ee5ng \u0111\u00fang input", "max_score":0.0, "description":"Th\u00ed sinh s\u1ebd b\u1ecb tr\u1eeb h\u1ebft \u0111i\u1ec3m n\u1ebfu kh\u00f4ng s\u1eed d\u1ee5ng \u0111\u00fang input."}]
+[{"id":1, "exam_task_id":1, "criteria_name":"K\u1ebft qu\u1ea3 \u0111\u00fang", "penalty":0.0},
+ {"id":2, "exam_task_id":1, "criteria_name":"Ch\u1ea1y v\u01b0\u1ee3t th\u1eddi gian", "penalty":0.5},
+ {"id":3, "exam_task_id":2, "criteria_name":"K\u1ebft qu\u1ea3 \u0111\u00fang", "penalty":0.0},
+ {"id":4, "exam_task_id":2, "criteria_name":"Ch\u1ea1y v\u01b0\u1ee3t th\u1eddi gian", "penalty":0.5},
+ {"id":5, "exam_task_id":3, "criteria_name":"K\u1ebft qu\u1ea3 \u0111\u00fang", "penalty":0.0},
+ {"id":6, "exam_task_id":3, "criteria_name":"Ch\u1ea1y v\u01b0\u1ee3t th\u1eddi gian", "penalty":0.5}]

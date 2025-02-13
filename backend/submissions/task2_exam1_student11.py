@@ -1,11 +1,3 @@
-def tinh_tong(a, b):
-    return a + b
-# Test case
-so_1 = 33
-so_2 = 99
-tong = tinh_tong(so_1, so_2)
-print(tong)
-
 def la_so_nguyen_to(n):
     if n < 2:
         return False
@@ -20,10 +12,3 @@ def liet_ke_so_nguyen_to(upper_limit):
 gioi_han = 50
 mang_nguyen_to = liet_ke_so_nguyen_to(gioi_han)
 print(",".join(map(str, mang_nguyen_to)))
-
-def dao_nguoc_chuoi(s):
-    return s[::-1]
-# Test case
-chuoi_dau_vao = "aye"
-chuoi_dao_nguoc = dao_nguoc_chuoi(chuoi_dau_vao)
-print(chuoi_dao_nguoc)

@@ -1,0 +1,73 @@
+INSERT INTO users (id, username, password, role, name, phone, email, created_at, updated_at, delete_at)
+VALUES 
+(1, 'admin', 'scrypt:32768:8:1$L9zb6dv2fnV1oIxU$1a0a0c9306e9d7d4d7675cc5100689c99162fe6ebf6305069f6bb19eaa89caae58a8b501daa3cc69b1ee98fd13685e0d68502adca68f909b882ce61ec64d2737', 'admin', 'Ma Bách Duy', '0985725835', 'bachduyatk300@gmail.com', '2025-01-11 17:27:23', NULL, NULL),
+(2, 'user1', 'scrypt:32768:8:1$dbYEz4phKeFNISv8$ba2c61887ddfbaa5c43affa428dd6b036bcf1e77211602be54e4513d3c262c23338885f7fb7e96d27926c5966a384fd1264d38f99b7a9cc993567492fd1af480', 'student', 'Nguyễn A', NULL, NULL, '2025-01-11 17:30:26', NULL, '2025-01-11 18:12:12'),
+(3, 'teacher1', 'scrypt:32768:8:1$rkWO8Sv9DnAUpmhi$ad41239f396700e07cf0d07a81f5228818c68ea464b6e4c0bce3f642279aef9c66e0b111bb3a5533ce98ad45639aac263fc166a064ca7a61c7bf153a059298d1', 'teacher', 'Giáo Viên 1', '0123456789', 'teacher1@gmail.com', '2025-01-11 17:33:05', '2025-01-14 17:04:37', NULL),
+(4, 'teacher2', 'scrypt:32768:8:1$AVnd0nwOOxj3XfDr$53ee88ff3b161a2df1b45268b05b844f369d6c87e9be91e448abf3123230d124a594158042a45702438ebd75ae16c97a23527128b3f3ebd855fb465c231591c3', 'teacher', 'Giáo Viên 2', NULL, 'teacher2@gmail.com', '2025-01-11 17:33:30', NULL, NULL),
+(5, 'teacher3', 'scrypt:32768:8:1$8XpAveH61Qkoo52O$ae9a060425a4af63a75c0d62ca433a227a3c646f8748e44a9a27ee358ff9a898063399ad69aeca978397c460fa13c70d939321fc63aed1331f6df7d5f37c1329', 'teacher', 'Giáo Viên 3', NULL, 'teacher3@gmail.com', '2025-01-11 17:33:51', NULL, NULL),
+(6, 'student1', 'scrypt:32768:8:1$sl8uxh5UFXbV4zZh$3e04af495e93a6094dd4b5e0542101c644d1dd6a1b9a2569e0e02ffca010ce691bc03ff840d3ca46fba56b407166eb9d1de7998e6c8a531b151cb3cfcb07928c', 'student', 'Sinh Viên 1', '0123456654', 'sv1@gmail.com', '2025-01-11 18:08:03', '2025-01-14 18:01:09', NULL),
+(7, 'admin1', 'scrypt:32768:8:1$98yNHWzEaFJVzAYM$8226a954d2dd021576e283bfea4f6b4b02f6a2ae633646fe0374205e9f55c72ae90735776f522050b27e99e2817ef94c5f654911430fdb421f5dcf4d7fda4de9', 'admin', 'Admin 2', '0123222222', 'admin2@gmail.com', '2025-01-11 18:08:30', NULL, NULL),
+(8, 'student2', 'scrypt:32768:8:1$OP8t4PtCUEB8Retl$461e2fcb3ba73ed28e4419b45d740b8c40915f984553e227aef50995c322c1f3ae9441b69974c410122595c770a8b61f1a630a51aeb45462d62c5a03c24464dc', 'student', 'Sinh Viên 2', NULL, NULL, '2025-01-11 18:10:35', NULL, NULL),
+(9, 'student3', 'scrypt:32768:8:1$FJIW6fcMmtrQD0Bw$e156bb0f4980401091bc837a2e15fd0420c929cd4d350f4d739a5fa7198e841efd19617806aaafc8d9ae4c5dca9f94f8c0ff1a211224ca8a28286dc03d15659e', 'student', 'Sinh Viên 3', NULL, NULL, '2025-01-11 18:11:02', NULL, NULL),
+(10, 'student4', 'scrypt:32768:8:1$SBvR1tqVm98oMQ26$a35ea7cf65c553e488f9365bb2109b491981ac65db79dbf5824dc2489705957505ba1d3a7d8ee7fd5c87c15c9f095545562ef6b73f04eee19e454307fe2b40d9', 'student', 'Sinh Viên 4', NULL, NULL, '2025-01-11 18:11:22', NULL, NULL),
+(11, 'student5', 'scrypt:32768:8:1$7EiZP4uJfU9XymYb$5d4f49b412c06771e6fff1ed2f7186d7faeb39001e1a51434330142c934c4afe6b79c72d4f38d6b92951a75a9efe2b1b7f1a96640b2f78e9dca370ddaced9e12', 'student', 'Sinh Viên 5', '0123555555', 'sv5@gmail.com', '2025-01-11 18:11:57', '2025-01-14 18:54:27', NULL),
+(12, 'admin2', 'scrypt:32768:8:1$hPuHd5IlhWITzI0N$b573b7dbedcfcfb955fa18fbacd51f0b44e2a20004058af620aa32eef369b47dcbbc4b2f8885e005c14189943e5336cfd5f865d7b58479b0b270f830df8d7174', 'admin', 'Admin 3', '0123111111', 'admin3@gmail.com', '2025-01-11 18:13:36', NULL, NULL),
+(13, 'student6', 'scrypt:32768:8:1$DtQNO9DjHHhJMCe0$cf1e44c46a27759172def9370d36d4e39988cd51f7668572e42285ea5bf75924e617f2a7b1858431b674d5814d1fa32c008f9f5c5ebdd72d752f0071954b3b0d', 'student', 'Sinh Viên 6', '0123666666', 'sv6@gmail.com', '2025-01-14 16:52:09', NULL, NULL);
+
+INSERT INTO `exams` (`id`, `title`, `description`, `start_time`, `end_time`, `created_by`, `status`, `created_at`, `updated_at`)
+VALUES
+(1, 'Olympic Lập trình lần VII', 'Kỳ thi lập trình dành cho sinh viên khối không chuyên', '2025-01-20 16:10:00', '2025-01-20 18:20:00', 3, 'ongoing', '2025-01-01 13:00:00', '2025-01-21 23:52:44'),
+(2, 'Kỳ thi Python Cơ bản', 'Kỳ thi kiểm tra kiến thức Python cơ bản', '2025-01-04 08:00:00', '2025-01-04 09:00:00', 4, 'completed', '2025-01-03 08:00:00', '2025-01-11 18:18:33'),
+(3, 'Kỳ thi Python Cơ bản lần 2', 'Test', '2025-01-19 10:40:00', '2025-01-19 11:40:00', 1, 'ongoing', '2025-01-14 17:39:07', '2025-02-04 16:47:25');
+
+INSERT INTO `exam_participants` (`id`, `exam_id`, `user_id`, `created_at`, `delete_at`)
+VALUES
+(1, 1, 6, '2025-01-01 13:00:00', NULL),
+(2, 2, 6, '2025-01-03 08:00:00', NULL),
+(3, 1, 8, '2025-01-01 13:00:00', NULL),
+(4, 2, 8, '2025-01-03 08:00:00', NULL),
+(6, 3, 13, '2025-01-14 17:52:42', NULL),
+(8, 3, 11, '2025-01-14 18:57:25', '2025-02-04 17:07:22'),
+(10, 1, 11, '2025-02-04 17:06:56', NULL);
+
+INSERT INTO `exam_tasks` (`id`, `exam_id`, `task_title`, `task_description`, `max_score`, `execution_time_limit`, `created_at`)
+VALUES
+(1, 1, 'Bài 1: Tính tổng', 'Viết chương trình tính tổng 2 số nguyên dưng 33 và 99', 3.0, 1.0, '2025-01-01 13:00:00'),
+(2, 1, 'Bài 2: Số nguyên tố', 'Viết chương trình liệt kê các số nguyên tố nhỏ hơn 50.', 3.0, 1.5, '2025-01-01 13:00:00'),
+(3, 1, 'Bài 3: Chuỗi đảo ngược', 'Viết chương trình nhận vào một chuỗi "aye" và trả về chuỗi đảo ngược.', 3.0, 1.0, '2025-01-01 13:00:00'),
+(4, 2, 'Bài 1: Tìm số', 'Viết chương trình tìm tất cả các số từ 2000 đến 3200 chia hết cho 7 nhưng không phải bội số của 5.', 4.5, 1.0, '2025-01-03 08:00:00'),
+(5, 2, 'Bài 2: Tính giai thừa', 'Viết chương trình tính giai thừa từ 0 đến 9.', 4.5, 1.0, '2025-01-03 08:00:00'),
+(6, 3, 'Bài 1: Tìm số lớn nhất', 'Viết chương trình tìm số lớn nhất trong danh sách 5 số nguyên.', 4.5, 1.0, '2025-01-23 22:49:04'),
+(7, 3, 'Bài 2: Tính tổng', 'Viết chương trình tính tổng các số từ 1 đến 10.', 4.5, 1.0, '2025-01-23 22:49:04');
+
+INSERT INTO submissions (id, user_id, exam_task_id, exam_id, submitted_at, execution_time, file_path, is_graded)
+VALUES 
+(1, 6, 1, 1, '2025-01-02 13:15:00', 1.15, 'submissions/task1_exam1_student6.py', 1),
+(2, 6, 2, 1, '2025-01-02 13:25:00', 0.6, 'submissions/task2_exam1_student6.py', 1),
+(3, 6, 3, 1, '2025-01-02 13:55:00', 0.55, 'submissions/task3_exam1_student6.py', 1),
+(4, 8, 1, 1, '2025-01-02 13:10:00', 0.4, 'submissions/task1_exam1_student8.py', 1),
+(5, 8, 2, 1, '2025-01-02 13:30:00', 0.55, 'submissions/task2_exam1_student8.py', 1),
+(6, 8, 3, 1, '2025-01-02 13:50:00', 0.65, 'submissions/task3_exam1_student8.py', 1),
+(7, 6, 1, 2, '2025-01-04 08:20:00', 1.55, 'submissions/task1_exam2_student6.py', 1),
+(8, 6, 2, 2, '2025-01-04 08:40:00', 0.75, 'submissions/task2_exam2_student6.py', 1),
+(9, 8, 1, 2, '2025-01-04 08:25:00', 0.35, 'submissions/task1_exam2_student8.py', 1),
+(10, 8, 2, 2, '2025-01-04 08:35:00', 0.85, 'submissions/task2_exam2_student8.py', 1),
+(11, 11, 1, 1, '2025-02-04 22:26:17', 0.14, 'submissions/task1_exam1_student11.py', 1),
+(12, 11, 2, 1, '2025-02-04 22:26:36', 0.13, 'submissions/task2_exam1_student11.py', 1);
+
+INSERT INTO `testcases` (`id`, `exam_task_id`, `input`, `expected_output`, `time_limit`, `created_at`)
+VALUES
+(1, 1, '33,99', '132', 0.5, '2025-01-01 13:00:00'),
+(2, 1, '50', '2,3,5,7,11,13,17,19,23,29,31,37,41,43,47', 0.7, '2025-01-01 13:00:00'),
+(3, 1, 'aye', 'eya', 1.0, '2025-01-01 13:00:00'),
+(4, 2, '2000,2100', '2002,2009,2016,2023,2030,2037,2044,2051,2058,2065,2072,2079,2086,2093', 1.5, '2025-01-03 08:00:00'),
+(5, 2, '9', '1,2,6,24,120,720,5040,40320,362880', 2.0, '2025-01-03 08:00:00'),
+(6, 3, '19,-2,112,0,-14', '112', 0.5, '2025-01-23 22:55:03'),
+(7, 3, '1,2,3,4,5,6,7,8,9,10', '55', 0.3, '2025-01-23 22:55:03');
+
+INSERT INTO `scores` (`id`, `user_id`, `exam_id`, `total_score`, `graded_at`)
+VALUES
+(1, 6, 1, 10.0, '2025-01-02 14:00:00'),
+(2, 8, 1, 6.0, '2025-01-02 14:00:00'),
+(3, 6, 2, 9.0, '2025-01-04 09:00:00'),
+(4, 8, 2, 10.0, '2025-01-04 09:00:00');

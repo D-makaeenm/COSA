@@ -1,4 +1,4 @@
-from models import User, Exam, ExamParticipant, ExamTask, Submission, db
+from models import User, Exam, ExamParticipant, ExamTask, Submission, db, Testcase
 from sqlalchemy import and_, func
 from datetime import datetime, timedelta
 import subprocess
@@ -152,36 +152,61 @@ def start_exam_service(user_id, exam_id):
 
 def get_question_details(user_id, exam_id, question_id):
     """
-    Lấy chi tiết câu hỏi cho thí sinh, bao gồm nội dung bài làm nếu đã nộp.
+    Lấy chi tiết câu hỏi cho thí sinh, bao gồm nội dung bài làm nếu đã nộp và các test cases.
     """
+    # Kiểm tra xem thí sinh có quyền truy cập kỳ thi không
+    participant = ExamParticipant.query.filter_by(exam_id=exam_id, user_id=user_id).first()
+    if not participant:
+        raise ValueError("Người dùng không có quyền truy cập kỳ thi này.")
+
     # Tìm câu hỏi trong kỳ thi
     question = ExamTask.query.filter_by(id=question_id, exam_id=exam_id).first()
     if not question:
         raise ValueError("Câu hỏi không tồn tại hoặc không thuộc kỳ thi này.")
 
-    # Kiểm tra xem thí sinh đã nộp bài chưa
-    submission = Submission.query.filter_by(exam_task_id=question_id, user_id=user_id).first()
+    # Lấy các test case cho câu hỏi
+    testcases = Testcase.query.filter_by(exam_task_id=question_id).all()
+    testcase_data = [
+        {
+            "input": testcase.input,
+            "expected_output": testcase.expected_output,
+            "time_limit": testcase.time_limit
+        }
+        for testcase in testcases
+    ]
+
+    # Kiểm tra xem thí sinh đã nộp bài chưa (lấy bài mới nhất)
+    submission = Submission.query.filter_by(exam_task_id=question_id, user_id=user_id)\
+                .order_by(Submission.submitted_at.desc())\
+                .first()
+    
     is_submitted = submission is not None
+    submitted_code = None
+    score = None
+    is_graded = False
 
     # Đọc nội dung file nếu bài đã nộp
-    submitted_code = None
-    if is_submitted and submission.file_path:
-        try:
-            with open(submission.file_path, 'r', encoding='utf-8') as f:
-                submitted_code = f.read()
-        except FileNotFoundError:
-            submitted_code = "File không tồn tại hoặc đã bị xóa."
+    if is_submitted:
+        if submission.file_path and submission.file_path.strip() != "":
+            try:
+                with open(submission.file_path, 'r', encoding='utf-8') as f:
+                    submitted_code = f.read()
+            except FileNotFoundError:
+                submitted_code = "File không tồn tại hoặc đã bị xóa."
+        is_graded = submission.is_graded
 
-    # Trả thông tin câu hỏi và nội dung bài nộp
+    # Trả thông tin câu hỏi & trạng thái bài làm
     return {
         "task_title": question.task_title,
         "task_description": question.task_description,
         "max_score": question.max_score,
         "execution_time_limit": question.execution_time_limit,
         "is_submitted": is_submitted,
-        "submitted_code": submitted_code
+        "submitted_code": submitted_code,
+        "score": score,
+        "is_graded": is_graded,
+        "testcases": testcase_data  # Thêm thông tin test cases
     }
-
 
 def submit_code_service(user_id, exam_id, question_id, code):
     """

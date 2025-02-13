@@ -146,8 +146,8 @@ def get_exam_details(exam_id):
             User.name,
             User.email,
             User.phone,
-            func.coalesce(Score.scores, 0).label("score"),  # Điểm, nếu chưa có sẽ là 0
-            func.rank().over(order_by=Score.scores.desc()).label("rank")  # Xếp hạng dựa trên điểm
+            func.coalesce(Score.total_score, 0).label("score"),  # Điểm, nếu chưa có sẽ là 0
+            func.rank().over(order_by=Score.total_score.desc()).label("rank")  # Xếp hạng dựa trên điểm
         )
         .join(ExamParticipant, ExamParticipant.user_id == User.id)  # Kết nối bảng ExamParticipant và User
         .outerjoin(Score, and_(Score.user_id == User.id, Score.exam_id == exam_id))  # Kết nối bảng Score (nếu có)
@@ -156,7 +156,7 @@ def get_exam_details(exam_id):
             User.role == 'student',             # Chỉ lấy thí sinh
             ExamParticipant.delete_at.is_(None)            # Bỏ qua tài khoản bị xóa
         )
-        .order_by(Score.scores.desc())  # Sắp xếp theo điểm số giảm dần
+        .order_by(Score.total_score.desc())  # Sắp xếp theo điểm số giảm dần
         .all()
     )
 
@@ -322,3 +322,38 @@ def update_exam(exam_id, data):
     db.session.commit()
     
     return {"message": "Cập nhật thông tin cuộc thi thành công."}
+
+def add_participant_to_exam(exam_id, user_id):
+    """
+    Thêm thí sinh vào cuộc thi.
+    """
+    # Kiểm tra xem cuộc thi và thí sinh có tồn tại không
+    exam = Exam.query.get(exam_id)
+    user = User.query.get(user_id)
+
+    if not exam:
+        raise ValueError("Cuộc thi không tồn tại")
+    if not user:
+        raise ValueError("Thí sinh không tồn tại")
+
+    # Kiểm tra nếu thí sinh đã tham gia cuộc thi
+    existing_participant = ExamParticipant.query.filter_by(
+        exam_id=exam_id, user_id=user_id
+    ).first()
+
+    if existing_participant:
+        if existing_participant.delete_at is not None:
+            # Nếu thí sinh đã bị xóa mềm, đặt lại delete_at = None
+            existing_participant.delete_at = None
+            db.session.commit()
+            return {"message": "Thí sinh đã được thêm lại vào cuộc thi"}
+        else:
+            # Nếu đã tham gia và không bị xóa mềm, báo lỗi
+            raise ValueError("Thí sinh đã tham gia cuộc thi này")
+
+    # Nếu thí sinh chưa tham gia, thêm mới
+    participant = ExamParticipant(exam_id=exam_id, user_id=user_id)
+    db.session.add(participant)
+    db.session.commit()
+
+    return {"message": "Thí sinh đã được thêm vào cuộc thi"}

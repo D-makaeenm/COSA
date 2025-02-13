@@ -33,11 +33,9 @@ function HomePage() {
                 }
             })
             .then((response) => {
-                console.log("Token:", token);
                 setContestData(response.data.info); // Đảm bảo đúng cấu trúc
             })
             .catch((error) => {
-                console.log("Token:", token);
                 console.error("Error fetching contest info:", error.response || error.message);
             });
 

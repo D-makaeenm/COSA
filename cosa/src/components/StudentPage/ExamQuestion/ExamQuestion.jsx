@@ -11,6 +11,7 @@ function ExamQuestion() {
     const [question, setQuestion] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [code, setCode] = useState("");
     const [isSubmitted, setIsSubmitted] = useState(false);
     const { updateScore, setLoadingScore } = useOutletContext(); // Nhận thêm setLoadingScore từ context
@@ -44,21 +45,30 @@ function ExamQuestion() {
     }, [examId, questionId, backendUrl]);
 
     const handleCodeSubmit = async () => {
+        if (isSubmitting) return; // Nếu đang gửi bài, không cho phép gửi tiếp
+
+        setIsSubmitting(true); // Đánh dấu đang gửi bài
         try {
             const token = localStorage.getItem("token");
             const payload = {
                 contest_id: examId,
                 student_id: localStorage.getItem("id"),
                 problem_id: questionId,
-                code,
+                code: encodeURIComponent(code),
             };
 
-            await axios.post(`${backendUrl}/submission/submit`, payload, {
+            const response = await axios.post(`${backendUrl}/submission/submit`, payload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            alert("Bài làm đã được nộp!");
+            if (response.status !== 200) {
+                throw new Error("Gửi bài làm thất bại.");
+            }
 
+            alert("Bài làm đã được nộp!");
+            setIsSubmitted(true); // Cập nhật trạng thái đã nộp
+
+            // Kiểm tra xem thí sinh đã nộp hết bài chưa
             const submissionCheck = await axios.get(
                 `${backendUrl}/submission/check_all_submitted/${examId}/${localStorage.getItem("id")}`,
                 {
@@ -67,18 +77,24 @@ function ExamQuestion() {
             );
 
             if (submissionCheck.data.all_submitted) {
-                setLoadingScore(true); // Bắt đầu trạng thái loading
+                setLoadingScore(true);
                 const interval = setInterval(async () => {
-                    const result = await axios.get(
-                        `${backendUrl}/submission/final_score/${examId}/${localStorage.getItem("id")}`,
-                        {
-                            headers: { Authorization: `Bearer ${token}` },
-                        }
-                    );
+                    try {
+                        const result = await axios.get(
+                            `${backendUrl}/submission/final_score/${examId}/${localStorage.getItem("id")}`,
+                            {
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
 
-                    if (result.data.score !== null) {
+                        if (result.data.score !== null) {
+                            clearInterval(interval);
+                            updateScore(result.data.score);
+                        }
+                    } catch (error) {
+                        console.error("Lỗi khi lấy điểm tổng:", error);
                         clearInterval(interval);
-                        updateScore(result.data.score); // Gửi điểm tổng
+                        alert("Có lỗi xảy ra khi lấy điểm tổng.");
                     }
                 }, 3000);
             }
@@ -86,28 +102,11 @@ function ExamQuestion() {
             navigate(`/student/start/exam/${examId}/questions`);
         } catch (err) {
             console.error("Error submitting code:", err);
-            alert("Có lỗi xảy ra khi nộp bài.");
+            alert("Có lỗi xảy ra khi nộp bài. Bài làm không được lưu.");
+        } finally {
+            setIsSubmitting(false); // Cho phép nộp bài lại nếu cần
         }
     };
-
-    useEffect(() => {
-        const fetchLatestNotification = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(`${backendUrl}/notification/get_latest_notification`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-    
-                if (response.data.message) {
-                    alert(response.data.message); // Hiển thị thông báo cuối cùng
-                }
-            } catch (err) {
-                console.error("Error fetching notifications:", err);
-            }
-        };
-    
-        fetchLatestNotification();
-    }, []);
 
     if (loading) {
         return <p>Đang tải câu hỏi...</p>;
@@ -123,6 +122,13 @@ function ExamQuestion() {
                 <div>
                     <h2>{question?.task_title}</h2>
                     <p>{question?.task_description}</p>
+                    {question?.testcases?.map((testcase, index) => (
+                        <div key={index}>
+                            <p><strong>Input:</strong> {testcase.input}</p>
+                            <p><strong>Output:</strong> {testcase.expected_output}</p>
+                            <p><strong>Thời gian giới hạn xử lý:</strong> {testcase.time_limit}s</p>
+                        </div>
+                    ))}
                 </div>
                 <div>
                     <h4>Phần viết code</h4>
@@ -136,8 +142,12 @@ function ExamQuestion() {
                 </div>
                 <div className={styles.btndiv}>
                     {!isSubmitted && (
-                        <button onClick={handleCodeSubmit} className={styles.submitButton}>
-                            Nộp bài
+                        <button
+                            onClick={handleCodeSubmit}
+                            className={styles.submitButton}
+                            disabled={isSubmitting} // Vô hiệu hóa khi đang gửi bài
+                        >
+                            {isSubmitting ? "Đang nộp..." : "Nộp bài"}
                         </button>
                     )}
                     {isSubmitted && <p className={styles.submittedMessage}>Bạn đã nộp bài này.</p>}

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from services.exam_service import get_exams, get_exam_details, create_new_exam, remove_participant_from_exam, update_exam
+from services.exam_service import get_exams, get_exam_details, create_new_exam, remove_participant_from_exam, update_exam, add_participant_to_exam
 from models import User
 
 exam_bp = Blueprint('exam_bp', __name__)
@@ -125,3 +125,24 @@ def edit_exam(exam_id):
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
         return jsonify({"error": "Có lỗi xảy ra khi sửa thông tin cuộc thi."}), 500
+    
+@exam_bp.route('/exams/add-participant', methods=['POST'])
+@jwt_required()
+def add_participant():
+    """
+    API: Thêm thí sinh vào cuộc thi
+    """
+    data = request.get_json()
+    exam_id = data.get('exam_id')
+    user_id = data.get('user_id')
+
+    if not exam_id or not user_id:
+        return jsonify({"error": "exam_id và user_id là bắt buộc"}), 400
+
+    try:
+        result = add_participant_to_exam(exam_id, user_id)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

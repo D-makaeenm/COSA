@@ -21,6 +21,8 @@ import AddContest from './components/AdminPage/PanelPage/AddContest/AddContest';
 import EditContest from './components/AdminPage/PanelPage/EditContest/EditContest';
 import Questions from './components/StudentPage/Question/Question';
 import ExamQuestion from './components/StudentPage/ExamQuestion/ExamQuestion';
+import AddStudent from './components/AdminPage/PanelPage/ListContest/AddStudent';
+import ContestInfo1 from './components/AdminPage/PanelPage/ListContest/ContestInfo1';
 import RuleAndStart from './components/StudentPage/Rule/RuleAndStart';
 import { Navigate } from 'react-router-dom';
 import ContestDetails from './components/AdminPage/PanelPage/EditContest/ContestDetails';
@@ -80,7 +82,17 @@ const routes = [
                 children: [
                     {
                         path: 'contests/:id',
-                        element: <ContestInfo />
+                        element: <ContestInfo />,
+                        children: [
+                            {
+                                path: 'add-student',
+                                element: <AddStudent />
+                            },
+                            {
+                                path: '',
+                                element: <ContestInfo1 />
+                            },
+                        ]
                     },
                     {
                         path: 'add-contest',
@@ -93,7 +105,7 @@ const routes = [
                     {
                         path: 'edit-contest-detail/:id',
                         element: <ContestDetails />
-                    }
+                    },
                 ]
             },
             {

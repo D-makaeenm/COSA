@@ -2,7 +2,6 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import styles from "./EditContest.module.css";
 import ExamTasks from "./ExamTasks";
-import GradingCriteria from "./GradingCriteria";
 import TestCases from "./TestCases";
 
 function ContestDetails() {
@@ -14,7 +13,6 @@ function ContestDetails() {
             <div className={styles.formDetails}>
                 <div className={styles.detailInfo_container}>
                     <ExamTasks examId={examId} />
-                    <GradingCriteria examId={examId} />
                     <TestCases examId={examId} />
                 </div>
                 <div className={styles.button}>
