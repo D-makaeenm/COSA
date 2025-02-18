@@ -1,43 +1,67 @@
-import React, { useState } from "react";
-import styles from "./EditContest.module.css";
-import icons from "../../../FontAwesome/icons";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import icons from "../../../FontAwesome/icons";
 import { Tooltip } from "react-tooltip";
+import styles from "./EditContest.module.css";
 
-function TestCases() {
-    const [testcases, setTestcases] = useState([
-        { id: 1, input: "1,2,3", expected_output: "6", execution_time: 0.5 },
-        { id: 2, input: "10", expected_output: "55", execution_time: 1 },
-    ]);
+function TestCases({ examId, onSave }) {
+    const [testcases, setTestcases] = useState([]);
     const [isEditing, setIsEditing] = useState(null); // ID của testcase đang được sửa
-    const [newTestcase, setNewTestcase] = useState({ input: "", expected_output: "", execution_time: 0 });
+    const [newTestcase, setNewTestcase] = useState({
+        input: "",
+        expected_output: "",
+        execution_time: 0,
+    });
 
+    const backendUrl = "http://localhost:5000/exam-tasks"; // API backend
+
+    // Fetch testcases khi component được mount
+    useEffect(() => {
+        axios
+            .get(`${backendUrl}/${examId}`)
+            .then((response) => {
+                setTestcases(response.data); // Cập nhật testcases từ backend
+            })
+            .catch((error) => console.error("Error fetching testcases:", error));
+    }, [examId]);
+
+    // Thêm testcase nhưng không gửi ngay, chỉ cập nhật state
     const handleAddTestcase = () => {
-        const newId = testcases.length > 0 ? testcases[testcases.length - 1].id + 1 : 1;
         const defaultTestcase = {
-            id: newId,
+            exam_id: examId,
             input: "Dữ liệu đầu vào",
             expected_output: "Kết quả mong muốn",
             execution_time: 1, // Thời gian mặc định (1 giây)
         };
-        setTestcases([...testcases, defaultTestcase]); // Thêm testcase mới
+        const updatedTestcases = [...testcases, defaultTestcase];
+        setTestcases(updatedTestcases);
+        onSave(updatedTestcases); // Gửi danh sách testcases lên ContestDetails
     };
 
+
+    // Chỉnh sửa testcase
     const handleEditTestcase = (id) => {
         setIsEditing(id);
+        const testcase = testcases.find((testcase) => testcase.id === id);
+        setNewTestcase(testcase);  // Cập nhật newTestcase với dữ liệu testcase cần sửa
     };
 
+    // Lưu testcase đã chỉnh sửa
     const handleSaveTestcase = (id) => {
-        setTestcases(
-            testcases.map((testcase) =>
-                testcase.id === id ? { ...testcase, ...newTestcase } : testcase
-            )
+        const updatedTestcases = testcases.map((testcase) =>
+            testcase.id === id ? { ...testcase, ...newTestcase } : testcase
         );
+        setTestcases(updatedTestcases);
         setIsEditing(null);
+        onSave(updatedTestcases);  // Gửi danh sách testcases lên ContestDetails
     };
 
+    // Xóa testcase
     const handleDeleteTestcase = (id) => {
-        setTestcases(testcases.filter((testcase) => testcase.id !== id));
+        const updatedTestcases = testcases.filter((testcase) => testcase.id !== id);
+        setTestcases(updatedTestcases);
+        onSave(updatedTestcases);  // Gửi danh sách testcases đã thay đổi lên ContestDetails
     };
 
     return (
@@ -63,7 +87,7 @@ function TestCases() {
                                     type="text"
                                     value={newTestcase.input || testcase.input}
                                     onChange={(e) =>
-                                        setNewTestcase({ ...testcase, input: e.target.value })
+                                        setNewTestcase({ ...newTestcase, input: e.target.value })
                                     }
                                     placeholder="Input"
                                 />
@@ -71,22 +95,23 @@ function TestCases() {
                                     type="text"
                                     value={newTestcase.expected_output || testcase.expected_output}
                                     onChange={(e) =>
-                                        setNewTestcase({ ...testcase, expected_output: e.target.value })
+                                        setNewTestcase({ ...newTestcase, expected_output: e.target.value })
                                     }
                                     placeholder="Expected Output"
                                 />
                                 <input
                                     type="number"
                                     step="any"
-                                    min = "0"
+                                    min="0"
                                     value={newTestcase.execution_time || testcase.execution_time}
                                     onChange={(e) =>
-                                        setNewTestcase({ ...testcase, execution_time: parseFloat(e.target.value) })
+                                        setNewTestcase({ ...newTestcase, execution_time: parseFloat(e.target.value) })
                                     }
                                     placeholder="Execution Time (seconds)"
                                 />
                                 <div className={styles.button2}>
                                     <button onClick={() => handleSaveTestcase(testcase.id)}>Lưu</button>
+                                    <button onClick={() => setIsEditing(null)}>Hủy</button>
                                 </div>
                             </div>
                         </>

@@ -51,8 +51,7 @@ class ExamTask(db.Model):
     max_score = db.Column(db.Float, nullable=False)
     execution_time_limit = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
-    delete_at = db.Column(db.DateTime, default=db.func.now())
-    penalty_per_time_over = db.Column(db.Float, nullable=False)
+    delete_at = db.Column(db.DateTime)
 
 
 # 📌 Bảng `grading_criteria` (Tiêu chí chấm điểm)

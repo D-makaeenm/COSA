@@ -14,7 +14,7 @@ def get_exam_tasks(exam_id):
             "task_title": task.task_title,
             "task_description": task.task_description,
             "max_score": task.max_score,
-            "execution_time_limit": task.execution_time_limit,
+            "time_limit": task.execution_time_limit,
             "grading_criteria": [
                 {
                     "criteria_name": criteria.criteria_name,
@@ -34,46 +34,53 @@ def get_exam_tasks(exam_id):
         for task in tasks
     ])
 
-
-# Thêm bài tập mới
+# Thêm bài tập mới (bao gồm testcases và grading criteria)
 @exam_tasks_bp.route("/add-task", methods=["POST"])
 def add_exam_task():
-    data = request.get_json()  # Lấy dữ liệu từ FE gửi lên
+    data = request.get_json()
 
-    # Kiểm tra xem tất cả thông tin cần thiết có trong data không
-    if not all(key in data for key in ("exam_id", "task_title", "task_description", "max_score", "execution_time_limit", "penalty_time_exceeded")):
+    if not all(key in data for key in ("exam_id", "task_title", "task_description", "max_score", "time_limit", "penalty_time", "input", "output")):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # Tạo một bài tập mới
+    # Tạo bài tập mới
     new_task = ExamTask(
         exam_id=data["exam_id"],
         task_title=data["task_title"],
         task_description=data["task_description"],
         max_score=data["max_score"],
-        execution_time_limit=data["execution_time_limit"]
+        execution_time_limit=data["time_limit"]
     )
     db.session.add(new_task)
-    db.session.flush()  # Flush để đẩy dữ liệu vào cơ sở dữ liệu mà không commit
+    db.session.flush()  # Flush để lấy ID của bài tập mới
 
-    # Lưu thông tin penalty vào bảng GradingCriteria (2 tiêu chí)
-    criteria = [
+    # Thêm tiêu chí chấm điểm '4', '2', 'Điểm trừ nếu vượt quá thời gian', '0.5'
+
+    grading_criteria = [
         {"criteria_name": "Kết quả đúng", "penalty": 0},
-        {"criteria_name": "Chạy vượt thời gian", "penalty": data["penalty_time_exceeded"]}  # Dùng penalty_time_exceeded từ FE
+        {"criteria_name": "Điểm trừ nếu vượt quá thời gian", "penalty": data["penalty_time"]},
     ]
-    
-    for crit in criteria:
+
+    for criteria in grading_criteria:
         new_criteria = GradingCriteria(
-            exam_task_id=new_task.id,  # Lấy ID bài tập vừa tạo
-            criteria_name=crit["criteria_name"],
-            penalty=crit["penalty"]
+            exam_task_id=new_task.id,
+            criteria_name=criteria["criteria_name"],
+            penalty=criteria["penalty"]
         )
         db.session.add(new_criteria)
-    
-    db.session.commit()  # Commit một lần khi tất cả thay đổi đã được thực hiện
 
-    return jsonify({"message": "Task added successfully"}), 201
+    # Thêm test case mới
+    new_testcase = Testcase(
+        exam_task_id=new_task.id,
+        input=data["input"],
+        expected_output=data["output"],
+        time_limit=data["time_limit"]
+    )
+    db.session.add(new_testcase)
 
-# Sửa bài tập
+    db.session.commit()
+
+    return jsonify({"message": "Task added successfully", "id": new_task.id}), 201
+
 @exam_tasks_bp.route("/<int:task_id>", methods=["PUT"])
 def update_exam_task(task_id):
     data = request.get_json()
@@ -85,16 +92,52 @@ def update_exam_task(task_id):
     task.task_title = data["task_title"]
     task.task_description = data["task_description"]
     task.max_score = data["max_score"]
-    task.execution_time_limit = data["execution_time_limit"]
+    task.execution_time_limit = data["time_limit"]
+
+    # Cập nhật tiêu chí chấm điểm
+    existing_criteria = {crit.criteria_name: crit for crit in GradingCriteria.query.filter_by(exam_task_id=task_id).all()}
     
-    # Cập nhật các tiêu chí chấm điểm (nếu có thay đổi)
-    criteria = GradingCriteria.query.filter_by(exam_task_id=task_id).all()
-    for crit in criteria:
-        if crit.criteria_name == "Chạy vượt thời gian":
-            crit.penalty = data["penalty_time_exceeded"]
-    
+    # Danh sách tiêu chí cần có
+    required_criteria = {
+        "Điểm trừ nếu vượt quá thời gian": data["penalty_time"],
+        "Điểm trừ nếu đúng": data.get("penalty_correct", 0)
+    }
+
+    for criteria_name, penalty in required_criteria.items():
+        if criteria_name in existing_criteria:
+            # Cập nhật tiêu chí nếu đã tồn tại
+            existing_criteria[criteria_name].penalty = penalty
+        else:
+            # Nếu chưa có, tạo mới tiêu chí
+            new_criteria = GradingCriteria(
+                exam_task_id=task_id,
+                criteria_name=criteria_name,
+                penalty=penalty
+            )
+            db.session.add(new_criteria)
+
+    # Cập nhật hoặc tạo mới testcase
+    testcase = Testcase.query.filter_by(exam_task_id=task_id).first()
+    if testcase:
+        # Cập nhật testcase hiện tại
+        testcase.input = data["input"]
+        testcase.expected_output = data["output"]
+        testcase.time_limit = data["time_limit"]
+    else:
+        # Nếu không có testcase, tạo mới
+        new_testcase = Testcase(
+            exam_task_id=task_id,
+            input=data["input"],
+            expected_output=data["output"],
+            time_limit=data["time_limit"]
+        )
+        db.session.add(new_testcase)
+
+    # Lưu thay đổi vào database
     db.session.commit()
+
     return jsonify({"message": "Task updated successfully"}), 200
+
 
 # Xóa mềm bài tập
 @exam_tasks_bp.route("/<int:task_id>", methods=["DELETE"])
@@ -102,6 +145,17 @@ def delete_exam_task(task_id):
     task = ExamTask.query.get(task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
-    task.delete_at = db.func.now()
+    
+    # Xóa bài tập
+    db.session.delete(task)
+
+    # Xóa luôn các tiêu chí chấm điểm liên quan đến bài tập này
+    GradingCriteria.query.filter_by(exam_task_id=task_id).delete()
+
+    # Xóa luôn các testcases liên quan đến bài tập này
+    Testcase.query.filter_by(exam_task_id=task_id).delete()
+
     db.session.commit()
-    return jsonify({"message": "Task soft deleted successfully"}), 200
+
+    return jsonify({"message": "deleted successfully"}), 200
+

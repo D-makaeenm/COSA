@@ -1,7 +1,7 @@
 import re
 import subprocess
 import time
-import json
+import ast
 from datetime import datetime
 from models import db, Submission, Testcase, ErrorLog, Score, Notification, ExamTask, GradingCriteria, GradingResult
 
@@ -73,7 +73,7 @@ def compare_outputs(expected_output, actual_output):
         print(f"❌ Debug Got: {repr(actual_output)}")
         return False
 
-# Chấm điểm bài nộp
+
 def grade_task_submission(submission_id):
     submission = Submission.query.get(submission_id)
     if not submission:
@@ -83,88 +83,182 @@ def grade_task_submission(submission_id):
     if not task:
         raise ValueError("Không tìm thấy bài tập.")
 
-    # Lấy tất cả test case cho bài tập
+    # Lấy tất cả test cases
     testcases = Testcase.query.filter_by(exam_task_id=submission.exam_task_id).all()
     if not testcases:
         raise ValueError("Không tìm thấy test case cho bài nộp.")
 
-    passed_test_cases = 0
+    # Lấy tiêu chí chấm điểm
+    grading_criteria_dict = {crit.criteria_name: crit.penalty for crit in GradingCriteria.query.filter_by(exam_task_id=task.id).all()}
+
+    # Xác định điểm tối đa và điểm trừ
+    correct_score = grading_criteria_dict.get("Điểm nếu đúng", task.max_score)  # Điểm nếu đúng
+    penalty_time = grading_criteria_dict.get("Điểm trừ nếu vượt quá thời gian", 0.5)  # Điểm trừ nếu vượt quá thời gian
+
     total_execution_time = 0
-    penalty = 0  # Khởi tạo điểm trừ do vượt quá thời gian
-    total_score = 0  # Tổng điểm cho bài này
+    total_penalty = 0
+    final_score = correct_score  # Ban đầu, giả định bài đúng
+    all_correct = True  # Kiểm tra xem tất cả testcase có đúng không
 
     try:
         for testcase in testcases:
             start_time = time.time()
+            execution_time = None
 
-            result = subprocess.run(
-                ["python", "-X", "utf8", submission.file_path],
-                input=testcase.input,
-                capture_output=True,
-                text=True,
-                timeout=testcase.time_limit,
-                encoding="utf-8",
-                errors="replace"
-            )
+            try:
+                result = subprocess.run(
+                    ["python", "-X", "utf8", submission.file_path],
+                    input=testcase.input,
+                    capture_output=True,
+                    text=True,
+                    timeout=testcase.time_limit,
+                    encoding="utf-8",
+                    errors="replace"
+                )
+                execution_time = time.time() - start_time
+                total_execution_time += execution_time
 
-            execution_time = time.time() - start_time
-            total_execution_time += execution_time
+            except subprocess.TimeoutExpired:
+                execution_time = testcase.time_limit * 1.5  # Giả định bài chạy quá lâu
+                total_execution_time += execution_time
+                total_penalty += penalty_time  # Trừ điểm do vượt thời gian
+                log_error(submission.id, "Timeout Error", f"Thời gian chạy vượt {testcase.time_limit}s")
+                continue
 
             output = normalize_output(result.stdout)
             expected_output = normalize_output(testcase.expected_output)
 
-            # Log các thông tin quan trọng để debug
-            print(f"Testcase: {testcase.id}, Execution Time: {execution_time:.4f}, Expected: {expected_output}, Got: {output}")
-            
+            # Xử lý lỗi runtime
             if result.stderr.strip():
                 log_error(submission.id, "Runtime Error", result.stderr.strip())
-                submission.is_graded = True
-                db.session.commit()
-                return
+                final_score = 0  # Nếu có lỗi runtime, mất toàn bộ điểm
+                all_correct = False
+                break
 
-            if compare_outputs(expected_output, output):
-                passed_test_cases += 1
-            else:
+            # Nếu sai kết quả → Mất toàn bộ điểm
+            if not compare_outputs(expected_output, output):
+                final_score = 0
+                all_correct = False
                 log_error(submission.id, "Wrong Output", f"Expected: {expected_output}, Got: {output}")
+                break
 
-            # Tính điểm trừ nếu vượt quá thời gian
+            # Nếu đúng nhưng vượt thời gian → Trừ điểm
             if execution_time > testcase.time_limit:
-                penalty += task.penalty_per_time_over  # Trừ thêm điểm nếu vượt quá thời gian
+                total_penalty += penalty_time
 
-        # Tính điểm cuối cùng cho từng bài
-        task_max_score = task.max_score  # Điểm tối đa cho bài này
-        task_score = (passed_test_cases / len(testcases)) * task_max_score  # Chấm điểm theo số test case đúng
-        final_score = max(task_score - penalty, 0)  # Điểm cuối cùng sau khi trừ điểm
+        # Tính điểm cuối cùng
+        final_score = max(final_score - total_penalty, 0)
 
-        total_score += final_score  # Cộng điểm cho bài này
-
-        # Log điểm cuối cùng của bài
-        print(f"Final score for task {task.id}: {final_score}, Total penalty: {penalty}")
-
+        # ✅ Cập nhật Submission
         submission.execution_time = total_execution_time
         submission.is_graded = True
+        submission.total_score = final_score
         db.session.commit()
 
-        # Lưu kết quả vào bảng grading_results cho từng tiêu chí
-        grading_criteria = GradingCriteria.query.filter_by(exam_task_id=task.id).all()
-        for criteria in grading_criteria:
+        # ✅ Lưu vào bảng grading_results
+        # Lưu điểm nếu đúng
+        correct_criteria = GradingCriteria.query.filter_by(exam_task_id=task.id, criteria_name="Điểm nếu đúng").first()
+        if correct_criteria:
             grading_result = GradingResult(
                 submission_id=submission.id,
-                criteria_id=criteria.id,
-                score=final_score if criteria.criteria_name == "Kết quả đúng" else 0  # Cập nhật điểm cho "Kết quả đúng"
+                criteria_id=correct_criteria.id,
+                score=correct_score if all_correct else 0  # Nếu bài sai, điểm là 0
             )
             db.session.add(grading_result)
 
-        # Cập nhật điểm tổng cho thí sinh vào bảng scores
-        save_score(submission.user_id, submission.exam_id, total_score)
+        # Lưu điểm trừ nếu vượt quá thời gian
+        penalty_criteria = GradingCriteria.query.filter_by(exam_task_id=task.id, criteria_name="Điểm trừ nếu vượt quá thời gian").first()
+        if penalty_criteria and total_penalty > 0:
+            grading_result = GradingResult(
+                submission_id=submission.id,
+                criteria_id=penalty_criteria.id,
+                score=-total_penalty  # Điểm trừ nếu vượt quá thời gian
+            )
+            db.session.add(grading_result)
 
-        # Gửi thông báo
+        # ✅ Cập nhật điểm tổng vào bảng scores
+        save_score(submission.user_id, submission.exam_id)
+
+        # ✅ Gửi thông báo cho thí sinh
         send_notification(submission.user_id, f"Điểm: {final_score:.2f}, Thời gian: {total_execution_time:.2f}s")
 
     except Exception as e:
         log_error(submission.id, "Grading Error", str(e))
     finally:
         db.session.commit()
+
+# Lưu điểm cuối cùng của kỳ thi
+def save_score(user_id, exam_id):
+    """
+    Cập nhật tổng điểm của thí sinh từ grading_results
+    """
+    # ✅ Lấy tổng điểm từ tiêu chí "Điểm nếu đúng"
+    total_correct_score = db.session.query(db.func.sum(GradingResult.score)).join(GradingCriteria).join(Submission).filter(
+        Submission.user_id == user_id,
+        Submission.exam_id == exam_id,
+        GradingCriteria.criteria_name == "Điểm nếu đúng"
+    ).scalar() or 0  # Nếu không có, mặc định là 0
+
+    # ✅ Lấy tổng điểm trừ do tiêu chí "Điểm trừ nếu vượt quá thời gian"
+    total_penalty = db.session.query(db.func.sum(GradingResult.score)).join(GradingCriteria).join(Submission).filter(
+        Submission.user_id == user_id,
+        Submission.exam_id == exam_id,
+        GradingCriteria.criteria_name == "Điểm trừ nếu vượt quá thời gian"
+    ).scalar() or 0  # Nếu không có, mặc định là 0
+
+    # ✅ Tính điểm tổng từ grading_results
+    final_score = max(total_correct_score + total_penalty, 0)
+
+    score_entry = Score.query.filter_by(user_id=user_id, exam_id=exam_id).first()
+
+    if not score_entry:
+        score_entry = Score(user_id=user_id, exam_id=exam_id, total_score=final_score, graded_at=db.func.now())
+    else:
+        score_entry.total_score = final_score
+        score_entry.graded_at = db.func.now()
+
+    print(f"📌 Cập nhật điểm tổng: User {user_id}, Exam {exam_id}, Total Score: {final_score}")
+
+    db.session.add(score_entry)
+    db.session.commit()
+
+
+def calculate_final_score_service(exam_id, student_id):
+    """
+    Tính tổng điểm cho một thí sinh dựa trên `grading_results`
+    """
+    submissions = Submission.query.filter_by(exam_id=exam_id, user_id=student_id, is_graded=True).all()
+    total_tasks = ExamTask.query.filter_by(exam_id=exam_id).count()
+
+    # Nếu thí sinh chưa hoàn thành tất cả bài thi
+    if len(submissions) < total_tasks:
+        return {"status": "pending", "score": None}
+
+    total_score = 0
+
+    for submission in submissions:
+        # ✅ Lấy điểm nếu bài đúng
+        task_score = db.session.query(db.func.sum(GradingResult.score)).join(GradingCriteria).filter(
+            GradingResult.submission_id == submission.id,
+            GradingCriteria.criteria_name == "Điểm nếu đúng"
+        ).scalar() or 0
+
+        # ✅ Lấy điểm trừ nếu vượt quá thời gian
+        penalty = db.session.query(db.func.sum(GradingResult.score)).join(GradingCriteria).filter(
+            GradingResult.submission_id == submission.id,
+            GradingCriteria.criteria_name == "Điểm trừ nếu vượt quá thời gian"
+        ).scalar() or 0
+
+        # ✅ Tổng điểm từng task
+        final_task_score = max(task_score + penalty, 0)  # Đảm bảo không âm
+        total_score += final_task_score
+
+        print(f"✅ Submission {submission.id} - Score: {final_task_score} (Task: {task_score}, Penalty: {penalty})")
+
+    # ✅ Cập nhật tổng điểm vào bảng Score, TRUYỀN final_score vào
+    save_score(student_id, exam_id, total_score)
+
+    return {"status": "completed", "score": total_score}
 
 # Ghi lỗi vào cơ sở dữ liệu với dòng lỗi nếu có
 def log_error(submission_id, error_type, message, line_number=None):
@@ -178,55 +272,10 @@ def log_error(submission_id, error_type, message, line_number=None):
     )
     db.session.commit()
 
-# Lưu điểm cuối cùng của kỳ thi
-def save_score(user_id, exam_id, total_score):
-    score_entry = Score.query.filter_by(user_id=user_id, exam_id=exam_id).first()
-    if not score_entry:
-        # Khi không tìm thấy điểm của thí sinh trong bảng, tạo mới
-        score_entry = Score(user_id=user_id, exam_id=exam_id, total_score=total_score, graded_at=db.func.now())
-    else:
-        # Cập nhật điểm tổng cho thí sinh
-        score_entry.total_score = total_score
-        score_entry.graded_at = db.func.now()
-
-    db.session.add(score_entry)
-    db.session.commit()
-
-
 # Gửi thông báo cho thí sinh
 def send_notification(user_id, message):
     db.session.add(Notification(user_id=user_id, message=message, created_at=db.func.now()))
     db.session.commit()
-
-# Tính điểm tổng cuối cùng của thí sinh
-def calculate_final_score_service(exam_id, student_id):
-    # Lấy tất cả bài nộp đã được chấm điểm
-    submissions = Submission.query.filter_by(exam_id=exam_id, user_id=student_id, is_graded=True).all()
-    total_tasks = ExamTask.query.filter_by(exam_id=exam_id).count()
-
-    if len(submissions) < total_tasks:
-        return {"status": "pending", "score": None}
-
-    total_score = 0
-
-    # Duyệt qua tất cả các bài nộp và tính tổng điểm từ bảng GradingResult
-    for submission in submissions:
-        grading_results = GradingResult.query.filter_by(submission_id=submission.id).all()
-        task_score = 0
-        for grading_result in grading_results:
-            task_score += grading_result.score  # Cộng điểm theo từng tiêu chí
-        total_score += task_score
-
-        # Log tổng điểm của bài nộp
-        print(f"Submission {submission.id} - Total Task Score: {task_score}, Accumulated Total Score: {total_score}")
-
-    # Cập nhật điểm tổng cho thí sinh vào bảng Score
-    save_score(student_id, exam_id, total_score)
-
-    return {"status": "completed", "score": total_score}
-
-
-
 
 # Kiểm tra xem thí sinh đã nộp đủ bài chưa
 def check_all_submitted_service(exam_id, student_id):

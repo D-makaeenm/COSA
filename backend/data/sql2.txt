@@ -137,7 +137,8 @@ CREATE TABLE `users` (
   `delete_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `exams` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -154,6 +155,7 @@ CREATE TABLE `exams` (
   CONSTRAINT `exams_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
 CREATE TABLE `exam_tasks` (
   `id` int NOT NULL AUTO_INCREMENT,
   `exam_id` int NOT NULL,
@@ -163,7 +165,6 @@ CREATE TABLE `exam_tasks` (
   `execution_time_limit` float NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `delete_at` datetime DEFAULT NULL,
-  `penalty_per_time_over` float NOT NULL DEFAULT '0.5',
   PRIMARY KEY (`id`),
   KEY `exam_id` (`exam_id`),
   CONSTRAINT `exam_tasks_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE
@@ -181,6 +182,7 @@ CREATE TABLE `testcases` (
   CONSTRAINT `testcases_ibfk_1` FOREIGN KEY (`exam_task_id`) REFERENCES `exam_tasks` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
 CREATE TABLE `grading_criteria` (
   `id` int NOT NULL AUTO_INCREMENT,
   `exam_task_id` int NOT NULL,
@@ -189,7 +191,8 @@ CREATE TABLE `grading_criteria` (
   PRIMARY KEY (`id`),
   KEY `exam_task_id` (`exam_task_id`),
   CONSTRAINT `grading_criteria_ibfk_1` FOREIGN KEY (`exam_task_id`) REFERENCES `exam_tasks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `submissions` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -207,7 +210,8 @@ CREATE TABLE `submissions` (
   CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`exam_task_id`) REFERENCES `exam_tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `grading_results` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -219,7 +223,8 @@ CREATE TABLE `grading_results` (
   KEY `criteria_id` (`criteria_id`),
   CONSTRAINT `grading_results_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `grading_results_ibfk_2` FOREIGN KEY (`criteria_id`) REFERENCES `grading_criteria` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `scores` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -232,7 +237,8 @@ CREATE TABLE `scores` (
   KEY `exam_id` (`exam_id`),
   CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `error_logs` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -244,18 +250,20 @@ CREATE TABLE `error_logs` (
   KEY `submission_id` (`submission_id`),
   CONSTRAINT `error_logs_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `exam_participants` (
   `id` int NOT NULL AUTO_INCREMENT,
   `exam_id` int NOT NULL,
   `user_id` int NOT NULL,
-  `created_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `delete_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `exam_id` (`exam_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `exam_participants_ibfk_1` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`) ON DELETE CASCADE,
   CONSTRAINT `exam_participants_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `notifications` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -263,5 +271,6 @@ CREATE TABLE `notifications` (
   `created_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+

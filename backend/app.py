@@ -4,7 +4,8 @@ from flask_cors import CORS
 from models import db
 from flask_jwt_extended import JWTManager
 from routes import register_routes
-
+import threading
+from services.contest_scheduler import start_scheduler
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,6 +19,9 @@ jwt = JWTManager(app)
 
 # Đăng ký routes
 register_routes(app)
+
+scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
+scheduler_thread.start()
 
 if __name__ == '__main__':
     with app.app_context():

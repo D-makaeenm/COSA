@@ -1,4 +1,1 @@
-[{"id":1, "user_id":6, "exam_id":1, "total_score":10.0, "graded_at":"2025-01-02 14:00:00"},
- {"id":2, "user_id":8, "exam_id":1, "total_score":6.0, "graded_at":"2025-01-02 14:00:00"},
- {"id":3, "user_id":6, "exam_id":2, "total_score":9.0, "graded_at":"2025-01-04 09:00:00"},
- {"id":4, "user_id":8, "exam_id":2, "total_score":10.0, "graded_at":"2025-01-04 09:00:00"}]
+[{"id":1, "user_id":6, "exam_id":1, "total_score":8.0, "graded_at":"2025-02-17 18:53:18"}]
