@@ -10,7 +10,7 @@ function ContestInfo() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
-
+    
     useEffect(() => {
         const fetchContestInfo = async () => {
             try {
@@ -51,7 +51,6 @@ function ContestInfo() {
                     },
                 }
             );
-            alert(`Thí sinh ${username} đã bị xóa khỏi cuộc thi.`);
             const response = await axios.get(`http://localhost:5000/management/exams/${id}`);
             setContestInfo(response.data);
         } catch (error) {

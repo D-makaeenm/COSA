@@ -25,10 +25,15 @@ import AddStudent from './components/AdminPage/PanelPage/ListContest/AddStudent'
 import ContestInfo1 from './components/AdminPage/PanelPage/ListContest/ContestInfo1';
 import RuleAndStart from './components/StudentPage/Rule/RuleAndStart';
 import { Navigate } from 'react-router-dom';
+import App from './App';
 import ContestDetails from './components/AdminPage/PanelPage/EditContest/ContestDetails';
 
 // Danh sách các routes
 const routes = [
+    {
+        path: '/test',
+        element: <App />
+    },
     {
         path: '',
         element: <Navigate to="/login" replace />,

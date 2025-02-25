@@ -25,7 +25,7 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
 
-# 📌 Bảng `exams` (Cuộc thi)
+# 📌 Bảng `exams` (Kỳ thi)
 class Exam(db.Model):
     __tablename__ = 'exams'
 
@@ -39,8 +39,10 @@ class Exam(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
+    created_by_user = db.relationship('User', backref='exams')
 
-# 📌 Bảng `exam_tasks` (Bài toán)
+
+# 📌 Bảng `exam_tasks` (Bài tập trong kỳ thi)
 class ExamTask(db.Model):
     __tablename__ = 'exam_tasks'
 
@@ -50,21 +52,13 @@ class ExamTask(db.Model):
     task_description = db.Column(db.Text, nullable=False)
     max_score = db.Column(db.Float, nullable=False)
     execution_time_limit = db.Column(db.Float, nullable=False)
+    image_path = db.Column(db.String(255), nullable=False)  # Đường dẫn ảnh minh họa
+    delete_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.now())
-    delete_at = db.Column(db.DateTime)
 
+    exam = db.relationship('Exam', backref='tasks')
 
-# 📌 Bảng `grading_criteria` (Tiêu chí chấm điểm)
-class GradingCriteria(db.Model):
-    __tablename__ = 'grading_criteria'
-
-    id = db.Column(db.Integer, primary_key=True)
-    exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id', ondelete='CASCADE'), nullable=False)
-    criteria_name = db.Column(db.String(255), nullable=False)
-    penalty = db.Column(db.Float, default=0.0)  # Điểm trừ nếu vi phạm
-
-
-# 📌 Bảng `exam_participants` (Danh sách thí sinh)
+# 📌 Bảng `exam_participants` (Danh sách người tham gia kỳ thi)
 class ExamParticipant(db.Model):
     __tablename__ = 'exam_participants'
 
@@ -72,18 +66,23 @@ class ExamParticipant(db.Model):
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
-    delete_at = db.Column(db.DateTime)
+    delete_at = db.Column(db.DateTime, nullable=True)
 
-# 📌 Bảng `testcases` (Bộ test case)
+    user = db.relationship('User', backref='participations')
+    exam = db.relationship('Exam', backref='participants')
+
+# 📌 Bảng `testcases` (Bộ Test Case)
 class Testcase(db.Model):
     __tablename__ = 'testcases'
 
     id = db.Column(db.Integer, primary_key=True)
     exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id', ondelete='CASCADE'), nullable=False)
-    input = db.Column(db.Text, nullable=False)
-    expected_output = db.Column(db.Text, nullable=False)
-    time_limit = db.Column(db.Float, nullable=False)  # Đổi từ `execution_time` để rõ nghĩa hơn
+    input_path = db.Column(db.String(255), nullable=False)  # Đường dẫn file input
+    output_path = db.Column(db.String(255), nullable=False)  # Đường dẫn file output
+    time_limit = db.Column(db.Float, nullable=False)  # Giới hạn thời gian thực thi
     created_at = db.Column(db.DateTime, default=db.func.now())
+
+    task = db.relationship('ExamTask', backref='testcases')
 
 
 # 📌 Bảng `submissions` (Bài nộp của thí sinh)
@@ -94,49 +93,40 @@ class Submission(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     exam_task_id = db.Column(db.Integer, db.ForeignKey('exam_tasks.id', ondelete='CASCADE'), nullable=False)
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'), nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)
+    file_path_code = db.Column(db.String(255), nullable=False)  # Đường dẫn đến file code bài nộp
     submitted_at = db.Column(db.DateTime, default=db.func.now())
-    execution_time = db.Column(db.Float, nullable=True)
-    is_graded = db.Column(db.Boolean, default=False)
+    execution_time = db.Column(db.Float, nullable=True)  # Thời gian thực thi code
+    is_graded = db.Column(db.Boolean, default=False)  # Đã chấm điểm hay chưa
+    score = db.Column(db.Float, default=0)  # Điểm số của bài nộp
+    output = db.Column(db.Text, nullable=False)  # Kết quả chạy của bài nộp
+
+    user = db.relationship('User', backref='submissions')
+    task = db.relationship('ExamTask', backref='submissions')
+    exam = db.relationship('Exam', backref='submissions')
 
 
-# 📌 Bảng `grading_results` (Kết quả chấm điểm theo từng tiêu chí)
-class GradingResult(db.Model):
-    __tablename__ = 'grading_results'
-
-    id = db.Column(db.Integer, primary_key=True)
-    submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id', ondelete='CASCADE'), nullable=False)
-    criteria_id = db.Column(db.Integer, db.ForeignKey('grading_criteria.id', ondelete='CASCADE'), nullable=False)
-    score = db.Column(db.Float, nullable=False)
-
-
-# 📌 Bảng `scores` (Tổng điểm)
+# 📌 Bảng `scores` (Tổng điểm của thí sinh cho mỗi kỳ thi)
 class Score(db.Model):
     __tablename__ = 'scores'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'), nullable=False)
-    total_score = db.Column(db.Float, nullable=False)
+    total_score = db.Column(db.Float, default=0)  # Tổng điểm sau khi chấm
     graded_at = db.Column(db.DateTime, default=db.func.now())
 
-
-# 📌 Bảng `notifications` (Thông báo)
-class Notification(db.Model):
-    __tablename__ = 'notifications'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.now())
+    user = db.relationship('User', backref='scores')
+    exam = db.relationship('Exam', backref='scores')
 
 
-# 📌 Bảng `error_logs` (Lỗi khi chấm bài)
+# 📌 Bảng `error_logs` (Lưu lỗi khi nộp bài)
 class ErrorLog(db.Model):
     __tablename__ = 'error_logs'
 
     id = db.Column(db.Integer, primary_key=True)
     submission_id = db.Column(db.Integer, db.ForeignKey('submissions.id', ondelete='CASCADE'), nullable=False)
-    line_number = db.Column(db.Integer, nullable=True)
-    error_message = db.Column(db.Text, nullable=False)
+    line_number = db.Column(db.Integer, nullable=True)  # Dòng lỗi nếu có
+    error_message = db.Column(db.Text, nullable=False)  # Mô tả lỗi
     error_time = db.Column(db.DateTime, default=db.func.now())
+
+    submission = db.relationship('Submission', backref='error_logs')

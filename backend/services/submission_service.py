@@ -3,27 +3,24 @@ import subprocess
 import time
 import ast
 from datetime import datetime
-from models import db, Submission, Testcase, ErrorLog, Score, Notification, ExamTask, GradingCriteria, GradingResult
+from models import db, Submission, Testcase, ErrorLog, Score, ExamTask
 
 # Lưu bài làm cho một bài tập
 def save_task_submission(data):
     user_id = data["student_id"]
     exam_id = data["contest_id"]
-    problem_id = data["problem_id"]
+    exam_task_id = data["problem_id"]
     code = data["code"]
     
     # 🔍 Xác định `exam_task_id` từ bảng `exam_tasks`
     exam_task = ExamTask.query.filter(
         ExamTask.exam_id == exam_id,
-        ExamTask.task_title.like(f'Bài {problem_id}%')
+        ExamTask.id == exam_task_id
     ).first()
 
     if not exam_task:
-        raise ValueError(f"Không tìm thấy bài tập số {problem_id} trong kỳ thi {exam_id}")
+        raise ValueError(f"Không tìm thấy bài tập số {exam_task_id} trong kỳ thi {exam_id}")
 
-    exam_task_id = exam_task.id
-
-    # Lưu mã vào file
     file_path = f"submissions/task{exam_task_id}_exam{exam_id}_student{user_id}.py"
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(code)
@@ -32,7 +29,7 @@ def save_task_submission(data):
     submission = Submission(
         user_id=user_id,
         exam_id=exam_id,
-        exam_task_id=exam_task_id,  # ✅ Lưu đúng `exam_task_id`
+        exam_task_id=exam_task_id,  # 🟢 Sử dụng đúng `exam_task_id`
         file_path=file_path,
         submitted_at=datetime.now(),
     )
@@ -44,22 +41,25 @@ def save_task_submission(data):
     except Exception as e:
         raise ValueError(f"Lỗi khi lưu submission: {str(e)}")
 
-# Chuẩn hóa đầu ra để so sánh chính xác
 def normalize_output(output):
     output = output.strip()
 
-    if re.match(r'^[\d\s,-]+$', output):
-        return re.sub(r'[^0-9,-]', '', output)
+    # ✅ Loại bỏ khoảng trắng trước và sau dấu phẩy
+    output = re.sub(r'\s*,\s*', ',', output)
 
-    elif re.search(r'\d+,\d+', output):  
-        numbers = re.findall(r'\d+', output)
-        return ",".join(numbers)
+    # ✅ Nếu output chứa danh sách số (tách bởi dấu phẩy hoặc khoảng trắng)
+    if re.search(r'\d', output):  # Kiểm tra xem có số nào trong output không
+        numbers = re.findall(r'\d+', output)  # Lấy tất cả số nguyên
+        return ",".join(numbers)  # Trả về chuỗi số nguyên cách nhau bởi dấu phẩy
 
+    # ✅ Nếu output chứa chuỗi trong dấu nháy đơn (ví dụ: "'output'")
     elif re.search(r"'(.*?)'", output):
         match = re.search(r"'(.*?)'", output)
-        return match.group(1)
+        return match.group(1).strip()  # Trả về nội dung bên trong dấu nháy đơn
 
-    return output
+    # ✅ Nếu output có khoảng trắng dư thừa, loại bỏ
+    return output.strip()
+
 
 # So sánh output để debug nếu có sai khác
 def compare_outputs(expected_output, actual_output):
@@ -69,10 +69,32 @@ def compare_outputs(expected_output, actual_output):
     if expected_output == actual_output:
         return True
     else:
-        print(f"❌ Debug Expected: {repr(expected_output)}")
-        print(f"❌ Debug Got: {repr(actual_output)}")
+        print(f"❌ Expected List: {expected_output.split(',')}")
+        print(f"❌ Got List: {actual_output.split(',')}")
         return False
 
+def contains_input_function(code):
+    """
+    Phân tích code Python để kiểm tra xem có sử dụng input() hoặc sys.stdin.read() không.
+    """
+    try:
+        tree = ast.parse(code)
+        for node in ast.walk(tree):
+            # Kiểm tra xem có sử dụng `input()`
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "input":
+                return True
+            # Kiểm tra xem có sử dụng `sys.stdin.read()`
+            if (
+                isinstance(node, ast.Call) 
+                and isinstance(node.func, ast.Attribute) 
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "sys"
+                and node.func.attr == "stdin"
+            ):
+                return True
+    except SyntaxError:
+        return False  # Nếu lỗi syntax, bỏ qua
+    return False  # Không tìm thấy bất kỳ cách nhập nào
 
 def grade_task_submission(submission_id):
     submission = Submission.query.get(submission_id)
@@ -92,13 +114,22 @@ def grade_task_submission(submission_id):
     grading_criteria_dict = {crit.criteria_name: crit.penalty for crit in GradingCriteria.query.filter_by(exam_task_id=task.id).all()}
 
     # Xác định điểm tối đa và điểm trừ
-    correct_score = grading_criteria_dict.get("Điểm nếu đúng", task.max_score)  # Điểm nếu đúng
-    penalty_time = grading_criteria_dict.get("Điểm trừ nếu vượt quá thời gian", 0.5)  # Điểm trừ nếu vượt quá thời gian
+    correct_score = grading_criteria_dict.get("Điểm nếu đúng", task.max_score)
+    penalty_time = grading_criteria_dict.get("Điểm trừ nếu vượt quá thời gian", 0.5)
 
     total_execution_time = 0
     total_penalty = 0
-    final_score = correct_score  # Ban đầu, giả định bài đúng
-    all_correct = True  # Kiểm tra xem tất cả testcase có đúng không
+    final_score = correct_score
+    all_correct = True
+
+    # **🔍 Kiểm tra xem thí sinh có dùng input() hoặc sys.stdin.read() không**
+    with open(submission.file_path, "r", encoding="utf-8") as f:
+        code_content = f.read()
+    
+    if not contains_input_function(code_content):
+        log_error(submission.id, "Hardcoded Output", "Thí sinh không sử dụng input() hoặc sys.stdin.read() để đọc dữ liệu từ test case.")
+        final_score = 0  # Trừ toàn bộ điểm nếu không dùng input
+        all_correct = False
 
     try:
         for testcase in testcases:
@@ -128,58 +159,53 @@ def grade_task_submission(submission_id):
             output = normalize_output(result.stdout)
             expected_output = normalize_output(testcase.expected_output)
 
-            # Xử lý lỗi runtime
             if result.stderr.strip():
                 log_error(submission.id, "Runtime Error", result.stderr.strip())
                 final_score = 0  # Nếu có lỗi runtime, mất toàn bộ điểm
                 all_correct = False
                 break
 
-            # Nếu sai kết quả → Mất toàn bộ điểm
             if not compare_outputs(expected_output, output):
                 final_score = 0
                 all_correct = False
                 log_error(submission.id, "Wrong Output", f"Expected: {expected_output}, Got: {output}")
                 break
 
-            # Nếu đúng nhưng vượt thời gian → Trừ điểm
             if execution_time > testcase.time_limit:
                 total_penalty += penalty_time
 
-        # Tính điểm cuối cùng
+        # **Tính điểm cuối cùng**
         final_score = max(final_score - total_penalty, 0)
 
-        # ✅ Cập nhật Submission
+        # ✅ **Cập nhật Submission**
         submission.execution_time = total_execution_time
         submission.is_graded = True
         submission.total_score = final_score
         db.session.commit()
 
-        # ✅ Lưu vào bảng grading_results
-        # Lưu điểm nếu đúng
+        # ✅ **Lưu vào bảng grading_results**
         correct_criteria = GradingCriteria.query.filter_by(exam_task_id=task.id, criteria_name="Điểm nếu đúng").first()
         if correct_criteria:
             grading_result = GradingResult(
                 submission_id=submission.id,
                 criteria_id=correct_criteria.id,
-                score=correct_score if all_correct else 0  # Nếu bài sai, điểm là 0
+                score=correct_score if all_correct else 0
             )
             db.session.add(grading_result)
 
-        # Lưu điểm trừ nếu vượt quá thời gian
         penalty_criteria = GradingCriteria.query.filter_by(exam_task_id=task.id, criteria_name="Điểm trừ nếu vượt quá thời gian").first()
         if penalty_criteria and total_penalty > 0:
             grading_result = GradingResult(
                 submission_id=submission.id,
                 criteria_id=penalty_criteria.id,
-                score=-total_penalty  # Điểm trừ nếu vượt quá thời gian
+                score=-total_penalty
             )
             db.session.add(grading_result)
 
-        # ✅ Cập nhật điểm tổng vào bảng scores
+        # ✅ **Cập nhật điểm tổng vào bảng scores**
         save_score(submission.user_id, submission.exam_id)
 
-        # ✅ Gửi thông báo cho thí sinh
+        # ✅ **Gửi thông báo cho thí sinh**
         send_notification(submission.user_id, f"Điểm: {final_score:.2f}, Thời gian: {total_execution_time:.2f}s")
 
     except Exception as e:
@@ -187,10 +213,11 @@ def grade_task_submission(submission_id):
     finally:
         db.session.commit()
 
+
 # Lưu điểm cuối cùng của kỳ thi
-def save_score(user_id, exam_id):
+def save_score(user_id, exam_id, final_score):  # Thêm final_score vào tham số
     """
-    Cập nhật tổng điểm của thí sinh từ grading_results
+    Cập nhật tổng điểm của thí sinh từ `grading_results`
     """
     # ✅ Lấy tổng điểm từ tiêu chí "Điểm nếu đúng"
     total_correct_score = db.session.query(db.func.sum(GradingResult.score)).join(GradingCriteria).join(Submission).filter(
@@ -207,7 +234,7 @@ def save_score(user_id, exam_id):
     ).scalar() or 0  # Nếu không có, mặc định là 0
 
     # ✅ Tính điểm tổng từ grading_results
-    final_score = max(total_correct_score + total_penalty, 0)
+    final_score = max(total_correct_score + total_penalty, 0)  # Đảm bảo không âm
 
     score_entry = Score.query.filter_by(user_id=user_id, exam_id=exam_id).first()
 

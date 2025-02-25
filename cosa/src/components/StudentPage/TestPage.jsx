@@ -121,7 +121,7 @@ function TestPage() {
                             <p>Thời gian còn lại</p>
                             <p>{formatTime(remainingTime)}</p>
                         </div>
-                        <div>
+                        <div className={styles.score}>
                             {isLoadingScore ? (
                                 <p>Đang chấm...</p>
                             ) : (

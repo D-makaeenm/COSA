@@ -7,6 +7,7 @@ import { Tooltip } from "react-tooltip";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
+
 function ContestInfo1() {
     const {
         contestInfo,
@@ -20,6 +21,9 @@ function ContestInfo1() {
         const date = new Date(dateTimeString);
         return format(date, "HH:mm:ss EEEE dd/MM/yyyy", { locale: vi });
     };
+
+
+
 
     return (
         <div>

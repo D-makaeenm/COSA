@@ -1,23 +1,22 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
+  const [content, setContent] = useState('');
+
+  useEffect(() => {
+    fetch('/output.html')
+      .then(response => response.text())
+      .then(data => setContent(data))
+      .catch(error => console.error("Lỗi tải dữ liệu:", error));
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h2>Hiển thị nội dung file .docx</h2>
+      <div id="output" style={{ border: '1px solid #000', padding: '10px', marginTop: '10px' }}>
+        <div dangerouslySetInnerHTML={{ __html: content }}></div>
+      </div>
     </div>
   );
 }

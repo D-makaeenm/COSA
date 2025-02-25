@@ -151,31 +151,28 @@ def start_exam_service(user_id, exam_id):
     }
 
 def get_question_details(user_id, exam_id, question_id):
-    """
-    Lấy chi tiết câu hỏi cho thí sinh, bao gồm nội dung bài làm nếu đã nộp và các test cases.
-    """
-    # Kiểm tra xem thí sinh có quyền truy cập kỳ thi không
+    # Kiểm tra quyền truy cập
     participant = ExamParticipant.query.filter_by(exam_id=exam_id, user_id=user_id).first()
     if not participant:
         raise ValueError("Người dùng không có quyền truy cập kỳ thi này.")
 
-    # Tìm câu hỏi trong kỳ thi
+    # Tìm câu hỏi
     question = ExamTask.query.filter_by(id=question_id, exam_id=exam_id).first()
     if not question:
         raise ValueError("Câu hỏi không tồn tại hoặc không thuộc kỳ thi này.")
 
-    # Lấy các test case cho câu hỏi
+    # Lấy danh sách test cases
     testcases = Testcase.query.filter_by(exam_task_id=question_id).all()
     testcase_data = [
         {
-            "input": testcase.input,
-            "expected_output": testcase.expected_output,
+            "input_path": f"http://localhost:5000/student/uploads/testcases/{testcase.input_path}",
+            "output_path": f"http://localhost:5000/student/uploads/testcases/{testcase.output_path}",
             "time_limit": testcase.time_limit
         }
         for testcase in testcases
     ]
 
-    # Kiểm tra xem thí sinh đã nộp bài chưa (lấy bài mới nhất)
+    # Kiểm tra bài nộp
     submission = Submission.query.filter_by(exam_task_id=question_id, user_id=user_id)\
                 .order_by(Submission.submitted_at.desc())\
                 .first()
@@ -185,27 +182,26 @@ def get_question_details(user_id, exam_id, question_id):
     score = None
     is_graded = False
 
-    # Đọc nội dung file nếu bài đã nộp
     if is_submitted:
-        if submission.file_path and submission.file_path.strip() != "":
+        if submission.file_path_code and submission.file_path_code.strip():
             try:
-                with open(submission.file_path, 'r', encoding='utf-8') as f:
+                with open(submission.file_path_code, 'r', encoding='utf-8') as f:
                     submitted_code = f.read()
             except FileNotFoundError:
                 submitted_code = "File không tồn tại hoặc đã bị xóa."
         is_graded = submission.is_graded
 
-    # Trả thông tin câu hỏi & trạng thái bài làm
     return {
         "task_title": question.task_title,
         "task_description": question.task_description,
+        "image_url": f"http://localhost:5000/student/uploads/images/{question.image_path}" if question.image_path else None,
         "max_score": question.max_score,
         "execution_time_limit": question.execution_time_limit,
         "is_submitted": is_submitted,
         "submitted_code": submitted_code,
         "score": score,
         "is_graded": is_graded,
-        "testcases": testcase_data  # Thêm thông tin test cases
+        "testcases": testcase_data
     }
 
 def submit_code_service(user_id, exam_id, question_id, code):

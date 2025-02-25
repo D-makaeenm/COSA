@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 from routes import register_routes
 import threading
 from services.contest_scheduler import start_scheduler
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -22,6 +23,8 @@ register_routes(app)
 
 scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
 scheduler_thread.start()
+
+print("Root path:", os.getcwd())
 
 if __name__ == '__main__':
     with app.app_context():

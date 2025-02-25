@@ -1,5 +1,81 @@
-INSERT INTO users (id, username, password, role, name, phone, email, created_at, updated_at, delete_at)
-VALUES 
+INSERT INTO exams (id, title, description, start_time, end_time, created_by, status, created_at, updated_at) VALUES
+(1, 'Olympic Lập trình lần VII', 'ádasd', '2025-02-18 16:00:00', '2025-02-18 19:00:00', 3, 'completed', '2025-01-01 13:00:00', '2025-02-18 19:00:02'),
+(2, 'Kỳ thi Python Cơ bản', 'python cơ bản', '2025-02-16 14:10:00', '2025-02-18 20:00:00', 4, 'ongoing', '2025-01-03 08:00:00', '2025-02-18 10:11:07'),
+(3, 'Kỳ thi Python Cơ bản lần 2', 'Test', '2025-02-16 14:10:00', '2025-01-19 11:40:00', 1, 'completed', '2025-01-14 17:39:07', '2025-02-16 14:36:16');
+
+INSERT INTO exam_tasks (id, exam_id, task_title, task_description, max_score, execution_time_limit, created_at, delete_at) VALUES
+(1, 1, 'Bài 1: Tính tổng', 'Viết chương trình tính tổng 2 số nguyên dương 33 và 99', 3.0, 0.51, '2025-01-01 13:00:00', NULL),
+(2, 1, 'Bài 2: Số nguyên tố', 'Viết chương trình liệt kê các số nguyên tố nhỏ hơn 50.', 4.0, 0.02, '2025-01-01 13:00:00', NULL),
+(3, 1, 'Bài 3: Chuỗi đảo ngược', 'Viết chương trình nhận vào một chuỗi "aye" và trả về chuỗi đảo ngược.', 3.0, 0.61, '2025-01-01 13:00:00', NULL),
+(4, 2, 'Bài 1: Tìm số', 'Viết chương trình tìm tất cả các số từ 2000 đến 2100 chia hết cho 7 nhưng không phải bội số của 5.', 5.0, 0.755, '2025-01-03 08:00:00', NULL),
+(5, 2, 'Bài 2: Tính giai thừa', 'Viết chương trình tính giai thừa từ 0 đến 9.', 5.0, 0.88, '2025-01-03 08:00:00', NULL),
+(6, 3, 'Bài 1: Tìm số lớn nhất', 'Viết chương trình tìm số lớn nhất trong danh sách 5 số nguyên.', 5.0, 0.5, '2025-01-23 22:49:04', NULL),
+(7, 3, 'Bài 2: Tính tổng', 'Viết chương trình tính tổng các số từ 1 đến 10.', 5.0, 0.6, '2025-01-23 22:49:04', NULL);
+
+INSERT INTO exam_participants (id, exam_id, user_id, created_at, delete_at) VALUES
+(1, 1, 6, '2025-02-17 18:23:44', NULL),
+(2, 1, 11, '2025-02-17 18:23:47', NULL),
+(3, 2, 8, '2025-02-18 17:10:29', NULL),
+(4, 2, 9, '2025-02-18 17:10:32', NULL);
+
+INSERT INTO submissions (id, user_id, exam_task_id, exam_id, submitted_at, execution_time, file_path, is_graded) VALUES
+(1, 6, 1, 1, '2025-02-18 17:02:08', 0.0562022, 'submissions/task1_exam1_student6.py', 1),
+(2, 6, 2, 1, '2025-02-18 17:02:18', 0.03, 'submissions/task2_exam1_student6.py', 1),
+(3, 6, 3, 1, '2025-02-18 17:02:28', 0.0595975, 'submissions/task3_exam1_student6.py', 1),
+(4, 11, 1, 1, '2025-02-18 17:08:00', 0.0586393, 'submissions/task1_exam1_student11.py', 1),
+(5, 11, 2, 1, '2025-02-18 17:08:10', 0.03, 'submissions/task2_exam1_student11.py', 1),
+(6, 11, 3, 1, '2025-02-18 17:08:19', 0.0574906, 'submissions/task3_exam1_student11.py', 1),
+(7, 8, 4, 2, '2025-02-18 19:43:11', 0.0606229, 'submissions/task4_exam2_student8.py', 1),
+(8, 8, 5, 2, '2025-02-18 19:43:20', 0.0430419, 'submissions/task5_exam2_student8.py', 1);
+
+INSERT INTO testcases (id, exam_task_id, input, expected_output, time_limit, created_at) VALUES
+(1, 1, '33,99', '132', 0.51, '2025-01-01 13:00:00'),
+(2, 2, '50', '2,3,5,7,11,13,17,19,23,29,31,37,41,43,47', 0.02, '2025-01-01 13:00:00'),
+(3, 3, 'aye', 'eya', 0.61, '2025-01-01 13:00:00'),
+(4, 4, '2000,2100', '2002,2009,2016,2023,2037,2044,2051,2058,2072,2079,2086,2093', 0.755, '2025-01-03 08:00:00'),
+(5, 5, '9', '1,2,6,24,120,720,5040,40320,362880', 0.88, '2025-01-03 08:00:00'),
+(6, 6, '19,-2,112,0,-14', '112', 0.5, '2025-01-23 22:55:03'),
+(7, 7, '1,2,3,4,5,6,7,8,9,10', '55', 0.6, '2025-01-23 22:55:03');
+
+INSERT INTO grading_criteria (id, exam_task_id, criteria_name, penalty) VALUES
+(1, 1, 'Điểm trừ nếu vượt quá thời gian', 0.5),
+(2, 1, 'Điểm nếu đúng', 3.0),
+(3, 2, 'Điểm trừ nếu vượt quá thời gian', 0.5),
+(4, 2, 'Điểm nếu đúng', 4.0),
+(5, 3, 'Điểm trừ nếu vượt quá thời gian', 0.5),
+(6, 3, 'Điểm nếu đúng', 3.0),
+(7, 4, 'Điểm nếu đúng', 5.0),
+(8, 4, 'Điểm trừ nếu vượt quá thời gian', 0.5),
+(9, 5, 'Điểm nếu đúng', 5.0),
+(10, 5, 'Điểm trừ nếu vượt quá thời gian', 0.5);
+
+INSERT INTO grading_results (id, submission_id, criteria_id, score) VALUES
+(1, 1, 2, 0.0),
+(2, 2, 4, 0.0),
+(3, 2, 3, -0.5),
+(4, 3, 6, 0.0),
+(5, 4, 2, 3.0),
+(6, 5, 4, 4.0),
+(7, 5, 3, -0.5),
+(8, 6, 6, 3.0),
+(9, 7, 7, 5.0),
+(10, 8, 9, 5.0);
+
+INSERT INTO scores (id, user_id, exam_id, total_score, graded_at) VALUES
+(1, 6, 1, 0.0, '2025-02-18 17:02:28'),
+(2, 11, 1, 9.5, '2025-02-18 17:08:19'),
+(3, 8, 2, 10.0, '2025-02-18 19:43:25');
+
+INSERT INTO notifications (id, user_id, message, created_at) VALUES
+(1, 6, 'Điểm: 0.00, Thời gian: 0.06s', '2025-02-18 17:02:08'),
+(2, 6, 'Điểm: 0.00, Thời gian: 0.03s', '2025-02-18 17:02:18'),
+(3, 6, 'Điểm: 0.00, Thời gian: 0.06s', '2025-02-18 17:02:28'),
+(4, 11, 'Điểm: 3.00, Thời gian: 0.06s', '2025-02-18 17:08:00'),
+(5, 11, 'Điểm: 3.50, Thời gian: 0.03s', '2025-02-18 17:08:10'),
+(6, 11, 'Điểm: 3.00, Thời gian: 0.06s', '2025-02-18 17:08:19');
+
+
+INSERT INTO users (id, username, password, role, name, phone, email, created_at, updated_at, delete_at) VALUES
 (1, 'admin', 'scrypt:32768:8:1$L9zb6dv2fnV1oIxU$1a0a0c9306e9d7d4d7675cc5100689c99162fe6ebf6305069f6bb19eaa89caae58a8b501daa3cc69b1ee98fd13685e0d68502adca68f909b882ce61ec64d2737', 'admin', 'Ma Bách Duy', '0985725835', 'bachduyatk300@gmail.com', '2025-01-11 17:27:23', NULL, NULL),
 (2, 'user1', 'scrypt:32768:8:1$dbYEz4phKeFNISv8$ba2c61887ddfbaa5c43affa428dd6b036bcf1e77211602be54e4513d3c262c23338885f7fb7e96d27926c5966a384fd1264d38f99b7a9cc993567492fd1af480', 'student', 'Nguyễn A', NULL, NULL, '2025-01-11 17:30:26', NULL, '2025-01-11 18:12:12'),
 (3, 'teacher1', 'scrypt:32768:8:1$rkWO8Sv9DnAUpmhi$ad41239f396700e07cf0d07a81f5228818c68ea464b6e4c0bce3f642279aef9c66e0b111bb3a5533ce98ad45639aac263fc166a064ca7a61c7bf153a059298d1', 'teacher', 'Giáo Viên 1', '0123456789', 'teacher1@gmail.com', '2025-01-11 17:33:05', '2025-01-14 17:04:37', NULL),
@@ -13,61 +89,3 @@ VALUES
 (11, 'student5', 'scrypt:32768:8:1$7EiZP4uJfU9XymYb$5d4f49b412c06771e6fff1ed2f7186d7faeb39001e1a51434330142c934c4afe6b79c72d4f38d6b92951a75a9efe2b1b7f1a96640b2f78e9dca370ddaced9e12', 'student', 'Sinh Viên 5', '0123555555', 'sv5@gmail.com', '2025-01-11 18:11:57', '2025-01-14 18:54:27', NULL),
 (12, 'admin2', 'scrypt:32768:8:1$hPuHd5IlhWITzI0N$b573b7dbedcfcfb955fa18fbacd51f0b44e2a20004058af620aa32eef369b47dcbbc4b2f8885e005c14189943e5336cfd5f865d7b58479b0b270f830df8d7174', 'admin', 'Admin 3', '0123111111', 'admin3@gmail.com', '2025-01-11 18:13:36', NULL, NULL),
 (13, 'student6', 'scrypt:32768:8:1$DtQNO9DjHHhJMCe0$cf1e44c46a27759172def9370d36d4e39988cd51f7668572e42285ea5bf75924e617f2a7b1858431b674d5814d1fa32c008f9f5c5ebdd72d752f0071954b3b0d', 'student', 'Sinh Viên 6', '0123666666', 'sv6@gmail.com', '2025-01-14 16:52:09', NULL, NULL);
-
-INSERT INTO `exams` (`id`, `title`, `description`, `start_time`, `end_time`, `created_by`, `status`, `created_at`, `updated_at`)
-VALUES
-(1, 'Olympic Lập trình lần VII', 'Kỳ thi lập trình dành cho sinh viên khối không chuyên', '2025-01-20 16:10:00', '2025-01-20 18:20:00', 3, 'ongoing', '2025-01-01 13:00:00', '2025-01-21 23:52:44'),
-(2, 'Kỳ thi Python Cơ bản', 'Kỳ thi kiểm tra kiến thức Python cơ bản', '2025-01-04 08:00:00', '2025-01-04 09:00:00', 4, 'completed', '2025-01-03 08:00:00', '2025-01-11 18:18:33'),
-(3, 'Kỳ thi Python Cơ bản lần 2', 'Test', '2025-01-19 10:40:00', '2025-01-19 11:40:00', 1, 'ongoing', '2025-01-14 17:39:07', '2025-02-04 16:47:25');
-
-INSERT INTO `exam_participants` (`id`, `exam_id`, `user_id`, `created_at`, `delete_at`)
-VALUES
-(1, 1, 6, '2025-01-01 13:00:00', NULL),
-(2, 2, 6, '2025-01-03 08:00:00', NULL),
-(3, 1, 8, '2025-01-01 13:00:00', NULL),
-(4, 2, 8, '2025-01-03 08:00:00', NULL),
-(6, 3, 13, '2025-01-14 17:52:42', NULL),
-(8, 3, 11, '2025-01-14 18:57:25', '2025-02-04 17:07:22'),
-(10, 1, 11, '2025-02-04 17:06:56', NULL);
-
-INSERT INTO `exam_tasks` (`id`, `exam_id`, `task_title`, `task_description`, `max_score`, `execution_time_limit`, `created_at`)
-VALUES
-(1, 1, 'Bài 1: Tính tổng', 'Viết chương trình tính tổng 2 số nguyên dưng 33 và 99', 3.0, 1.0, '2025-01-01 13:00:00'),
-(2, 1, 'Bài 2: Số nguyên tố', 'Viết chương trình liệt kê các số nguyên tố nhỏ hơn 50.', 3.0, 1.5, '2025-01-01 13:00:00'),
-(3, 1, 'Bài 3: Chuỗi đảo ngược', 'Viết chương trình nhận vào một chuỗi "aye" và trả về chuỗi đảo ngược.', 3.0, 1.0, '2025-01-01 13:00:00'),
-(4, 2, 'Bài 1: Tìm số', 'Viết chương trình tìm tất cả các số từ 2000 đến 3200 chia hết cho 7 nhưng không phải bội số của 5.', 4.5, 1.0, '2025-01-03 08:00:00'),
-(5, 2, 'Bài 2: Tính giai thừa', 'Viết chương trình tính giai thừa từ 0 đến 9.', 4.5, 1.0, '2025-01-03 08:00:00'),
-(6, 3, 'Bài 1: Tìm số lớn nhất', 'Viết chương trình tìm số lớn nhất trong danh sách 5 số nguyên.', 4.5, 1.0, '2025-01-23 22:49:04'),
-(7, 3, 'Bài 2: Tính tổng', 'Viết chương trình tính tổng các số từ 1 đến 10.', 4.5, 1.0, '2025-01-23 22:49:04');
-
-INSERT INTO submissions (id, user_id, exam_task_id, exam_id, submitted_at, execution_time, file_path, is_graded)
-VALUES 
-(1, 6, 1, 1, '2025-01-02 13:15:00', 1.15, 'submissions/task1_exam1_student6.py', 1),
-(2, 6, 2, 1, '2025-01-02 13:25:00', 0.6, 'submissions/task2_exam1_student6.py', 1),
-(3, 6, 3, 1, '2025-01-02 13:55:00', 0.55, 'submissions/task3_exam1_student6.py', 1),
-(4, 8, 1, 1, '2025-01-02 13:10:00', 0.4, 'submissions/task1_exam1_student8.py', 1),
-(5, 8, 2, 1, '2025-01-02 13:30:00', 0.55, 'submissions/task2_exam1_student8.py', 1),
-(6, 8, 3, 1, '2025-01-02 13:50:00', 0.65, 'submissions/task3_exam1_student8.py', 1),
-(7, 6, 1, 2, '2025-01-04 08:20:00', 1.55, 'submissions/task1_exam2_student6.py', 1),
-(8, 6, 2, 2, '2025-01-04 08:40:00', 0.75, 'submissions/task2_exam2_student6.py', 1),
-(9, 8, 1, 2, '2025-01-04 08:25:00', 0.35, 'submissions/task1_exam2_student8.py', 1),
-(10, 8, 2, 2, '2025-01-04 08:35:00', 0.85, 'submissions/task2_exam2_student8.py', 1),
-(11, 11, 1, 1, '2025-02-04 22:26:17', 0.14, 'submissions/task1_exam1_student11.py', 1),
-(12, 11, 2, 1, '2025-02-04 22:26:36', 0.13, 'submissions/task2_exam1_student11.py', 1);
-
-INSERT INTO `testcases` (`id`, `exam_task_id`, `input`, `expected_output`, `time_limit`, `created_at`)
-VALUES
-(1, 1, '33,99', '132', 0.5, '2025-01-01 13:00:00'),
-(2, 1, '50', '2,3,5,7,11,13,17,19,23,29,31,37,41,43,47', 0.7, '2025-01-01 13:00:00'),
-(3, 1, 'aye', 'eya', 1.0, '2025-01-01 13:00:00'),
-(4, 2, '2000,2100', '2002,2009,2016,2023,2030,2037,2044,2051,2058,2065,2072,2079,2086,2093', 1.5, '2025-01-03 08:00:00'),
-(5, 2, '9', '1,2,6,24,120,720,5040,40320,362880', 2.0, '2025-01-03 08:00:00'),
-(6, 3, '19,-2,112,0,-14', '112', 0.5, '2025-01-23 22:55:03'),
-(7, 3, '1,2,3,4,5,6,7,8,9,10', '55', 0.3, '2025-01-23 22:55:03');
-
-INSERT INTO `scores` (`id`, `user_id`, `exam_id`, `total_score`, `graded_at`)
-VALUES
-(1, 6, 1, 10.0, '2025-01-02 14:00:00'),
-(2, 8, 1, 6.0, '2025-01-02 14:00:00'),
-(3, 6, 2, 9.0, '2025-01-04 09:00:00'),
-(4, 8, 2, 10.0, '2025-01-04 09:00:00');

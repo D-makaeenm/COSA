@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./Questions.module.css";
+import { ToastContainer, toast } from 'react-toastify';
+import Swal from "sweetalert2";
+
 
 function Questions() {
     const { examId } = useParams();
@@ -10,6 +13,17 @@ function Questions() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const notify = () => toast("Wow so easy!");
+
+    const showAlert = () => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: "Đây là một thông báo SweetAlert2!",
+            icon: "success", // success, error, warning, info, question
+            confirmButtonText: "OK",
+        });
+    };
+
 
     useEffect(() => {
         const fetchQuestions = async () => {

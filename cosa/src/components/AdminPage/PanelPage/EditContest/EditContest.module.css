@@ -167,13 +167,21 @@
     height: 30px;
     width: 60px;
     padding: 0 5px 0 5px;
-    background-color: #e9e9e9;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.3s ease;
+    border: none;
+    font-size: 16px;
+    color: #000000;
 }
 .edit_taskItem_btn_container button:hover{
-    background-color: #afffad;
+    background-color: #c3c3c3;
+}
+.btnluu{
+    background-color: #6eff75;
+}
+.btnhuy{
+    background-color: rgb(255, 120, 120);
 }
 .button2{
     display: flex;
@@ -227,4 +235,20 @@
     width: 100%;
     padding-left: 10px;
 }
-
+.btnaccess{
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 0 0;
+}
+.btnaccess button{
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: rgb(125, 255, 125);
+    transition: 0.3s ease;
+}
+.btnaccess button:hover{
+    background-color: #b4b4b4;
+}

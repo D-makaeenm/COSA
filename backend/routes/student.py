@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import os
 from services.student_service import (
     get_ongoing_exam_service,
     get_exam_questions_service,
@@ -11,6 +12,10 @@ from services.student_service import (
 from datetime import datetime, timedelta
 
 student_bp = Blueprint('student_bp', __name__)
+
+UPLOAD_FOLDER_IMAGES = os.path.abspath("E:/COSA/backend/uploads/images")
+UPLOAD_FOLDER_TESTCASES = os.path.abspath("E:/COSA/backend/uploads/testcases")
+
 
 @student_bp.route('/ongoing-exam', methods=['GET'])
 @jwt_required()
@@ -79,6 +84,21 @@ def get_question(exam_id, question_id):
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@student_bp.route("/uploads/images/<path:filename>")
+def get_uploaded_image(filename):
+    file_path = os.path.join(UPLOAD_FOLDER_IMAGES, filename)
+    if not os.path.exists(file_path):
+        return jsonify({"error": "File không tồn tại"}), 404
+    return send_from_directory(UPLOAD_FOLDER_IMAGES, filename)
+
+# Route phục vụ file test cases
+@student_bp.route("/uploads/testcases/<path:filename>")
+def get_uploaded_testcase(filename):
+    file_path = os.path.join(UPLOAD_FOLDER_TESTCASES, filename)
+    if not os.path.exists(file_path):
+        return jsonify({"error": "File không tồn tại"}), 404
+    return send_from_directory(UPLOAD_FOLDER_TESTCASES, filename)
 
 
 @student_bp.route('/exam/<int:exam_id>/question/<int:question_id>/submit', methods=['POST'])

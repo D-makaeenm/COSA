@@ -14,7 +14,7 @@ function ExamQuestion() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [code, setCode] = useState("");
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const { updateScore, setLoadingScore } = useOutletContext(); // Nhận thêm setLoadingScore từ context
+    const { updateScore, setLoadingScore } = useOutletContext();
 
     const backendUrl = "http://localhost:5000";
 
@@ -121,12 +121,22 @@ function ExamQuestion() {
             <div className={styles.container}>
                 <div>
                     <h2>{question?.task_title}</h2>
-                    <p>{question?.task_description}</p>
+                    {question?.image_url && (
+                        <img
+                            src={question.image_url}
+                            alt="Hình minh họa"
+                            className={styles.questionImage}
+                        />
+                    )}
                     {question?.testcases?.map((testcase, index) => (
                         <div key={index}>
-                            <p><strong>Input:</strong> {testcase.input}</p>
-                            <p><strong>Output:</strong> {testcase.expected_output}</p>
-                            <p><strong>Thời gian giới hạn xử lý:</strong> {testcase.time_limit}s</p>
+                            <p><strong>Thời gian giới hạn:</strong> {testcase.time_limit}s</p>
+                            <p>
+                                <strong>Input:</strong>{" "}
+                                <a href={testcase.input_path} download>
+                                    Tải file input
+                                </a>
+                            </p>
                         </div>
                     ))}
                 </div>

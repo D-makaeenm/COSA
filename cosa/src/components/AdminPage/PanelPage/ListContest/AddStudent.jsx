@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ContestInfo.module.css";
+import { ToastContainer, toast } from 'react-toastify';
 
 function AddStudent() {
     const { id: contestId } = useParams(); // Lấy contestId từ URL
@@ -9,6 +10,14 @@ function AddStudent() {
     const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
     const [error, setError] = useState(null); // Trạng thái lỗi
     const navigate = useNavigate();
+    const notify = (action) => {
+        if (action === 'add') {
+            toast.success("Thêm thành công!", {
+                autoClose: 3000,
+                closeOnClick: true,
+            });
+        }
+    };
 
     useEffect(() => {
         // Gọi API để lấy danh sách thí sinh chưa tham gia cuộc thi
@@ -55,7 +64,7 @@ function AddStudent() {
                     },
                 }
             );
-            alert("Thí sinh đã được thêm vào cuộc thi.");
+            notify('add');
             // Cập nhật danh sách thí sinh sau khi thêm
             setStudents((prevStudents) =>
                 prevStudents.filter((student) => student.id !== studentId)
@@ -86,6 +95,7 @@ function AddStudent() {
             <div className={styles.title}>
                 <h1>Danh sách thí sinh chưa tham gia cuộc thi này</h1>
             </div>
+            <ToastContainer />
             <table className={styles.table}>
                 <thead>
                     <tr>
