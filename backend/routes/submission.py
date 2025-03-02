@@ -82,3 +82,17 @@ def check_all_submitted(exam_id, student_id):
         return jsonify({"all_submitted": all_submitted}), 200
     except Exception as e:
         return jsonify({"error": f"Lỗi kiểm tra bài nộp: {str(e)}"}), 500
+
+@submission_bp.route('/status/<int:submission_id>', methods=['GET'])
+@jwt_required()
+def check_submission_status(submission_id):
+    print(f"📌 Kiểm tra bài nộp với ID: {submission_id}")  # In ra ID được nhận
+
+    submission = Submission.query.get(submission_id)
+    
+    if not submission:
+        print("❌ Không tìm thấy submission!")  # Debug lỗi
+        return jsonify({"error": "Submission không tồn tại"}), 404
+
+    print(f"✅ Submission tìm thấy: {submission}")  # Nếu tìm thấy submission
+    return jsonify({"is_graded": submission.is_graded}), 200

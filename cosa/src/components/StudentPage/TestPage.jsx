@@ -3,6 +3,7 @@ import Navbar from "../LoginPage/Navbar";
 import { Outlet, useLocation } from "react-router-dom";
 import styles from "./TestPage.module.css";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 function TestPage() {
     const [userInfo, setUserInfo] = useState({ username: "", name: "" });
@@ -20,7 +21,7 @@ function TestPage() {
     const updateScore = (score) => {
         setCurrentScore(score);
         localStorage.setItem("currentScore", score);
-        alert("Bạn đã hoàn thành bài thi, điểm của bạn là: " + score);
+        showAlert(score);
         setIsLoadingScore(false);
     };
 
@@ -91,6 +92,15 @@ function TestPage() {
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = timeInSeconds % 60;
         return `${minutes} phút ${seconds < 10 ? `0${seconds}` : seconds} giây`;
+    };
+
+    const showAlert = (score) => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: `Bạn đã hoàn thành bài thi với ${score} điểm`,
+            icon: "success",
+            confirmButtonText: "OK",
+        });
     };
 
     return (

@@ -4,6 +4,7 @@ import axios from "axios";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import styles from "./ExamQuestion.module.css";
+import Swal from "sweetalert2";
 
 function ExamQuestion() {
     const { examId, questionId } = useParams();
@@ -50,9 +51,11 @@ function ExamQuestion() {
         setIsSubmitting(true); // Đánh dấu đang gửi bài
         try {
             const token = localStorage.getItem("token");
+            const studentId = localStorage.getItem("id");
+
             const payload = {
                 contest_id: examId,
-                student_id: localStorage.getItem("id"),
+                student_id: studentId,
                 problem_id: questionId,
                 code: encodeURIComponent(code),
             };
@@ -61,19 +64,39 @@ function ExamQuestion() {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (response.status !== 200) {
-                throw new Error("Gửi bài làm thất bại.");
+            if (response.status !== 200 || !response.data || !response.data.submission_id) {
+                throw new Error("Bài làm không được lưu. Vui lòng thử lại.");
             }
 
-            alert("Bài làm đã được nộp!");
-            setIsSubmitted(true); // Cập nhật trạng thái đã nộp
+            const submissionId = response.data.submission_id;
+            console.log(`✅ Bài đã lưu: Submission ID = ${submissionId}`);
+
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            let graded = false;
+
+            for (let i = 0; i < 5; i++) {  // Thử kiểm tra tối đa 5 lần (15 giây)
+                const checkResponse = await axios.get(
+                    `${backendUrl}/submission/status/${submissionId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                if (checkResponse.data.is_graded) {
+                    graded = true;
+                    break;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 3000)); // Chờ tiếp 3 giây
+            }
+
+            if (!graded) {
+                console.warn("⚠️ Bài đã lưu nhưng chưa chấm điểm. Có thể backend xử lý chậm.");
+            }
+
+            showAlert();
+            setIsSubmitted(true);
 
             // Kiểm tra xem thí sinh đã nộp hết bài chưa
             const submissionCheck = await axios.get(
-                `${backendUrl}/submission/check_all_submitted/${examId}/${localStorage.getItem("id")}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `${backendUrl}/submission/check_all_submitted/${examId}/${studentId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
             if (submissionCheck.data.all_submitted) {
@@ -81,10 +104,8 @@ function ExamQuestion() {
                 const interval = setInterval(async () => {
                     try {
                         const result = await axios.get(
-                            `${backendUrl}/submission/final_score/${examId}/${localStorage.getItem("id")}`,
-                            {
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
+                            `${backendUrl}/submission/final_score/${examId}/${studentId}`,
+                            { headers: { Authorization: `Bearer ${token}` } }
                         );
 
                         if (result.data.score !== null) {
@@ -106,6 +127,16 @@ function ExamQuestion() {
         } finally {
             setIsSubmitting(false); // Cho phép nộp bài lại nếu cần
         }
+    };
+
+    const showAlert = () => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: "Nộp bài thành công!",
+            icon: "success",
+            confirmButtonText: "OK",
+            timer: 1500,
+        });
     };
 
     if (loading) {

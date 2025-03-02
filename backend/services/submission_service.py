@@ -176,6 +176,7 @@ def grade_task_submission(submission_id):
 def save_score(user_id, exam_id):
     total_score = db.session.query(db.func.sum(Submission.score)).filter_by(user_id=user_id, exam_id=exam_id, is_graded=True).scalar() or 0
 
+    total_score = total_score if total_score is not None else 0
     score_entry = Score.query.filter_by(user_id=user_id, exam_id=exam_id).first()
     if not score_entry:
         score_entry = Score(user_id=user_id, exam_id=exam_id, total_score=total_score, graded_at=db.func.now())

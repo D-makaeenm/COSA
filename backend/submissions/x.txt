@@ -1,174 +1,73 @@
-def tinh_tong(a, b):
-    return a + b
-# Đọc input từ test case
-so_1, so_2 = map(int, input().split(","))
-tong = tinh_tong(so_1, so_2)
-# In kết quả
-print(tong)
-
-
-def la_so_nguyen_to(n):
-    if n < 2:
-        return False
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
-def liet_ke_so_nguyen_to(upper_limit):
-    return [n for n in range(2, upper_limit) if la_so_nguyen_to(n)]
-# Đọc input từ test case
-gioi_han = int(input())
-# Tính toán danh sách số nguyên tố
-mang_nguyen_to = liet_ke_so_nguyen_to(gioi_han)
-# In kết quả
-print(",".join(map(str, mang_nguyen_to)))
-
-
-def dao_nguoc_chuoi(s):
-    return s[::-1]
-# Đọc input từ test case
-chuoi_dau_vao = input()
-# Đảo ngược chuỗi
-chuoi_dao_nguoc = dao_nguoc_chuoi(chuoi_dau_vao)
-# In kết quả
-print(chuoi_dao_nguoc)
-
-
-
-
-exams: Cơ bản lần 2
-
-numbers = [19, -2, 112, 0, -14]
-max_number = numbers[0]
-for num in numbers:
-    if num > max_number:
-        max_number = num
-print(max_number)
-
-
-
-numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-total = 0
-for num in numbers:
-    total += num
-print(total)
-
-
-
-
-
-# Nhận input từ hệ thống chấm bài (stdin)
-start, end = map(int, input().split(","))
-
-# Tìm các số chia hết cho 7 nhưng không phải bội số của 5
-result = [num for num in range(start, end + 1) if num % 7 == 0 and num % 5 != 0]
-
-# In kết quả dưới dạng danh sách số, cách nhau bởi dấu phẩy
-print(",".join(map(str, result)))
-
-
-
-def factorial(n):
-    if n == 0:
-        return 1
-    return n * factorial(n - 1)
-
-def factorial_list(n):
-    return [str(factorial(i)) for i in range(1, n + 1)]
-
-# Nhận input từ test case
-n = int(input().strip())
-output = ",".join(factorial_list(n))
-print(output)
-
-
-
-
-
-
 # Đọc dữ liệu từ file input
 with open("SOLON2.INP", "r") as f:
     n = int(f.readline().strip())
     a = list(map(int, f.readline().split()))
-
-# Xử lý tìm số lớn thứ hai
 unique_numbers = sorted(set(a), reverse=True)
-
-# Ghi kết quả ra file output
 with open("SOLON2.OUT", "w") as f:
     f.write(str(unique_numbers[1]) + "\n")
 
 
 
-
-
-# Hàm kiểm tra số hoàn hảo
 def is_perfect_number(x):
     if x < 2:
         return False
-    sum_divisors = sum(i for i in range(1, x) if x % i == 0)
+    sum_divisors = 1  # Luôn có 1 là ước của mọi số
+    sqrt_x = int(x ** 0.5)
+    for i in range(2, sqrt_x + 1):
+        if x % i == 0:
+            sum_divisors += i
+            if i != x // i:  # Tránh cộng hai lần nếu i * i = x
+                sum_divisors += x // i
     return sum_divisors == x
-
-# Đọc dữ liệu từ file input
 with open("HOANHAO.INP", "r") as f:
-    n = int(f.readline().strip())
-    a = list(map(int, f.readline().split()))
-
-# Tính tổng các số hoàn hảo
+    a = list(map(int, f.readline().split()))  # Đọc tất cả số trên một dòng
 perfect_sum = sum(x for x in a if is_perfect_number(x))
-
-# Ghi kết quả ra file output
 with open("HOANHAO.OUT", "w") as f:
     f.write(str(perfect_sum if perfect_sum > 0 else -1) + "\n")
 
 
 
-
-# Đọc dữ liệu từ file input.txt
-with open("input.txt", "r") as f:
-    n = int(f.readline().strip())
-    fib_numbers = list(map(int, f.readline().split()))
-
-# Kiểm tra tính chất Fibonacci
+with open("FIBO.INP", "r") as f:
+    n = int(f.readline().strip())  # Đọc số lượng phần tử
+    fib_numbers = list(map(int, f.readline().split()))  # Đọc dãy số
 is_fibo = all(fib_numbers[i] == fib_numbers[i - 1] + fib_numbers[i - 2] for i in range(2, n))
-
-# Ghi kết quả ra file output.txt
-with open("output.txt", "w") as f:
+with open("FIBO.OUT", "w") as f:
     f.write("1\n" if is_fibo else "0\n")
 
 
 
-
-
-# Đọc dữ liệu từ file input.txt
-with open("input.txt", "r") as f:
-    K, N, P, Q = map(int, f.readline().split())
-
-# Đếm số lượng số thỏa mãn điều kiện
+with open("MAHOA.INP", "r") as f:
+    K, N, P, Q = map(int, f.readline().split())  # Đọc 4 số nguyên từ file
 count = sum(1 for T in range(K, N + 1) if (P * T) % Q == 0)
-
-# Ghi kết quả ra file output.txt
-with open("output.txt", "w") as f:
+with open("MAHOA.OUT", "w") as f:
     f.write(str(count) + "\n")
-
-
 
 
 
 import re
 
-# Đọc dữ liệu từ file input.txt
-with open("input.txt", "r") as f:
+def extract_clusters(expression):
+    stack = []
+    clusters = []
+    for i, char in enumerate(expression):
+        if char == "(":
+            stack.append(i)  # Lưu vị trí dấu mở ngoặc
+        elif char == ")":
+            if stack:
+                start = stack.pop()  # Lấy vị trí mở ngoặc gần nhất
+                clusters.append(expression[start + 1:i])  # Lấy nội dung bên trong
+            else:
+                return -1  # Nếu có dấu ")" nhưng không có "(", lỗi cú pháp
+    if stack:  # Nếu còn dấu "(" chưa đóng, cũng là lỗi cú pháp
+        return -1
+    return clusters
+with open("CUM.INP", "r") as f:
     expression = f.readline().strip()
-
-# Tìm tất cả cụm trong dấu ngoặc đơn
-clusters = re.findall(r'\((.*?)\)', expression)
-
-# Ghi kết quả ra file output.txt
-with open("output.txt", "w") as f:
-    if clusters:
+clusters = extract_clusters(expression)
+with open("CUM.OUT", "w") as f:
+    if clusters == -1:
+        f.write("-1\n")  # Lỗi cú pháp
+    else:
         f.write(str(len(clusters)) + "\n")  # Số lượng cụm
         for cluster in clusters:
-            f.write(cluster + "\n")
-    else:
-        f.write("-1\n")  # Lỗi cú pháp
+            f.write(f"({cluster})\n")  # Giữ nguyên dấu ngoặc theo đề bài

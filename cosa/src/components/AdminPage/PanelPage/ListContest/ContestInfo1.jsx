@@ -7,7 +7,6 @@ import { Tooltip } from "react-tooltip";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 function ContestInfo1() {
     const {
