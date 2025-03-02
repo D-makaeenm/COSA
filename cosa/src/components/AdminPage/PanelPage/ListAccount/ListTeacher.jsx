@@ -8,7 +8,7 @@ import icons from "../../../FontAwesome/icons";
 function ListTeacher() {
     const [teachers, setTeachers] = useState([]);
     const navigate = useNavigate();
-
+    const userRole = localStorage.getItem("role");
     useEffect(() => {
         const fetchTeachers = async () => {
             try {
@@ -83,10 +83,12 @@ function ListTeacher() {
                             <td>{teacher.email}</td>
                             <td>{new Date(teacher.created_at).toLocaleString()}</td>
                             <td>
-                                <div>
-                                    <button className={styles.btnEdit} onClick={() => handleEditClick(teacher)}><FontAwesomeIcon icon={icons.edit} className={styles.iconcustom} /></button>
-                                    <button className={styles.btnDelete} onClick={() => handleDelete(teacher.username)}><FontAwesomeIcon icon={icons.delete} className={styles.iconcustom} /></button>
-                                </div>
+                                {userRole !== "teacher" && (
+                                    <div>
+                                        <button className={styles.btnEdit} onClick={() => handleEditClick(teacher)}><FontAwesomeIcon icon={icons.edit} className={styles.iconcustom} /></button>
+                                        <button className={styles.btnDelete} onClick={() => handleDelete(teacher.username)}><FontAwesomeIcon icon={icons.delete} className={styles.iconcustom} /></button>
+                                    </div>
+                                )}
                             </td>
                         </tr>
                     ))}

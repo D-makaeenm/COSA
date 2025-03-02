@@ -80,3 +80,95 @@ def factorial_list(n):
 n = int(input().strip())
 output = ",".join(factorial_list(n))
 print(output)
+
+
+
+
+
+
+# Đọc dữ liệu từ file input
+with open("SOLON2.INP", "r") as f:
+    n = int(f.readline().strip())
+    a = list(map(int, f.readline().split()))
+
+# Xử lý tìm số lớn thứ hai
+unique_numbers = sorted(set(a), reverse=True)
+
+# Ghi kết quả ra file output
+with open("SOLON2.OUT", "w") as f:
+    f.write(str(unique_numbers[1]) + "\n")
+
+
+
+
+
+# Hàm kiểm tra số hoàn hảo
+def is_perfect_number(x):
+    if x < 2:
+        return False
+    sum_divisors = sum(i for i in range(1, x) if x % i == 0)
+    return sum_divisors == x
+
+# Đọc dữ liệu từ file input
+with open("HOANHAO.INP", "r") as f:
+    n = int(f.readline().strip())
+    a = list(map(int, f.readline().split()))
+
+# Tính tổng các số hoàn hảo
+perfect_sum = sum(x for x in a if is_perfect_number(x))
+
+# Ghi kết quả ra file output
+with open("HOANHAO.OUT", "w") as f:
+    f.write(str(perfect_sum if perfect_sum > 0 else -1) + "\n")
+
+
+
+
+# Đọc dữ liệu từ file input.txt
+with open("input.txt", "r") as f:
+    n = int(f.readline().strip())
+    fib_numbers = list(map(int, f.readline().split()))
+
+# Kiểm tra tính chất Fibonacci
+is_fibo = all(fib_numbers[i] == fib_numbers[i - 1] + fib_numbers[i - 2] for i in range(2, n))
+
+# Ghi kết quả ra file output.txt
+with open("output.txt", "w") as f:
+    f.write("1\n" if is_fibo else "0\n")
+
+
+
+
+
+# Đọc dữ liệu từ file input.txt
+with open("input.txt", "r") as f:
+    K, N, P, Q = map(int, f.readline().split())
+
+# Đếm số lượng số thỏa mãn điều kiện
+count = sum(1 for T in range(K, N + 1) if (P * T) % Q == 0)
+
+# Ghi kết quả ra file output.txt
+with open("output.txt", "w") as f:
+    f.write(str(count) + "\n")
+
+
+
+
+
+import re
+
+# Đọc dữ liệu từ file input.txt
+with open("input.txt", "r") as f:
+    expression = f.readline().strip()
+
+# Tìm tất cả cụm trong dấu ngoặc đơn
+clusters = re.findall(r'\((.*?)\)', expression)
+
+# Ghi kết quả ra file output.txt
+with open("output.txt", "w") as f:
+    if clusters:
+        f.write(str(len(clusters)) + "\n")  # Số lượng cụm
+        for cluster in clusters:
+            f.write(cluster + "\n")
+    else:
+        f.write("-1\n")  # Lỗi cú pháp

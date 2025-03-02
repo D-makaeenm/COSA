@@ -6,7 +6,8 @@ import styles from "./ContestInfo.module.css";
 import { Tooltip } from "react-tooltip";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function ContestInfo1() {
     const {
@@ -22,8 +23,32 @@ function ContestInfo1() {
         return format(date, "HH:mm:ss EEEE dd/MM/yyyy", { locale: vi });
     };
 
+    // 🛑 Hàm xuất Excel
+    const handleExportDataContest = () => {
+        if (!contestInfo || !contestInfo.participants.length) {
+            alert("Không có dữ liệu để xuất!");
+            return;
+        }
 
+        // 1️⃣ Chuẩn bị dữ liệu xuất
+        const exportData = contestInfo.participants.map((participant, index) => ({
+            "STT": index + 1,
+            "Username": participant.username,
+            "Họ và tên": participant.name,
+            "Điện thoại": participant.phone,
+            "Email": participant.email,
+            "Số điểm": participant.score,
+            "Thứ hạng": participant.rank,
+        }));
 
+        // 2️⃣ Tạo worksheet và workbook
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Danh sách");
+
+        // 3️⃣ Xuất file Excel
+        XLSX.writeFile(wb, `Danh_sach_ThiSinh_${contestInfo.title}.xlsx`);
+    };
 
     return (
         <div>
@@ -35,23 +60,20 @@ function ContestInfo1() {
                     </div>
                     <Tooltip anchorId="edit-contest" content="Sửa thông tin cơ bản" />
 
-                    <div
-                        id="contest-details"
-                        className={styles.editContest}
-                        onClick={handleEditContestDetailsClick}
-                    >
+                    <div id="contest-details" className={styles.editContest} onClick={handleEditContestDetailsClick}>
                         <FontAwesomeIcon icon={icons.info} />
                     </div>
                     <Tooltip anchorId="contest-details" content="Sửa thông tin chi tiết" />
 
-                    <div
-                        id="add-student-contest"
-                        className={styles.editContest}
-                        onClick={handleAddStudenttoContest}
-                    >
+                    <div id="add-student-contest" className={styles.editContest} onClick={handleAddStudenttoContest}>
                         <FontAwesomeIcon icon={icons.circleplus} />
                     </div>
                     <Tooltip anchorId="add-student-contest" content="Thêm thí sinh" />
+
+                    <div id="export-data" className={styles.editContest} onClick={handleExportDataContest}>
+                        <FontAwesomeIcon icon={icons.chart} />
+                    </div>
+                    <Tooltip anchorId="export-data" content="Xuất báo cáo" />
                 </div>
                 <div className={styles.author}>
                     <p>Người tạo: {contestInfo.creator_name}</p>

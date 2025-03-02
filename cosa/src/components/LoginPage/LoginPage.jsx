@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import styles from "./Login.module.css";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import pythonlogo from "../../assets/images/logopython.png";
 import logo from "../../assets/images/logo.png";
 
@@ -11,22 +11,39 @@ function LoginPage() {
     const navigate = useNavigate();
     const [loginError, setLoginError] = useState("");
 
+    // 🛑 Chặn quay lại màn hình đăng nhập nếu đã đăng nhập
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role");
+
+        if (token) {
+            // Nếu đã đăng nhập, điều hướng đến trang phù hợp
+            if (role === "admin") {
+                navigate("/admin", { replace: true });
+            } else if (role === "student") {
+                navigate("/student", { replace: true });
+            } else if (role === "teacher") {
+                navigate("/teacher", { replace: true });
+            }
+        }
+
+        // 🛑 Chặn quay lại trang đăng nhập
+        window.history.replaceState(null, "", window.location.href);
+    }, [navigate]);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         const username = e.target.username.value;
         const password = e.target.password.value;
 
         try {
-            // Gửi yêu cầu đăng nhập
-            const response = await axios.post("http://127.0.0.1:5000/auth/login", {
-                username,
-                password,
-            });
+            const response = await axios.post("http://127.0.0.1:5000/auth/login", { username, password });
 
             const token = response.data.access_token;
             const role = response.data.role;
             const id = response.data.id;
 
+            // Lưu thông tin đăng nhập vào localStorage
             localStorage.setItem("token", token);
             localStorage.setItem("username", username);
             localStorage.setItem("role", role);
@@ -34,12 +51,13 @@ function LoginPage() {
 
             setLoginError("");
 
+            // Chuyển hướng dựa vào vai trò của người dùng
             if (role === "admin") {
-                navigate("/admin");
+                navigate("/admin", { replace: true });
             } else if (role === "student") {
-                navigate("/student");
+                navigate("/student", { replace: true });
             } else if (role === "teacher") {
-                navigate("/teacher");
+                navigate("/teacher", { replace: true });
             }
         } catch (error) {
             setLoginError(error.response?.data?.error || "Sai tài khoản hoặc mật khẩu");
@@ -70,8 +88,8 @@ function LoginPage() {
                             </div>
                             <p className={styles.lg_form_title}>Đăng nhập</p>
                             <div className={styles.lg_form_input_container}>
-                                <input type="text" name="username" placeholder="Tài Khoản" />
-                                <input type="password" name="password" placeholder="Mật Khẩu" />
+                                <input type="text" name="username" placeholder="Tài Khoản" required />
+                                <input type="password" name="password" placeholder="Mật Khẩu" required />
                             </div>
                             <button type="submit" className={styles.lg_form_submit}>
                                 Sign in

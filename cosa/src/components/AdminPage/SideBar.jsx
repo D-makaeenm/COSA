@@ -62,7 +62,7 @@ function SideBar() {
                     <FontAwesomeIcon icon={icons.list} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Danh sách cuộc thi</span>}
                 </div>
-                <div
+                {/* <div
                     style={{
                         justifyContent: isCollapsed ? "center" : "flex-start",
                         padding: isCollapsed ? "10px 0" : "10px 0 10px 10px",
@@ -71,7 +71,7 @@ function SideBar() {
                 >
                     <FontAwesomeIcon icon={icons.chart} className={styles.iconcustom}/>
                     {!isCollapsed && <span>Báo cáo, Thống kê</span>}
-                </div>
+                </div> */}
             </div>
         </div>
     );

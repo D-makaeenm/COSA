@@ -59,7 +59,7 @@
 
 .panel_button_title{
     display: flex;
-    margin-left: 10px;
+    margin: 10px 0 10px 10px;
     align-items: center;
 }
 .panel_button_title p{
@@ -73,6 +73,7 @@
     justify-content: space-around;
     align-items: center;
     gap: 20px;
+    margin-top: 10px;
 }
 .panel_button_type div{
     padding: 3px 0 3px 0;

@@ -1,39 +1,84 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from services.submission_service import save_task_submission, grade_task_submission, calculate_final_score_service, check_all_submitted_service
+from services.submission_service import save_task_submission, grade_task_submission, check_all_submitted_service
 from urllib.parse import unquote
+from models import Submission, ExamTask, Score
 
 submission_bp = Blueprint('submission', __name__)
 
+# ✅ Route: Nộp bài tập (Lưu + Chấm điểm ngay)
 @submission_bp.route('/submit', methods=['POST'])
+@jwt_required()
 def submit_task():
+    """
+    1. Nhận code của thí sinh và lưu vào hệ thống.
+    2. Chạy code với file input từ giáo viên và tạo file output.
+    3. So sánh output với file output gốc.
+    4. Chấm điểm từng test case và cập nhật tổng điểm.
+    """
     try:
         data = request.json
         data["code"] = unquote(data.get("code", ""))  # Decode code trước khi lưu
         
-        submission_id = save_task_submission(data)  # Lưu bài làm
-        grade_task_submission(submission_id)       # Chấm điểm
-        return jsonify({"message": "Task submitted successfully.", "submission_id": submission_id}), 200
+        # ✅ 1. Lưu bài nộp
+        submission_id = save_task_submission(data)
+        if not submission_id:
+            return jsonify({"error": "Failed to save submission"}), 500
+
+        # ✅ 2. Chấm điểm ngay sau khi nộp
+        grade_task_submission(submission_id)
+
+        return jsonify({
+            "message": "Task submitted and graded successfully.",
+            "submission_id": submission_id
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
+# ✅ Route: Lấy tổng điểm của thí sinh trong kỳ thi
 @submission_bp.route('/final_score/<int:exam_id>/<int:student_id>', methods=['GET'])
 @jwt_required()
 def final_score(exam_id, student_id):
+    """
+    1. Kiểm tra xem tất cả bài tập trong kỳ thi đã được chấm chưa.
+    2. Nếu chưa chấm hết, báo lỗi.
+    3. Nếu đã chấm, trả về tổng điểm của thí sinh.
+    """
     try:
-        result = calculate_final_score_service(exam_id, student_id)
-        if result["status"] == "pending":
+        total_tasks = ExamTask.query.filter_by(exam_id=exam_id).count()
+        graded_tasks = Submission.query.filter_by(exam_id=exam_id, user_id=student_id, is_graded=True).count()
+
+        if total_tasks == 0:
+            return jsonify({"message": "No tasks found in this exam.", "score": None}), 404
+
+        if graded_tasks < total_tasks:
             return jsonify({"message": "Not all tasks have been graded yet.", "score": None}), 400
-        return jsonify({"message": "Final score calculated.", "score": result["score"]}), 200
+
+        # ✅ Lấy tổng điểm từ bảng scores
+        score_entry = Score.query.filter_by(user_id=student_id, exam_id=exam_id).first()
+        total_score = score_entry.total_score if score_entry else 0
+
+        return jsonify({
+            "message": "Final score calculated.",
+            "score": total_score
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ✅ Route: Kiểm tra xem thí sinh đã nộp đủ tất cả bài tập chưa
 @submission_bp.route('/check_all_submitted/<int:exam_id>/<int:student_id>', methods=['GET'])
 @jwt_required()
 def check_all_submitted(exam_id, student_id):
+    """
+    1. Kiểm tra xem số bài nộp của thí sinh có bằng số bài tập trong kỳ thi không.
+    2. Trả về kết quả True/False.
+    """
     try:
         all_submitted = check_all_submitted_service(exam_id, student_id)
         return jsonify({"all_submitted": all_submitted}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Lỗi kiểm tra bài nộp: {str(e)}"}), 500

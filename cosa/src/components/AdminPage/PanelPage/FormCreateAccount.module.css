@@ -10,7 +10,7 @@
     font-size: 18px;
     margin: 10px 0 10px 10px;
 }
-.outlet_account1{
+.outlet_account2{
     display: flex;
     flex-direction: row;
     justify-content: start;
@@ -19,7 +19,7 @@
     flex: 1;
     max-height: 45px;
 }
-.outlet_account1 div{
+.outlet_account2 div{
     display: flex;
     padding: 10px;
     background-color: #fafafa;
@@ -30,10 +30,10 @@
     border: solid 2px #e7e8eb;
     cursor: pointer;
 }
-.outlet_account1 div p{
+.outlet_account2 div p{
     margin: 0;
 }
-.outlet_account1 div:hover{
+.outlet_account2 div:hover{
     background-color: #dedede;
     border: solid 2px #000000;
 }

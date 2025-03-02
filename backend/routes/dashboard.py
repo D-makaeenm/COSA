@@ -7,24 +7,28 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 #Trong này là tất cả xử lý liên quan tới JWT role và gọi hàm thông qua services
 
-def check_admin_access():
-    """Kiểm tra xem user có quyền admin không."""
+def check_access(required_roles):
+    """
+    Kiểm tra xem user có quyền truy cập theo vai trò được yêu cầu.
+    required_roles: List chứa các quyền được phép truy cập (VD: ['admin', 'teacher'])
+    """
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
 
     if not current_user:
         return {"error": "User not found"}, 401
 
-    if current_user.role != 'admin':
-        return {"error": "Admin access only"}, 403
+    if current_user.role not in required_roles:
+        return {"error": f"Access denied. Required roles: {', '.join(required_roles)}"}, 403
 
     return current_user
+
 
 @dashboard_bp.route('/latest-contest-summary', methods=['GET'])
 @jwt_required()
 def latest_contest_summary():
     # Kiểm tra quyền admin
-    access_check = check_admin_access()
+    access_check = check_access(["admin", "teacher"])
     if isinstance(access_check, tuple):  # Nếu có lỗi
         return jsonify(access_check[0]), access_check[1]
     current_user = access_check  # Nếu hợp lệ
@@ -41,7 +45,7 @@ def latest_contest_summary():
 @jwt_required()
 def statistics():
     # Kiểm tra quyền admin
-    access_check = check_admin_access()
+    access_check = check_access(["admin", "teacher"])
     if isinstance(access_check, tuple):  # Nếu có lỗi
         return jsonify(access_check[0]), access_check[1]
     current_user = access_check  # Nếu hợp lệ

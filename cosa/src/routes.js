@@ -180,6 +180,104 @@ const routes = [
         ],
     },
     {
+        path: '/teacher',
+        element: <AdminPage />,
+        children: [
+            {
+                path: '', // Điều hướng mặc định từ /admin
+                element: <Navigate to="home" replace />,
+            },
+            {
+                path: 'home', // Sub-route /admin/home
+                element: <HomePage />,
+            },
+            {
+                path: 'list-contest',
+                element: <ListContest />,
+                children: [
+                    {
+                        path: 'contests/:id',
+                        element: <ContestInfo />,
+                        children: [
+                            {
+                                path: 'add-student',
+                                element: <AddStudent />
+                            },
+                            {
+                                path: '',
+                                element: <ContestInfo1 />
+                            },
+                        ]
+                    },
+                    {
+                        path: 'add-contest',
+                        element: <AddContest />
+                    },
+                    {
+                        path: 'edit-contest/:id',
+                        element: <EditContest />
+                    },
+                    {
+                        path: 'edit-contest-detail/:id',
+                        element: <ContestDetails />
+                    },
+                ]
+            },
+            {
+                path: 'reports', // Sub-route /admin/reports
+                element: <Reports />,
+            },
+            {
+                path: 'createUser', // Điều hướng mặc định
+                element: <CreateAccPage />,
+                children: [
+                    {
+                        path: '',
+                        element: <FormCreateAccount />,
+                        children: [
+                            {
+                                path: '',
+                                element: <Navigate to="form-teacher" replace />,
+                            },
+                            {
+                                path: 'form-teacher',
+                                element: <Teacher />,
+                            },
+                            {
+                                path: 'form-student',
+                                element: <Student />,
+                            },
+                        ],
+                    },
+                    {
+                        path: 'list-teacher', // Danh sách tài khoản admin
+                        element: <ListTeacher />,
+                    },
+                    {
+                        path: 'list-student', // Danh sách tài khoản admin
+                        element: <ListStudent />,
+                    },
+                    {
+                        path: 'edit-account-teacher',
+                        element: <EditTeacher />,
+                    },
+                    {
+                        path: 'edit-account-student',
+                        element: <EditStudent />,
+                    },
+                ],
+            },
+            {
+                path: '', // Điều hướng mặc định
+                element: <HomePage />,
+            },
+            {
+                path: '*', // Điều hướng mặc định
+                element: <NotFoundPage />,
+            },
+        ],
+    },
+    {
         path: '*',
         element: <NotFoundPage />,
     },

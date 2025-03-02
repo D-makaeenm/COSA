@@ -11,6 +11,8 @@ function CreateAccPage() {
         student: 0,
     });
 
+    const userRole = localStorage.getItem("role");
+
     const fetchAccountCounts = async () => {
         try {
             const response = await axios.get("http://localhost:5000/admin/account-counts", {
@@ -43,9 +45,11 @@ function CreateAccPage() {
                         <p>Danh sách tài khoản</p>
                     </div>
                     <div className={styles.panel_button_type}>
-                        <div onClick={() => navigate("list-admin")}>
-                            <p>Admin: {accountCounts.admin} tài khoản</p>
-                        </div>
+                        {userRole !== "teacher" && (
+                            <div onClick={() => navigate("list-admin")}>
+                                <p>Admin: {accountCounts.admin} tài khoản</p>
+                            </div>
+                        )}
                         <div onClick={() => navigate("list-teacher")}>
                             <p>Giáo Viên: {accountCounts.teacher} tài khoản</p>
                         </div>
