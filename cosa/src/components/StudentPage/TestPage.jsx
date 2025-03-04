@@ -127,17 +127,17 @@ function TestPage() {
                         </button>
                     </div>
                     <div className={styles.afterStart}>
-                        <div className={styles.timeout}>
+                        {/* <div className={styles.timeout}>
                             <p>Thời gian còn lại</p>
                             <p>{formatTime(remainingTime)}</p>
-                        </div>
-                        <div className={styles.score}>
+                        </div> */}
+                        {/* <div className={styles.score}>
                             {isLoadingScore ? (
                                 <p>Đang chấm...</p>
                             ) : (
                                 <p>Điểm hiện tại: {currentScore !== null ? currentScore : "Chưa có"}</p>
                             )}
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
