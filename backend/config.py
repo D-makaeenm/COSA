@@ -1,10 +1,11 @@
 import os
 
 class Config:
-    # Đọc URL từ biến môi trường, nếu không có thì mặc định localhost
+    password = 'makaeenm1'
+    database = 'cosa'
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
-        'mysql+pymysql://root:makaeenm1@localhost:3306/cosa'
+        f'mysql+pymysql://root:{password}@localhost:3306/{database}'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = 'DEVDUY'  # Đổi thành khóa bí mật của bạn
+    JWT_SECRET_KEY = 'DEVDUY'

@@ -1,4 +1,1 @@
-[{"id":1, "exam_id":1, "user_id":6, "created_at":"2025-02-17 18:23:44", "delete_at":""},
- {"id":2, "exam_id":1, "user_id":11, "created_at":"2025-02-17 18:23:47", "delete_at":""},
- {"id":3, "exam_id":2, "user_id":8, "created_at":"2025-02-18 17:10:29", "delete_at":""},
- {"id":4, "exam_id":2, "user_id":9, "created_at":"2025-02-18 17:10:32", "delete_at":""}]
+[{"id":1, "exam_id":1, "user_id":6, "created_at":"2025-02-25 00:32:12", "delete_at":""}]
