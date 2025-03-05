@@ -7,5 +7,7 @@ mysql -u root -p -e "CREATE DATABASE cosa;"
 mysql -u root -p cosa < database.sql
 ### Đối với powershell
 Get-Content database.sql | mysql -u root -p cosa
-
-
+### Thay thông tin về chuỗi kết nối
+## Cài đặt
+- Chuyển đến file backend -> pip install requirements.txt
+- Chuyển đến file cosa -> npm install
