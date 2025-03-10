@@ -19,6 +19,20 @@ function ExamQuestion() {
 
     const backendUrl = "http://localhost:5000";
 
+    // 📌 Tải code từ localStorage nếu có
+    useEffect(() => {
+        const savedCode = localStorage.getItem(`task_${questionId}_code`);
+        if (savedCode) {
+            setCode(savedCode);
+        }
+    }, [questionId]);
+
+    // 📌 Khi thí sinh gõ code, tự động lưu vào localStorage
+    const handleCodeChange = (value) => {
+        setCode(value);
+        localStorage.setItem(`task_${questionId}_code`, value);
+    };
+
     useEffect(() => {
         const fetchQuestion = async () => {
             try {
@@ -32,7 +46,6 @@ function ExamQuestion() {
                 );
 
                 setQuestion(response.data);
-                setCode(response.data.submitted_code || "");
                 setIsSubmitted(response.data.is_submitted);
                 setLoading(false);
             } catch (err) {
@@ -46,12 +59,15 @@ function ExamQuestion() {
     }, [examId, questionId, backendUrl]);
 
     const handleCodeSubmit = async () => {
-        if (isSubmitting) return; // Nếu đang gửi bài, không cho phép gửi tiếp
+        if (isSubmitting) return;
 
-        setIsSubmitting(true); // Đánh dấu đang gửi bài
+        setIsSubmitting(true);
         try {
             const token = localStorage.getItem("token");
             const studentId = localStorage.getItem("id");
+
+            // ✅ Lưu examId vào localStorage sớm hơn
+            localStorage.setItem("examId", examId);
 
             const payload = {
                 contest_id: examId,
@@ -64,7 +80,7 @@ function ExamQuestion() {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (response.status !== 200 || !response.data || !response.data.submission_id) {
+            if (response.status !== 200 || !response.data?.submission_id) {
                 throw new Error("Bài làm không được lưu. Vui lòng thử lại.");
             }
 
@@ -72,9 +88,9 @@ function ExamQuestion() {
             console.log(`✅ Bài đã lưu: Submission ID = ${submissionId}`);
 
             await new Promise((resolve) => setTimeout(resolve, 2000));
-            let graded = false;
 
-            for (let i = 0; i < 5; i++) {  // Thử kiểm tra tối đa 5 lần (15 giây)
+            let graded = false;
+            for (let i = 0; i < 5; i++) {
                 const checkResponse = await axios.get(
                     `${backendUrl}/submission/status/${submissionId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
@@ -83,7 +99,7 @@ function ExamQuestion() {
                     graded = true;
                     break;
                 }
-                await new Promise((resolve) => setTimeout(resolve, 3000)); // Chờ tiếp 3 giây
+                await new Promise((resolve) => setTimeout(resolve, 3000));
             }
 
             if (!graded) {
@@ -92,8 +108,9 @@ function ExamQuestion() {
 
             showAlert();
             setIsSubmitted(true);
+            localStorage.removeItem(`task_${questionId}_code`); // ✅ Xóa code đã lưu sau khi nộp
 
-            // Kiểm tra xem thí sinh đã nộp hết bài chưa
+            // ✅ Kiểm tra nếu thí sinh đã nộp tất cả bài
             const submissionCheck = await axios.get(
                 `${backendUrl}/submission/check_all_submitted/${examId}/${studentId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -123,9 +140,14 @@ function ExamQuestion() {
             navigate(`/student/start/exam/${examId}/questions`);
         } catch (err) {
             console.error("Error submitting code:", err);
-            alert("Có lỗi xảy ra khi nộp bài. Bài làm không được lưu.");
+            Swal.fire({
+                title: "Lỗi!",
+                text: "Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
         } finally {
-            setIsSubmitting(false); // Cho phép nộp bài lại nếu cần
+            setIsSubmitting(false);
         }
     };
 
@@ -139,13 +161,8 @@ function ExamQuestion() {
         });
     };
 
-    if (loading) {
-        return <p>Đang tải câu hỏi...</p>;
-    }
-
-    if (error) {
-        return <p>{error}</p>;
-    }
+    if (loading) return <p>Đang tải câu hỏi...</p>;
+    if (error) return <p>{error}</p>;
 
     return (
         <div className={styles.questions}>
@@ -177,7 +194,7 @@ function ExamQuestion() {
                         value={code}
                         height="500px"
                         extensions={[python()]}
-                        onChange={(value) => setCode(value)}
+                        onChange={handleCodeChange}
                         readOnly={isSubmitted}
                     />
                 </div>
@@ -186,7 +203,7 @@ function ExamQuestion() {
                         <button
                             onClick={handleCodeSubmit}
                             className={styles.submitButton}
-                            disabled={isSubmitting} // Vô hiệu hóa khi đang gửi bài
+                            disabled={isSubmitting}
                         >
                             {isSubmitting ? "Đang nộp..." : "Nộp bài"}
                         </button>

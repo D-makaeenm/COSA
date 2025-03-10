@@ -20,6 +20,7 @@ CREATE TABLE `exams` (
   `description` text,
   `start_time` datetime NOT NULL,
   `end_time` datetime NOT NULL,
+  `duration` int DEFAULT NOT NULL,
   `created_by` int NOT NULL,
   `status` enum('scheduled','ongoing','completed') DEFAULT 'scheduled',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,

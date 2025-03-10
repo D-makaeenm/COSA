@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, send_from_directory, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
+from models import db, Submission
 from services.student_service import (
     get_ongoing_exam_service,
     get_exam_questions_service,
@@ -13,8 +14,11 @@ from datetime import datetime, timedelta
 
 student_bp = Blueprint('student_bp', __name__)
 
-UPLOAD_FOLDER_IMAGES = os.path.abspath("E:/COSA/backend/uploads/images")
-UPLOAD_FOLDER_TESTCASES = os.path.abspath("E:/COSA/backend/uploads/testcases")
+def get_upload_folder_images():
+    return os.path.join(current_app.root_path, "uploads", "images")
+
+def get_upload_folder_testcases():
+    return os.path.join(current_app.root_path, "uploads", "testcases")
 
 
 @student_bp.route('/ongoing-exam', methods=['GET'])
@@ -87,19 +91,17 @@ def get_question(exam_id, question_id):
 
 @student_bp.route("/uploads/images/<path:filename>")
 def get_uploaded_image(filename):
-    file_path = os.path.join(UPLOAD_FOLDER_IMAGES, filename)
+    file_path = os.path.join(get_upload_folder_images(), filename)
     if not os.path.exists(file_path):
         return jsonify({"error": "File không tồn tại"}), 404
-    return send_from_directory(UPLOAD_FOLDER_IMAGES, filename)
+    return send_from_directory(get_upload_folder_images(), filename)
 
-# Route phục vụ file test cases
 @student_bp.route("/uploads/testcases/<path:filename>")
 def get_uploaded_testcase(filename):
-    file_path = os.path.join(UPLOAD_FOLDER_TESTCASES, filename)
+    file_path = os.path.join(get_upload_folder_testcases(), filename)
     if not os.path.exists(file_path):
         return jsonify({"error": "File không tồn tại"}), 404
-    return send_from_directory(UPLOAD_FOLDER_TESTCASES, filename)
-
+    return send_from_directory(get_upload_folder_testcases(), filename)
 
 @student_bp.route('/exam/<int:exam_id>/question/<int:question_id>/submit', methods=['POST'])
 @jwt_required()
@@ -107,17 +109,41 @@ def submit_code(exam_id, question_id):
     """
     API để nộp bài làm và chấm điểm.
     """
-    current_user_id = get_jwt_identity()
-    data = request.get_json()
-    code = data.get("code")
-
-    if not code:
-        return jsonify({"error": "Code cannot be empty"}), 400
-
     try:
+        current_user_id = get_jwt_identity()  # Lấy ID thí sinh từ JWT
+        data = request.get_json()
+        code = data.get("code", "")
+
+        if code is None:
+            return jsonify({"error": "Code không được để trống"}), 400
+
+        # 📌 Gọi `submit_code_service()` từ student_service
         result = submit_code_service(current_user_id, exam_id, question_id, code)
+
         return jsonify(result), 200
+
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@student_bp.route('/exam/<int:exam_id>/submitted-tasks/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_submitted_tasks(exam_id, user_id):
+    try:
+        # ✅ Kiểm tra người dùng hiện tại có quyền truy vấn dữ liệu không
+        current_user_id = get_jwt_identity()
+        if current_user_id != user_id:
+            return jsonify({"error": "Bạn không có quyền truy cập dữ liệu này."}), 403
+
+        # ✅ Truy vấn danh sách các bài tập đã nộp của thí sinh
+        submissions = Submission.query.filter_by(exam_id=exam_id, user_id=user_id).all()
+        
+        # ✅ Chuyển kết quả thành danh sách JSON
+        submitted_tasks = [{"task_id": sub.exam_task_id} for sub in submissions]
+
+        return jsonify(submitted_tasks), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        

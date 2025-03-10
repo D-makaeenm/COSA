@@ -295,6 +295,7 @@ def update_exam(exam_id, data):
     start_time = data.get("start_time")
     end_time = data.get("end_time")
     status = data.get("status")
+    duration = data.get("duration")
     
     if not title or not start_time or not end_time:
         raise ValueError("Thiếu các trường cần thiết: title, start_time hoặc end_time.")
@@ -316,6 +317,7 @@ def update_exam(exam_id, data):
     exam.start_time = start_time
     exam.end_time = end_time
     exam.status = status
+    exam.duration = duration
     exam.updated_at = datetime.utcnow()  # Cập nhật thời gian sửa đổi
     
     # Lưu vào database

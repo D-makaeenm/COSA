@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../LoginPage/Navbar";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styles from "./TestPage.module.css";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -13,10 +13,12 @@ function TestPage() {
             : null
     );
     const [isLoadingScore, setIsLoadingScore] = useState(false);
-
     const [remainingTime, setRemainingTime] = useState(
         parseInt(localStorage.getItem("remainingTime")) || 0
     );
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const updateScore = (score) => {
         setCurrentScore(score);
@@ -62,17 +64,87 @@ function TestPage() {
         localStorage.removeItem("token");
         localStorage.removeItem("remainingTime");
         localStorage.removeItem("currentScore");
+        localStorage.removeItem("examId"); // ✅ Xóa luôn examId khi đăng xuất
         window.location.href = "/login";
     };
 
-    const location = useLocation();
+    const examId = localStorage.getItem("examId");
+    const userId = localStorage.getItem("id");
 
     useEffect(() => {
         if (location.state?.remainingTime) {
             setRemainingTime(location.state.remainingTime);
-            localStorage.setItem("remainingTime", location.state.remainingTime);
+            localStorage.setItem("remainingTime", location.state.remainingTime); // ✅ Giữ thời gian khi back lại
         }
     }, [location.state?.remainingTime]);
+
+    const handleAutoSubmitExam = useCallback(async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const examId = localStorage.getItem("examId");
+            const userId = localStorage.getItem("id");
+    
+            if (!examId || !token || !userId) {
+                console.error("Exam ID, User ID hoặc Token bị thiếu.");
+                return;
+            }
+    
+            // ✅ Lấy danh sách tất cả task của kỳ thi
+            const examTasksResponse = await axios.get(
+                `http://127.0.0.1:5000/student/exam/${examId}/questions`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+    
+            // console.log("examTasksResponse.data:", examTasksResponse.data);
+    
+            // ✅ Kiểm tra nếu API trả về object chứa danh sách tasks
+            const examTasks = Array.isArray(examTasksResponse.data.tasks)
+                ? examTasksResponse.data.tasks
+                : [];
+    
+            // console.log("Danh sách bài tập:", examTasks);
+    
+            const submittedTasks = new Set();
+    
+            // ✅ Lấy danh sách bài đã nộp
+            const submissionResponse = await axios.get(
+                `http://127.0.0.1:5000/student/exam/${examId}/submitted-tasks/${userId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+    
+            // console.log("submittedTasksResponse.data:", submissionResponse.data);
+    
+            submissionResponse.data.forEach((task) => {
+                submittedTasks.add(task.task_id);
+            });
+    
+            // ✅ Nộp các bài chưa nộp
+            for (const task of examTasks) {
+                if (!submittedTasks.has(task.id)) {  // 🛠 Đổi từ task.task_id thành task.id
+                    const savedCode = localStorage.getItem(`task_${task.id}_code`);
+    
+                    await axios.post(
+                        `http://127.0.0.1:5000/student/exam/${examId}/question/${task.id}/submit`,
+                        { user_id: userId, code: savedCode || "" },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+    
+                    localStorage.removeItem(`task_${task.id}_code`);
+                }
+            }
+    
+            Swal.fire({
+                title: "Hết thời gian!",
+                text: "Bài thi đã được nộp tự động.",
+                icon: "info",
+                confirmButtonText: "OK"
+            });
+    
+            navigate(`/student/start/exam/${examId}/questions`);
+        } catch (error) {
+            console.error("Lỗi khi nộp bài tự động:", error);
+        }
+    }, [navigate, examId, userId]);
 
     useEffect(() => {
         if (remainingTime > 0 && currentScore === null) {
@@ -86,8 +158,12 @@ function TestPage() {
 
             return () => clearInterval(timer);
         }
-    }, [remainingTime, currentScore]);
 
+        if (remainingTime === 0) {
+            handleAutoSubmitExam();
+        }
+    }, [remainingTime, currentScore, handleAutoSubmitExam]);
+    
     const formatTime = (timeInSeconds) => {
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = timeInSeconds % 60;
@@ -127,17 +203,11 @@ function TestPage() {
                         </button>
                     </div>
                     <div className={styles.afterStart}>
-                        {/* <div className={styles.timeout}>
+                        <div className={styles.timeout}>
                             <p>Thời gian còn lại</p>
                             <p>{formatTime(remainingTime)}</p>
-                        </div> */}
-                        {/* <div className={styles.score}>
-                            {isLoadingScore ? (
-                                <p>Đang chấm...</p>
-                            ) : (
-                                <p>Điểm hiện tại: {currentScore !== null ? currentScore : "Chưa có"}</p>
-                            )}
-                        </div> */}
+                        </div>
+                        {isLoadingScore && <p>Đang cập nhật điểm...</p>}
                     </div>
                 </div>
             </div>

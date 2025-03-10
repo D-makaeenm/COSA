@@ -34,6 +34,7 @@ class Exam(db.Model):
     description = db.Column(db.Text, nullable=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     status = db.Column(db.Enum('scheduled', 'ongoing', 'completed'), default='scheduled')
     created_at = db.Column(db.DateTime, default=db.func.now())

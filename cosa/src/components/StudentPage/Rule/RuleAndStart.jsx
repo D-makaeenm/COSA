@@ -8,7 +8,10 @@ function RuleAndStart() {
     const navigate = useNavigate();
     const [exam, setExam] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [remainingTime, setRemainingTime] = useState(0);
+    const [remainingTime, setRemainingTime] = useState(
+        parseInt(localStorage.getItem("remainingTime")) || 0
+    );
+    
 
     useEffect(() => {
         const fetchUserInfoAndExam = async () => {
@@ -26,11 +29,12 @@ function RuleAndStart() {
 
                 setExam(examResponse.data);
 
-                const startTime = new Date(examResponse.data.start_time);
-                const endTime = new Date(examResponse.data.end_time);
-                const totalSeconds = Math.max((endTime - startTime) / 1000, 0);
-
-                setRemainingTime(totalSeconds);
+                if (!localStorage.getItem("remainingTime")) {
+                    const durationInMinutes = examResponse.data.duration; // API trả về phút
+                    const totalSeconds = durationInMinutes * 60; // Chuyển phút sang giây
+                    setRemainingTime(totalSeconds);
+                    localStorage.setItem("remainingTime", totalSeconds); // ✅ Lưu vào localStorage
+                }
             } catch (error) {
                 console.error("Error fetching data:", error);
                 setExam(null);
@@ -47,9 +51,12 @@ function RuleAndStart() {
             alert("Không có cuộc thi nào đang diễn ra!");
             return;
         }
-
+    
+        const startTimestamp = Date.now(); // ✅ Lưu timestamp khi bắt đầu
+        localStorage.setItem("startTimestamp", startTimestamp);
+    
         navigate(`exam/${exam.id}/questions`, {
-            state: { remainingTime }, // Truyền thời gian qua state
+            state: { remainingTime, startTimestamp }, // ✅ Truyền timestamp qua state
         });
     };
 

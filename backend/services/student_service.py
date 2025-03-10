@@ -3,6 +3,7 @@ from sqlalchemy import and_, func
 from datetime import datetime, timedelta
 import subprocess
 import os
+from services.submission_service import save_task_submission, grade_task_submission
 
 def get_ongoing_exam_service(user_id):
     """
@@ -29,9 +30,9 @@ def get_ongoing_exam_service(user_id):
         "id": ongoing_exam.id,
         "title": ongoing_exam.title,
         "start_time": ongoing_exam.start_time,
-        "end_time": ongoing_exam.end_time
+        "end_time": ongoing_exam.end_time,
+        "duration": ongoing_exam.duration
     }
-
 
 def get_exam_questions_service(exam_id, user_id):
     # Kiểm tra nếu người dùng tham gia kỳ thi
@@ -67,7 +68,6 @@ def get_exam_questions_service(exam_id, user_id):
             for task in tasks
         ],
     }
-
 
 
 def submit_exam_task_service(user_id, exam_id, data):
@@ -206,36 +206,31 @@ def get_question_details(user_id, exam_id, question_id):
 
 def submit_code_service(user_id, exam_id, question_id, code):
     """
-    Lưu bài làm, thực thi mã nguồn và chấm điểm.
+    Lưu bài làm, thực thi mã nguồn và chấm điểm ngay lập tức.
     """
-    # Tạo đường dẫn file để lưu mã nguồn
-    file_path = f"submissions/task_{question_id}_exam_{exam_id}_student_{user_id}.py"
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, "w") as f:
-        f.write(code)
+    try:
+        # 📌 Tạo dữ liệu đầu vào giống như API nộp bài chính
+        data = {
+            "student_id": user_id,
+            "contest_id": exam_id,
+            "problem_id": question_id,
+            "code": code
+        }
 
-    # Thực thi mã nguồn và chấm điểm
-    score, execution_time, details = grade_code(file_path, question_id)
+        # ✅ 1. Lưu bài nộp (Sử dụng chung với API /submit)
+        submission_id = save_task_submission(data)
+        if not submission_id:
+            return {"error": "Lỗi khi lưu bài làm."}
 
-    # Lưu kết quả vào bảng submissions
-    submission = Submission(
-        user_id=user_id,
-        exam_task_id=question_id,
-        file_path=file_path,
-        exam_id=exam_id,
-        submitted_at=datetime.utcnow(),
-        execution_time=execution_time,
-        score=score,
-        is_graded=True,
-    )
-    db.session.add(submission)
-    db.session.commit()
+        # ✅ 2. Chấm điểm bài làm sau khi nộp
+        grade_task_submission(submission_id)
 
-    return {
-        "message": "Bài làm đã được chấm.",
-        "score": score,
-        "details": details,
-    }
+        return {
+            "message": "Bài làm đã được nộp và chấm điểm.",
+            "submission_id": submission_id
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def grade_code(file_path, question_id):
