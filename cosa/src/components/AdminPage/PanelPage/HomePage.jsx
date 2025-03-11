@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SubmissionProgressChart from "./Chart/SubmissionProgressChart";
 import ExamChart from "./Chart/ExamChart";
 import axios from "axios";
-
+import config from "../../../config";
 function HomePage() {
 
     const [contestData, setContestData] = useState(null);
@@ -27,7 +27,7 @@ function HomePage() {
 
         // Gọi API để lấy thông tin cuộc thi gần nhất
         axios
-            .get("http://127.0.0.1:5000/dashboard/latest-contest-summary", {
+            .get(`${config.apiBaseUrl}/dashboard/latest-contest-summary`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -41,7 +41,7 @@ function HomePage() {
 
 
         axios
-            .get("http://localhost:5000/dashboard/statistics", {
+            .get(`${config.apiBaseUrl}/dashboard/statistics`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

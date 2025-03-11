@@ -4,6 +4,7 @@ import styles from "./List.module.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import icons from "../../../FontAwesome/icons";
+import config from "../../../../config";
 
 function ListAdmin() {
     const [admins, setAdmins] = useState([]);
@@ -13,7 +14,7 @@ function ListAdmin() {
     useEffect(() => {
         const fetchAdmins = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/admin/list-admins", {
+                const response = await axios.get(`${config.apiBaseUrl}/admin/list-admins`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -40,7 +41,7 @@ function ListAdmin() {
 
         try {
             const response = await axios.delete(
-                "http://localhost:5000/admin/delete-admin",
+                `${config.apiBaseUrl}/admin/delete-admin`,
                 {
                     data: { username },
                     headers: {

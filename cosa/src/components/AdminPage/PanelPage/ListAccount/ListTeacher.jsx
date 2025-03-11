@@ -4,6 +4,7 @@ import styles from "./List.module.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import icons from "../../../FontAwesome/icons";
+import config from "../../../../config";
 
 function ListTeacher() {
     const [teachers, setTeachers] = useState([]);
@@ -12,7 +13,7 @@ function ListTeacher() {
     useEffect(() => {
         const fetchTeachers = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/admin/list-teacher", {
+                const response = await axios.get(`${config.apiBaseUrl}/admin/list-teacher`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -38,7 +39,7 @@ function ListTeacher() {
 
         try {
             const response = await axios.delete(
-                "http://localhost:5000/admin/delete-teacher",
+                `${config.apiBaseUrl}/admin/delete-teacher`,
                 {
                     data: { username },
                     headers: {

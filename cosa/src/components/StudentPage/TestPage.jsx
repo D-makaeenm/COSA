@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styles from "./TestPage.module.css";
 import axios from "axios";
 import Swal from "sweetalert2";
+import config from "../../../src/config"
 
 function TestPage() {
     const [userInfo, setUserInfo] = useState({ username: "", name: "" });
@@ -42,7 +43,7 @@ function TestPage() {
                 }
 
                 const userResponse = await axios.post(
-                    "http://127.0.0.1:5000/user/get_username",
+                    `${config.apiBaseUrl}/user/get_username`,
                     { username },
                     {
                         headers: {
@@ -68,9 +69,6 @@ function TestPage() {
         window.location.href = "/login";
     };
 
-    const examId = localStorage.getItem("examId");
-    const userId = localStorage.getItem("id");
-
     useEffect(() => {
         if (location.state?.remainingTime) {
             setRemainingTime(location.state.remainingTime);
@@ -91,7 +89,7 @@ function TestPage() {
     
             // ✅ Lấy danh sách tất cả task của kỳ thi
             const examTasksResponse = await axios.get(
-                `http://127.0.0.1:5000/student/exam/${examId}/questions`,
+                `${config.apiBaseUrl}/student/exam/${examId}/questions`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
     
@@ -108,7 +106,7 @@ function TestPage() {
     
             // ✅ Lấy danh sách bài đã nộp
             const submissionResponse = await axios.get(
-                `http://127.0.0.1:5000/student/exam/${examId}/submitted-tasks/${userId}`,
+                `${config.apiBaseUrl}/student/exam/${examId}/submitted-tasks/${userId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
     
@@ -120,11 +118,11 @@ function TestPage() {
     
             // ✅ Nộp các bài chưa nộp
             for (const task of examTasks) {
-                if (!submittedTasks.has(task.id)) {  // 🛠 Đổi từ task.task_id thành task.id
+                if (!submittedTasks.has(task.id)) {
                     const savedCode = localStorage.getItem(`task_${task.id}_code`);
     
                     await axios.post(
-                        `http://127.0.0.1:5000/student/exam/${examId}/question/${task.id}/submit`,
+                        `${config.apiBaseUrl}/student/exam/${examId}/question/${task.id}/submit`,
                         { user_id: userId, code: savedCode || "" },
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
@@ -144,7 +142,7 @@ function TestPage() {
         } catch (error) {
             console.error("Lỗi khi nộp bài tự động:", error);
         }
-    }, [navigate, examId, userId]);
+    }, [navigate]);
 
     useEffect(() => {
         if (remainingTime > 0 && currentScore === null) {

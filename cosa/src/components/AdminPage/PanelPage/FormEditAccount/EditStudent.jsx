@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../FormCreateAccount/Form.module.css";
 import axios from "axios";
+import config from "../../../../config";
 
 function EditStudent() {
     const { state } = useLocation();
@@ -21,7 +22,7 @@ function EditStudent() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/admin/edit-student", // Đặt URL API chỉnh sửa
+                `${config.apiBaseUrl}/admin/edit-student`, // Đặt URL API chỉnh sửa
                 data,
                 {
                     headers: {
@@ -45,7 +46,7 @@ function EditStudent() {
         const fetchContests = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("http://localhost:5000/management/exams", {
+                const response = await axios.get(`${config.apiBaseUrl}/management/exams`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

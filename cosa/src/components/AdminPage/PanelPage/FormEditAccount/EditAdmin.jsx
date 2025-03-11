@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../FormCreateAccount/Form.module.css";
 import axios from "axios";
+import config from "../../../../config";
 
 function EditAdmin() {
     const { state } = useLocation();
@@ -19,7 +20,7 @@ function EditAdmin() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/admin/edit-admin", // Đặt URL API chỉnh sửa
+                `${config.apiBaseUrl}/admin/edit-admin`, // Đặt URL API chỉnh sửa
                 data,
                 {
                     headers: {

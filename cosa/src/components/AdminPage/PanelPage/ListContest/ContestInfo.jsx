@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Outlet, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import styles from "./ContestInfo.module.css";
+import config from "../../../../config"
 
 function ContestInfo() {
     const { id } = useParams(); // Lấy id từ URL
@@ -14,7 +15,7 @@ function ContestInfo() {
     useEffect(() => {
         const fetchContestInfo = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/management/exams/${id}`);
+                const response = await axios.get(`${config.apiBaseUrl}/management/exams/${id}`);
                 setContestInfo(response.data);
                 setError(null);
             } catch (err) {
@@ -40,7 +41,7 @@ function ContestInfo() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                "http://localhost:5000/management/exams/remove-participant",
+                `${config.apiBaseUrl}/management/exams/remove-participant`,
                 {
                     exam_id: id, // ID của cuộc thi
                     username: username, // ID của sinh viên
@@ -51,7 +52,7 @@ function ContestInfo() {
                     },
                 }
             );
-            const response = await axios.get(`http://localhost:5000/management/exams/${id}`);
+            const response = await axios.get(`${config.apiBaseUrl}/management/exams/${id}`);
             setContestInfo(response.data);
         } catch (error) {
             alert(error.response?.data?.error || "Có lỗi xảy ra!");

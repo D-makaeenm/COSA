@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../FormCreateAccount/Form.module.css";
 import axios from "axios";
+import config from "../../../../config";
 
 function EditTeacher() {
     const { state } = useLocation();
@@ -19,7 +20,7 @@ function EditTeacher() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/admin/edit-teacher", // Đặt URL API chỉnh sửa
+                `${config.apiBaseUrl}/admin/edit-teacher`, // Đặt URL API chỉnh sửa
                 data,
                 {
                     headers: {

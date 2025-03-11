@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import pythonlogo from "../../assets/images/logopython.png";
 import logo from "../../assets/images/logo.png";
+import config from "../../config.js";
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -37,7 +38,7 @@ function LoginPage() {
         const password = e.target.password.value;
 
         try {
-            const response = await axios.post("http://127.0.0.1:5000/auth/login", { username, password });
+            const response = await axios.post(`${config.apiBaseUrl}/auth/login`, { username, password });
 
             const token = response.data.access_token;
             const role = response.data.role;

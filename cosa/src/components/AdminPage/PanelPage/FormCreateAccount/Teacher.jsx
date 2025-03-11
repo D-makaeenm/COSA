@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./Form.module.css";
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
+import config from "../../../../config";
 
 function Teacher() {
     const { fetchAccountCounts } = useOutletContext(); // Lấy context từ Outlet
@@ -13,7 +14,7 @@ function Teacher() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/auth/register-teacher", // Địa chỉ endpoint backend
+                `${config.apiBaseUrl}/auth/register-teacher`, // Địa chỉ endpoint backend
                 data,
                 {
                     headers: {

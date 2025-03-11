@@ -3,6 +3,7 @@ import Rules from "../../LoginPage/Rule";
 import styles from "../TestPage.module.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import config from "../../../config"
 
 function RuleAndStart() {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ function RuleAndStart() {
                 const token = localStorage.getItem("token");
 
                 const examResponse = await axios.get(
-                    "http://127.0.0.1:5000/student/ongoing-exam",
+                    `${config.apiBaseUrl}/student/ongoing-exam`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

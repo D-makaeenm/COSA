@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./Questions.module.css";
+import config from "../../../config";
 
 function Questions() {
     const { examId } = useParams();
@@ -17,7 +18,7 @@ function Questions() {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    `http://localhost:5000/student/exam/${examId}/questions`,
+                    `${config.apiBaseUrl}/student/exam/${examId}/questions`,
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }

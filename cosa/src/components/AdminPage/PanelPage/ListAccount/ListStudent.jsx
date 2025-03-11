@@ -4,6 +4,7 @@ import styles from "./List.module.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import icons from "../../../FontAwesome/icons";
+import config from "../../../../config";
 
 function ListStudent() {
     const [students, setStudents] = useState([]);
@@ -12,7 +13,7 @@ function ListStudent() {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/admin/list-student", {
+                const response = await axios.get(`${config.apiBaseUrl}/admin/list-student`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -38,7 +39,7 @@ function ListStudent() {
 
         try {
             const response = await axios.delete(
-                "http://localhost:5000/admin/delete-student",
+                `${config.apiBaseUrl}/admin/delete-student`,
                 {
                     data: { username },
                     headers: {

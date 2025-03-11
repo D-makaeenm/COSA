@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ContestInfo.module.css";
 import { ToastContainer, toast } from 'react-toastify';
+import config from "../../../../config";
 
 function AddStudent() {
     const { id: contestId } = useParams(); // Lấy contestId từ URL
@@ -25,7 +26,7 @@ function AddStudent() {
             try {
                 const token = localStorage.getItem("token"); // Lấy token từ localStorage
                 const response = await axios.get(
-                    `http://localhost:5000/admin/list-student/${contestId}`, // API mới
+                    `${config.apiBaseUrl}/admin/list-student/${contestId}`, // API mới
                     {
                         headers: {
                             Authorization: `Bearer ${token}`, // Thêm token vào headers
@@ -53,7 +54,7 @@ function AddStudent() {
         try {
             const token = localStorage.getItem("token"); // Lấy token từ localStorage
             await axios.post(
-                `http://localhost:5000/management/exams/add-participant`,
+                `${config.apiBaseUrl}/management/exams/add-participant`,
                 {
                     exam_id: contestId,
                     user_id: studentId,

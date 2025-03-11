@@ -4,6 +4,7 @@ import styles from "./ListContest.module.css";
 import icons from "../../../FontAwesome/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import config from "../../../../config";
 
 const statusTranslation = {
     completed: "Hoàn thành",
@@ -34,7 +35,7 @@ function ListContest() {
         const token = localStorage.getItem("token");
 
         axios
-            .get("http://localhost:5000/management/exams", {
+            .get(`${config.apiBaseUrl}/management/exams`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

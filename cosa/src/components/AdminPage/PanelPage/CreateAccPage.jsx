@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./CreateAccPage.module.css";
 import axios from "axios";
 import { Outlet, useNavigate } from "react-router-dom";
+import config from "../../../config";
 
 function CreateAccPage() {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ function CreateAccPage() {
 
     const fetchAccountCounts = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/admin/account-counts", {
+            const response = await axios.get(`${config.apiBaseUrl}/admin/account-counts`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },

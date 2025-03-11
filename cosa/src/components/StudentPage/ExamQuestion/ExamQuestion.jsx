@@ -5,6 +5,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import styles from "./ExamQuestion.module.css";
 import Swal from "sweetalert2";
+import config from "../../../config"
 
 function ExamQuestion() {
     const { examId, questionId } = useParams();
@@ -17,7 +18,7 @@ function ExamQuestion() {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const { updateScore, setLoadingScore } = useOutletContext();
 
-    const backendUrl = "http://localhost:5000";
+    const backendUrl = `${config.apiBaseUrl}`;
 
     // 📌 Tải code từ localStorage nếu có
     useEffect(() => {
