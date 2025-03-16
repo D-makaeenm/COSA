@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from services.compile_service import compile_and_run_cpp
 from services.submission_service import save_task_submission, grade_task_submission, check_all_submitted_service
 from urllib.parse import unquote
 from models import Submission, ExamTask, Score
@@ -96,3 +97,20 @@ def check_submission_status(submission_id):
 
     print(f"✅ Submission tìm thấy: {submission}")  # Nếu tìm thấy submission
     return jsonify({"is_graded": submission.is_graded}), 200
+
+@submission_bp.route('/compile', methods=['POST'])
+@jwt_required()
+def compile_code():
+    try:
+        data = request.json
+        code = unquote(data.get("code", ""))  # Decode code
+        response = compile_and_run_cpp(code)
+
+        # ✅ Đảm bảo response luôn có cả "error" và "output"
+        return jsonify({
+            "error": response.get("error"),
+            "output": response.get("output")
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Lỗi khi compile: {str(e)}", "output": None}), 500

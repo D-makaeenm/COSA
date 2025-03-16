@@ -1,13 +1,12 @@
 import re
 import subprocess
 import time
-import ast
 import os
 import shutil
 from datetime import datetime
 from models import db, Submission, Testcase, ErrorLog, Score, ExamTask
 
-UPLOADS_FOLDER = os.path.abspath("uploads/testcases")  # Thư mục chứa file input/output của giáo viên
+UPLOADS_FOLDER = os.path.abspath("uploads/testcases")
 SUBMISSIONS_FOLDER = os.path.abspath("submissions")
 
 # 📌 Lưu bài làm cho một bài tập
@@ -22,7 +21,7 @@ def save_task_submission(data):
     os.makedirs(task_folder, exist_ok=True)
 
     # ✅ Lưu file code của thí sinh vào đúng thư mục
-    file_path = os.path.join(task_folder, f"submission.py")
+    file_path = os.path.join(task_folder, "submission.cpp")
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(code)
 
@@ -31,7 +30,7 @@ def save_task_submission(data):
         user_id=user_id,
         exam_id=exam_id,
         exam_task_id=exam_task_id,
-        file_path_code=file_path,  # ✅ Lưu đường dẫn chính xác
+        file_path_code=file_path,
         submitted_at=datetime.now(),
         execution_time=None,
         is_graded=False,
@@ -54,14 +53,12 @@ def normalize_output(output):
     numbers = re.findall(r'\d+', output)
     return ",".join(numbers) if numbers else output
 
-
 # 📌 So sánh output thí sinh với output chuẩn
 def compare_outputs(expected_output, actual_output):
     return normalize_output(expected_output) == normalize_output(actual_output)
 
-
 # 📌 Chấm điểm bài nộp của thí sinh
-def grade_task_submission(submission_id):
+def grade_task_submission(submission_id): #c++
     submission = Submission.query.get(submission_id)
     if not submission:
         raise ValueError("Submission không tồn tại.")
@@ -90,59 +87,65 @@ def grade_task_submission(submission_id):
     os.makedirs(submission_dir, exist_ok=True)
 
     for idx, testcase in enumerate(testcases, start=1):
-        input_filename = testcase.input_path
-        output_filename = testcase.output_path
+        input_file = os.path.join(UPLOADS_FOLDER, testcase.input_path)
+        expected_output_file = os.path.join(UPLOADS_FOLDER, testcase.output_path)
 
-        input_file = os.path.join(UPLOADS_FOLDER, input_filename)
-        expected_output_file = os.path.join(UPLOADS_FOLDER, output_filename)
-
-        if not os.path.exists(input_file):
-            print(f"❌ Lỗi: Không tìm thấy file input {input_file}")
+        if not os.path.exists(input_file) or not os.path.exists(expected_output_file):
+            print(f"❌ Lỗi: Không tìm thấy file test case {input_file} hoặc {expected_output_file}")
             continue
 
-        if not os.path.exists(expected_output_file):
-            print(f"❌ Lỗi: Không tìm thấy file output {expected_output_file}")
-            continue
-
-        # ✅ Sao chép file input vào thư mục bài nộp và giữ nguyên tên gốc
-        local_input_file = os.path.join(submission_dir, input_filename)
+        local_input_file = os.path.join(submission_dir, testcase.input_path)
         shutil.copy(input_file, local_input_file)
 
-        # ✅ Đúng đường dẫn file output mà thí sinh có thể tạo
-        local_output_file = os.path.join(submission_dir, output_filename)
+        local_output_file = os.path.join(submission_dir, os.path.basename(expected_output_file))
+
+        print(f"🔹 Test case {idx}:")
+        print(f"   📂 File input sử dụng: {local_input_file}")
+        print(f"   📂 File output chuẩn: {expected_output_file}")
+        print(f"   📂 File output sinh viên sinh ra: {local_output_file}")
 
         start_time = time.time()
 
         try:
-            # ✅ Chạy code của thí sinh trong thư mục bài nộp
             result = subprocess.run(
-                ["python", os.path.abspath(submission.file_path_code)],  
-                cwd=submission_dir,  # ✅ Chạy trong thư mục bài nộp
+                ["g++", submission.file_path_code, "-o", os.path.join(submission_dir, "submission")],
                 capture_output=True,
-                text=True,
-                timeout=task.execution_time_limit
+                text=True
             )
+
+            if result.returncode != 0:
+                print(f"⚠️ Lỗi biên dịch: {result.stderr.strip()}")
+                raise RuntimeError(f"Lỗi biên dịch: {result.stderr.strip()}")
+            
+            
+            with open(local_output_file, "w", encoding="utf-8") as output_file:  
+                execution_result = subprocess.run(
+                    [os.path.join(submission_dir, "submission")],
+                    stdin=open(local_input_file, "r"),
+                    stdout=output_file,  # Ghi output vào file đúng cách
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=task.execution_time_limit,
+                    cwd=submission_dir  
+                )
+
             execution_time = time.time() - start_time
             total_execution_time += execution_time
 
-            output = result.stdout.strip()
-
             if os.path.exists(local_output_file):
                 with open(local_output_file, "r", encoding="utf-8") as f:
-                    output = f.read().strip()
+                    output = f.read().strip()  # Đọc output từ file
+            else:
+                output = ""  # Nếu không có file output, đặt output rỗng
 
             submission_output += output + "\n"
 
-            print(f"✅ Test case {idx}/{total_testcases} | Output: {output}")
-
         except subprocess.TimeoutExpired:
-            print(f"⏳ [User {submission.user_id}] Timeout ở test case {idx}/{total_testcases} - Vượt {testcase.time_limit}s")
-            log_error(submission.id, "Timeout Error", f"Thời gian chạy vượt {testcase.time_limit}s")
+            log_error(submission.id, "Timeout Error", f"Thời gian chạy vượt {task.execution_time_limit}s")
             continue
 
-        if result.stderr.strip():
-            print(f"❌ [User {submission.user_id}] Runtime Error ở test case {idx}/{total_testcases}: {result.stderr.strip()}")
-            log_error(submission.id, "Runtime Error", result.stderr.strip())
+        except RuntimeError as e:
+            log_error(submission.id, "Compilation Error", str(e))
             continue
 
         with open(expected_output_file, "r", encoding="utf-8") as f:
@@ -150,23 +153,19 @@ def grade_task_submission(submission_id):
 
         if output == expected_output:
             passed_testcases += 1
-        else:
-            print(f"⚠️ [User {submission.user_id}] Output sai! Mong đợi: {expected_output}, Nhận được: {output}")
 
     if total_testcases > 0:
-        final_score = (passed_testcases / total_testcases) * correct_score  
+        final_score = (passed_testcases / total_testcases) * correct_score 
 
     if total_execution_time > task.execution_time_limit:
         final_score = max(final_score - penalty_time, 0)
 
-    # **Cập nhật điểm vào bảng submissions**
     submission.execution_time = total_execution_time
     submission.is_graded = True
     submission.score = final_score
     submission.output = submission_output.strip()
     db.session.commit()
 
-    # **Cập nhật tổng điểm vào bảng scores**
     save_score(submission.user_id, submission.exam_id)
 
     print(f"📌 Chấm điểm xong: [User {submission.user_id}] [Exam {submission.exam_id}] [Task {task.id}] Điểm: {final_score}/{correct_score} | Đúng {passed_testcases}/{total_testcases} test cases | Thời gian chạy: {total_execution_time:.2f}s")
@@ -175,8 +174,6 @@ def grade_task_submission(submission_id):
 # 📌 Lưu tổng điểm vào bảng scores
 def save_score(user_id, exam_id):
     total_score = db.session.query(db.func.sum(Submission.score)).filter_by(user_id=user_id, exam_id=exam_id, is_graded=True).scalar() or 0
-
-    total_score = total_score if total_score is not None else 0
     score_entry = Score.query.filter_by(user_id=user_id, exam_id=exam_id).first()
     if not score_entry:
         score_entry = Score(user_id=user_id, exam_id=exam_id, total_score=total_score, graded_at=db.func.now())

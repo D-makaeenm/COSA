@@ -1,125 +1,221 @@
-# Đọc dữ liệu từ file input
-with open("SOLON2.INP", "r") as f:
-    n = int(f.readline().strip())
-    a = list(map(int, f.readline().split()))
-unique_numbers = sorted(set(a), reverse=True)
-with open("SOLON2.OUT", "w") as f:
-    f.write(str(unique_numbers[1]) + "\n")
+#include <iostream>
+#include <fstream>
+#include <set>
+
+using namespace std;
+
+int main() {
+    ifstream fin("SOLON2.INP"); // Mở file đầu vào
+    ofstream fout("SOLON2.OUT"); // Mở file đầu ra
+
+    int n;
+    fin >> n; // Đọc số lượng phần tử
+
+    set<int> unique_numbers; // Tập hợp để lưu các số duy nhất
+    for (int i = 0; i < n; i++) {
+        int x;
+        fin >> x;
+        unique_numbers.insert(x);
+    }
+
+    // Nếu không có đủ hai số khác nhau
+    if (unique_numbers.size() < 2) {
+        fout << "Không có số lớn thứ hai";
+    } else {
+        auto it = unique_numbers.rbegin(); // Lấy số lớn nhất
+        ++it; // Lấy số lớn thứ hai
+        fout << *it;
+    }
+
+    fin.close();
+    fout.close();
+    return 0;
+}
 
 
 
-def is_perfect_number(x):
-    if x < 2:
-        return False
-    sum_divisors = 1  # Luôn có 1 là ước của mọi số
-    sqrt_x = int(x ** 0.5)
-    for i in range(2, sqrt_x + 1):
-        if x % i == 0:
-            sum_divisors += i
-            if i != x // i:  # Tránh cộng hai lần nếu i * i = x
-                sum_divisors += x // i
-    return sum_divisors == x
-with open("HOANHAO.INP", "r") as f:
-    a = list(map(int, f.readline().split()))  # Đọc tất cả số trên một dòng
-perfect_sum = sum(x for x in a if is_perfect_number(x))
-with open("HOANHAO.OUT", "w") as f:
-    f.write(str(perfect_sum if perfect_sum > 0 else -1) + "\n")
+Bài 2:
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+// Hàm kiểm tra số hoàn hảo
+bool isPerfectNumber(int x) {
+    if (x <= 1) return false;
+    int sum = 1;
+    for (int i = 2; i * i <= x; i++) { 
+        if (x % i == 0) { 
+            sum += i; 
+            if (i != x / i) sum += x / i;
+        }
+    }
+    return sum == x;
+}
+
+int main() {
+    ifstream infile("HOANHAO.INP");
+    ofstream outfile("HOANHAO.OUT");
+
+    if (!infile || !outfile) return 1;
+
+    vector<int> numbers;
+    int num;
+    while (infile >> num) {
+        numbers.push_back(num);
+    }
+
+    infile.close();
+
+    int sumPerfect = 0;
+    for (int num : numbers) {
+        if (isPerfectNumber(num)) {
+            sumPerfect += num;
+        }
+    }
+
+    // Chỉ ghi kết quả ra file, không ghi debug
+    outfile << (sumPerfect > 0 ? sumPerfect : -1);
+    outfile.close();
+
+    return 0;
+}
 
 
 
-with open("FIBO.INP", "r") as f:
-    n = int(f.readline().strip())  # Đọc số lượng phần tử
-    fib_numbers = list(map(int, f.readline().split()))  # Đọc dãy số
-is_fibo = all(fib_numbers[i] == fib_numbers[i - 1] + fib_numbers[i - 2] for i in range(2, n))
-with open("FIBO.OUT", "w") as f:
-    f.write("1\n" if is_fibo else "0\n")
+Bài 3:
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+int main() {
+    ifstream infile("FIBO.INP");
+    ofstream outfile("FIBO.OUT");
+
+    if (!infile || !outfile) return 1; // Kiểm tra file mở thành công
+
+    int n;
+    infile >> n;
+
+    vector<int> fibo(n);
+    for (int i = 0; i < n; i++) {
+        infile >> fibo[i];
+    }
+
+    infile.close(); // Đóng file sau khi đọc xong
+
+    bool isFibonacci = true;
+    
+    // Kiểm tra tính chất Fibonacci
+    for (int i = 2; i < n; i++) {
+        if (fibo[i] != fibo[i - 1] + fibo[i - 2]) {
+            isFibonacci = false;
+            break;
+        }
+    }
+
+    outfile << (isFibonacci ? 1 : 0);
+    outfile.close(); // Đóng file sau khi ghi xong
+
+    return 0;
+}
+
+
+Bài 4:
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+int main() {
+    ifstream infile("MAHOA.INP");
+    ofstream outfile("MAHOA.OUT");
+
+    if (!infile || !outfile) return 1; // Kiểm tra nếu mở file thất bại
+
+    int K, N, P, Q;
+    infile >> K >> N >> P >> Q;
+    infile.close(); // Đóng file sau khi đọc xong
+
+    int count = 0;
+    
+    // Duyệt tất cả giá trị T trong khoảng [K, N]
+    for (int T = K; T <= N; T++) {
+        if ((P * T) % Q == 0) {
+            count++;
+        }
+    }
+
+    outfile << count;
+    outfile.close(); // Đóng file sau khi ghi xong
+
+    return 0;
+}
 
 
 
-with open("MAHOA.INP", "r") as f:
-    K, N, P, Q = map(int, f.readline().split())  # Đọc 4 số nguyên từ file
-count = sum(1 for T in range(K, N + 1) if (P * T) % Q == 0)
-with open("MAHOA.OUT", "w") as f:
-    f.write(str(count) + "\n")
+Bài 5:
+#include <iostream>
+#include <fstream>
+#include <stack>
+#include <vector>
 
+using namespace std;
 
+// Hàm tách các cụm trong biểu thức
+vector<string> extractGroups(const string &expr) {
+    vector<string> groups;
+    stack<int> stk;
+    vector<pair<int, int>> positions;
 
-import re
+    for (int i = 0; i < expr.size(); i++) {
+        if (expr[i] == '(') {
+            stk.push(i);
+        } else if (expr[i] == ')') {
+            if (stk.empty()) {
+                return {"-1"}; // Lỗi cú pháp nếu có dấu đóng ngoặc thừa
+            }
+            int start = stk.top();
+            stk.pop();
+            positions.push_back({start, i});
+        }
+    }
 
-def extract_clusters(expression):
-    stack = []
-    clusters = []
-    for i, char in enumerate(expression):
-        if char == "(":
-            stack.append(i)  # Lưu vị trí dấu mở ngoặc
-        elif char == ")":
-            if stack:
-                start = stack.pop()  # Lấy vị trí mở ngoặc gần nhất
-                clusters.append(expression[start + 1:i])  # Lấy nội dung bên trong
-            else:
-                return -1  # Nếu có dấu ")" nhưng không có "(", lỗi cú pháp
-    if stack:  # Nếu còn dấu "(" chưa đóng, cũng là lỗi cú pháp
-        return -1
-    return clusters
-with open("CUM.INP", "r") as f:
-    expression = f.readline().strip()
-clusters = extract_clusters(expression)
-with open("CUM.OUT", "w") as f:
-    if clusters == -1:
-        f.write("-1\n")  # Lỗi cú pháp
-    else:
-        f.write(str(len(clusters)) + "\n")  # Số lượng cụm
-        for cluster in clusters:
-            f.write(f"({cluster})\n")  # Giữ nguyên dấu ngoặc theo đề bài
+    if (!stk.empty()) return {"-1"}; // Lỗi cú pháp nếu còn dấu '(' chưa đóng
 
+    // Lấy các cụm từ vị trí đã tìm được
+    for (auto p : positions) {
+        groups.push_back(expr.substr(p.first, p.second - p.first + 1));
+    }
 
-nhiều testcase:
+    return groups;
+}
 
-import re
+int main() {
+    ifstream infile("CUM.INP");
+    ofstream outfile("CUM.OUT");
 
-def extract_clusters(expression):
-    stack = []
-    clusters = []
-    for i, char in enumerate(expression):
-        if char == "(":
-            stack.append(i)
-        elif char == ")":
-            if stack:
-                start = stack.pop()
-                clusters.append(expression[start:i+1])
-            else:
-                return -1
-    if stack:
-        return -1
-    return clusters
+    if (!infile || !outfile) return 1; // Kiểm tra nếu mở file thất bại
 
-with open("CUM.INP", "r", encoding="utf-8") as f:
-    lines = f.readlines()
+    string line;
+    getline(infile, line); // Đọc toàn bộ biểu thức từ file
+    infile.close();
 
-num_testcases = int(lines[0].strip())
-testcases = [line.strip() for line in lines[1:num_testcases+1]]
+    vector<string> groups = extractGroups(line);
 
-with open("CUM.OUT", "w", encoding="utf-8") as f:
-    f.write(str(num_testcases) + "\n")
-    for testcase in testcases:
-        clusters = extract_clusters(testcase)
-        if clusters == -1:
-            f.write("-1\n")
-        else:
-            f.write(str(len(clusters)) + "\n")
-            for cluster in clusters:
-                f.write(cluster + "\n")
+    // Ghi kết quả ra file
+    if (groups[0] == "-1") {
+        outfile << "-1" << endl; // Lỗi cú pháp
+    } else {
+        outfile << groups.size() << endl;
+        for (const auto &g : groups) {
+            outfile << g << endl;
+        }
+    }
 
-cum.inp:
-2
-(a+b)*(c-d)
-x*((x+1)/(y+1))
-cum.out:
-2
-2
-(a+b)
-(c-d)
-3
-(x+1)
-(y+1)
-((x+1)/(y+1))
+    outfile.close();
+    return 0;
+}

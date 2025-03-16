@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import CodeMirror from "@uiw/react-codemirror";
-import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp";
 import styles from "./ExamQuestion.module.css";
 import Swal from "sweetalert2";
-import config from "../../../config"
+import config from "../../../config";
+import { ToastContainer, toast } from 'react-toastify';
 
 function ExamQuestion() {
     const { examId, questionId } = useParams();
@@ -16,10 +17,24 @@ function ExamQuestion() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [code, setCode] = useState("");
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [compileOutput, setCompileOutput] = useState(null);
     const { updateScore, setLoadingScore } = useOutletContext();
 
     const backendUrl = `${config.apiBaseUrl}`;
 
+    const notify = (action) => {
+        if (action === 'notok') {
+            toast.warning("Compile lỗi!", {
+                autoClose: 2000,
+                closeOnClick: true,
+            });
+        } else if (action === 'ok') {
+            toast.success("Compile thành công!", {
+                autoClose: 2000,
+                closeOnClick: true,
+            });
+        }
+    };
     // 📌 Tải code từ localStorage nếu có
     useEffect(() => {
         const savedCode = localStorage.getItem(`task_${questionId}_code`);
@@ -75,6 +90,7 @@ function ExamQuestion() {
                 student_id: studentId,
                 problem_id: questionId,
                 code: encodeURIComponent(code),
+                language: "cpp",
             };
 
             const response = await axios.post(`${backendUrl}/submission/submit`, payload, {
@@ -162,11 +178,51 @@ function ExamQuestion() {
         });
     };
 
+    const handleCodeCompile = async () => {
+        setCompileOutput(null); // Xóa output cũ trước khi compile
+        try {
+            const token = localStorage.getItem("token");
+    
+            const payload = {
+                code: encodeURIComponent(code),
+                language: "cpp",
+            };
+    
+            const response = await axios.post(`${backendUrl}/submission/compile`, payload, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+    
+            if (response.status === 200) {
+                // Kiểm tra lỗi biên dịch hoặc runtime
+                if (response.data.error) {
+                    setCompileOutput(`Lỗi\n${response.data.error}`);
+                    notify("notok");
+                } else {
+                    // Lấy kết quả từ output object (tên file có thể khác nhau)
+                    const outputData = response.data.output;
+                    const outputValues = outputData ? Object.values(outputData).join("\n") : "Không có output";
+    
+                    setCompileOutput(outputValues);
+                    notify("ok");
+                }
+            } else {
+                setCompileOutput("Lỗi không xác định khi compile.");
+                notify("notok");
+            }
+        } catch (err) {
+            console.error("Lỗi khi compile:", err);
+            setCompileOutput("Lỗi hệ thống khi compile.");
+            notify("notok");
+        }
+    };
+    
+
     if (loading) return <p>Đang tải câu hỏi...</p>;
     if (error) return <p>{error}</p>;
 
     return (
         <div className={styles.questions}>
+            <ToastContainer />
             <div className={styles.container}>
                 <div>
                     <h2>{question?.task_title}</h2>
@@ -194,7 +250,7 @@ function ExamQuestion() {
                     <CodeMirror
                         value={code}
                         height="500px"
-                        extensions={[python()]}
+                        extensions={[cpp()]} // Đổi từ python() sang cpp()
                         onChange={handleCodeChange}
                         readOnly={isSubmitted}
                     />
@@ -209,8 +265,22 @@ function ExamQuestion() {
                             {isSubmitting ? "Đang nộp..." : "Nộp bài"}
                         </button>
                     )}
+                    <button
+                        onClick={handleCodeCompile}
+                        className={styles.submitButton}
+                    >
+                        Compile
+                    </button>
                     {isSubmitted && <p className={styles.submittedMessage}>Bạn đã nộp bài này.</p>}
                 </div>
+                {compileOutput && (
+                    <div className={styles.compileOutput}>
+                        <h4 style={{ color: compileOutput.startsWith("Lỗi") ? "red" : "green" }}>
+                            {compileOutput.startsWith("Lỗi") ? "Lỗi ❌:" : "Kết quả chạy ✅:"}
+                        </h4>
+                        <pre>{compileOutput}</pre>
+                    </div>
+                )}
             </div>
         </div>
     );
