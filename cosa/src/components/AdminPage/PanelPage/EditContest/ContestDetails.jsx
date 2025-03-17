@@ -23,22 +23,33 @@ function ContestDetails() {
             .catch((error) => console.error("Lỗi tải bài tập:", error));
     }, [examId]);
 
-    const handleFileChange = (e, field, taskId) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const handleFileChange = (e, fileType, taskId, testCaseId = null) => {
+        const file = e.target.files[0]; // Lấy file đầu tiên từ input
 
         setTasks(prevTasks =>
-            prevTasks.map(task =>
-                task.id === taskId
-                    ? {
+            prevTasks.map(task => {
+                if (task.id !== taskId) return task;
+
+                // Nếu là test case thì cập nhật test case tương ứng
+                if (testCaseId !== null) {
+                    return {
                         ...task,
-                        [field]: file, // Lưu file object để gửi lên server
-                        [`${field}_name`]: file.name || "Chưa có" // Lưu tên file để hiển thị
-                    }
-                    : task
-            )
+                        testcases: task.testcases.map(tc =>
+                            tc.id === testCaseId
+                                ? { ...tc, [fileType]: file, [`${fileType}_name`]: file.name }
+                                : tc
+                        )
+                    };
+                }
+
+                // Nếu là task thì cập nhật file của task
+                return {
+                    ...task,
+                    [fileType]: file,
+                    [`${fileType}_name`]: file.name
+                };
+            })
         );
-        setTasksChanged(true);
     };
 
     const handleEditTask = (id) => {
@@ -77,20 +88,33 @@ function ContestDetails() {
 
 
     const handleSaveTask = (id) => {
-        setTasks(prevTasks =>
-            prevTasks.map(task =>
+        console.log("Before update:", tasks);
+
+        setTasks(prevTasks => {
+            const updatedTasks = prevTasks.map(task =>
                 task.id === id
                     ? {
                         ...task,
                         input_file_name: task.input_file ? task.input_file.name : task.input_file_name,
-                        output_file_name: task.output_file ? task.output_file.name : task.output_file_name
+                        output_file_name: task.output_file ? task.output_file.name : task.output_file_name,
+                        testcases: task.testcases.map(tc => ({
+                            ...tc,
+                            input_file_name: tc.input_file ? tc.input_file.name : tc.input_file_name,
+                            output_file_name: tc.output_file ? tc.output_file.name : tc.output_file_name // 🔹 Sửa chỗ này
+                        }))
                     }
                     : task
-            )
-        );
+            );
+
+            console.log("After update:", updatedTasks);
+            return updatedTasks;
+        });
+
         setIsEditing(null);
         setTasksChanged(true);
     };
+
+
 
 
     const notify = (action) => {
@@ -116,19 +140,45 @@ function ContestDetails() {
         try {
             for (const task of tasks) {
                 const formData = new FormData();
+                formData.append("task_title", task.task_title);
+                formData.append("task_description", task.task_description);
+                formData.append("max_score", task.max_score);
+                formData.append("time_limit", task.time_limit);
+                formData.append("exam_id", examId);
 
-                Object.entries(task).forEach(([key, value]) => {
-                    if (value && key !== "delete") {
-                        formData.append(key, value);
-                    }
-                });
+                if (task.task_image instanceof File) {
+                    formData.append("task_image", task.task_image);
+                }
+
+                let taskId = task.id;
 
                 if (task.delete && task.id) {
                     await axios.delete(`${backendUrl}/${task.id}`);
                 } else if (String(task.id).startsWith("new-")) {
-                    await axios.post(`${backendUrl}/add-task`, formData);
+                    const response = await axios.post(`${backendUrl}/add-task`, formData);
+                    taskId = response.data.id;
                 } else {
                     await axios.put(`${backendUrl}/${task.id}`, formData);
+                }
+
+                // 🔹 Xử lý test cases 🔹
+                for (const tc of task.testcases) {
+                    const tcFormData = new FormData();
+                    tcFormData.append("task_id", taskId);
+                    tcFormData.append("time_limit", tc.time_limit ?? task.time_limit);
+
+                    if (tc.input_file && tc.input_file instanceof File) {
+                        tcFormData.append("input_file", tc.input_file);
+                    }
+                    if (tc.output_file && tc.output_file instanceof File) {
+                        tcFormData.append("output_file", tc.output_file);
+                    }
+
+                    if (tc.isNew) {
+                        await axios.post(`${backendUrl}/add-testcase`, tcFormData);
+                    } else {
+                        await axios.put(`${backendUrl}/testcase/${tc.id}`, tcFormData);
+                    }
                 }
             }
 
@@ -137,6 +187,65 @@ function ContestDetails() {
         } catch (error) {
             console.error("Lỗi khi gửi thay đổi:", error);
         }
+    };
+
+
+    const handleAddTestCase = (taskId) => {
+        setTasks(prevTasks => {
+            return prevTasks.map(task =>
+                task.id === taskId
+                    ? {
+                        ...task,
+                        testcases: [
+                            ...(task.testcases || []),
+                            {
+                                id: `tc-${Date.now()}`,
+                                input_file: null,
+                                output_file: null,
+                                isNew: true,  // ✅ Đánh dấu testcase mới
+                            }
+                        ]
+                    }
+                    : task
+            );
+        });
+        setTasksChanged(true);
+    };
+
+    const handleDeleteTestCase = (taskId, testCaseId) => {
+        setTasks(prevTasks =>
+            prevTasks.map(task =>
+                task.id === taskId
+                    ? { ...task, testcases: task.testcases.filter(tc => tc.id !== testCaseId) }
+                    : task
+            )
+        );
+        setTasksChanged(true);
+    };
+
+    const handleTestCaseFileChange = (e, taskId, testCaseId, field) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setTasks(prevTasks =>
+            prevTasks.map(task =>
+                task.id === taskId
+                    ? {
+                        ...task,
+                        testcases: task.testcases.map(tc =>
+                            tc.id === testCaseId
+                                ? {
+                                    ...tc,
+                                    [field]: file,
+                                    [`${field}_name`]: file.name // Lưu tên file để hiển thị
+                                }
+                                : tc
+                        )
+                    }
+                    : task
+            )
+        );
+        setTasksChanged(true);
     };
 
 
@@ -187,13 +296,26 @@ function ContestDetails() {
                                     <p>Điểm: </p>
                                     <input type="number" min="0" value={task.max_score} onChange={(e) => setTasks(tasks.map(t => t.id === task.id ? { ...t, max_score: parseFloat(e.target.value) } : t))} required />
                                 </div>
-                                <div className={styles.edit_taskItem_inside}>
-                                    <p>File Input:</p>
-                                    <input type="file" onChange={(e) => handleFileChange(e, "input_file", task.id)} required />
-                                </div>
-                                <div className={styles.edit_taskItem_inside}>
-                                    <p>File Output:</p>
-                                    <input type="file" onChange={(e) => handleFileChange(e, "output_file", task.id)} required />
+
+                                <div>
+                                    <h4>Test Cases</h4>
+                                    {task.testcases && task.testcases.map((tc, index) => (
+                                        <div key={tc.id} className={styles.testCaseItem}>
+                                            <p>Test Case {index + 1}</p>
+                                            <div className={styles.testcase_item}>
+                                                <div className={styles.testcase_item_inside}>
+                                                    <p>File Input:</p>
+                                                    <input type="file" onChange={(e) => handleFileChange(e, "input_file", task.id, tc.id)} required />
+                                                </div>
+                                                <div className={styles.testcase_item_inside}>
+                                                    <p>File Output:</p>
+                                                    <input type="file" onChange={(e) => handleFileChange(e, "output_file", task.id, tc.id)} required />
+                                                </div>
+                                            </div>
+                                            <button onClick={() => handleDeleteTestCase(task.id, tc.id)}>Xóa</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => handleAddTestCase(task.id)}>Thêm Test Case</button>
                                 </div>
                                 <div className={styles.edit_taskItem_btn_container}>
                                     <button className={styles.btnluu} onClick={() => handleSaveTask(task.id)}>Lưu</button>
@@ -205,13 +327,36 @@ function ContestDetails() {
                                 <h5>{task.task_title}</h5>
                                 <p>{task.task_description}</p>
                                 <p>Điểm: {task.max_score} điểm</p>
-                                <p>Giới hạn thời gian: {task.time_limit}</p>
-                                <p>Tên file đề bài: {task.task_image instanceof File ? task.task_image.name : task.task_image}</p>
-                                <p>File INPUT: {task.input_file_name || task.testcases?.[0]?.input_path || "Chưa có"}</p>
-                                <p>File OUTPUT: {task.output_file_name || task.testcases?.[0]?.output_path || "Chưa có"}</p>
+                                <p>Giới hạn thời gian: {task.time_limit} giây</p>
+                                <p>
+                                    Tên file đề bài:{" "}
+                                    {task.task_image instanceof File ? task.task_image.name : task.task_image}
+                                </p>
+
+                                <h5>Test Cases (Input / Output)</h5>
+                                {task.testcases.map((tc, index) => (
+                                    <div key={tc.id}>
+                                        Test {index + 1}:
+                                        {tc.input_file_name
+                                            ? tc.input_file_name
+                                            : tc.input_path
+                                                ? tc.input_path.split(/[\\/]/).pop()  // Lấy tên file từ đường dẫn
+                                                : "Chưa có"}
+                                        -
+                                        {tc.output_file_name
+                                            ? tc.output_file_name
+                                            : tc.output_path
+                                                ? tc.output_path.split(/[\\/]/).pop()  // Lấy tên file từ đường dẫn
+                                                : "Chưa có"}
+                                    </div>
+                                ))}
                                 <div className={styles.button3}>
-                                    <button className={styles.button3_edit} onClick={() => handleEditTask(task.id)}>Sửa</button>
-                                    <button className={styles.button3_del} onClick={() => handleDeleteTask(task.id)}>Xóa</button>
+                                    <button className={styles.button3_edit} onClick={() => handleEditTask(task.id)}>
+                                        Sửa
+                                    </button>
+                                    <button className={styles.button3_del} onClick={() => handleDeleteTask(task.id)}>
+                                        Xóa
+                                    </button>
                                 </div>
                             </>
                         )}

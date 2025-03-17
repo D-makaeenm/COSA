@@ -67,10 +67,34 @@ def grade_task_submission(submission_id): #c++
     if not task:
         raise ValueError("Không tìm thấy bài tập.")
 
-    testcases = Testcase.query.filter_by(exam_task_id=task.id).all()
+    # 📌 Tìm tất cả test case thuộc bài tập
+    task_folder = os.path.join(UPLOADS_FOLDER, f"Task{task.id}")
+    
+    if not os.path.exists(task_folder):
+        raise ValueError(f"Không tìm thấy thư mục test case: {task_folder}")
+    
+    testcases = []
+    for test_dir in sorted(os.listdir(task_folder)):  # Duyệt từng thư mục test case
+        test_path = os.path.join(task_folder, test_dir)
+        if os.path.isdir(test_path):  # Chỉ xét thư mục con (Test1, Test2, ...)
+            inp_file = None
+            out_file = None
+            for filename in os.listdir(test_path):
+                if filename.endswith(".INP"):
+                    inp_file = os.path.join(test_path, filename)
+                elif filename.endswith(".OUT"):
+                    out_file = os.path.join(test_path, filename)
+            
+            if inp_file and out_file:
+                testcases.append((inp_file, out_file))
+
     if not testcases:
-        print(f"❌ Lỗi: Không tìm thấy test case cho bài tập {task.id}")
+        print(f"❌ Lỗi: Không tìm thấy test case hợp lệ cho bài tập {task.id}")
         return
+    
+    # Tạo thư mục chứa bài nộp của thí sinh
+    submission_dir = os.path.abspath(f"submissions/task{task.id}_exam{submission.exam_id}_student{submission.user_id}")
+    os.makedirs(submission_dir, exist_ok=True)
 
     correct_score = task.max_score
     penalty_time = 0.5
@@ -82,27 +106,20 @@ def grade_task_submission(submission_id): #c++
 
     print(f"📌 Chấm điểm bài nộp {submission_id} - Task {task.id} - Max Score: {correct_score}")
 
-    # Tạo thư mục chứa bài nộp của thí sinh
-    submission_dir = os.path.abspath(f"submissions/task{task.id}_exam{submission.exam_id}_student{submission.user_id}")
-    os.makedirs(submission_dir, exist_ok=True)
+    for idx, (input_file, expected_output_file) in enumerate(testcases, start=1):
+        test_case_folder = os.path.join(submission_dir, f"Test{idx}")  # 📂 Tạo thư mục riêng
+        os.makedirs(test_case_folder, exist_ok=True)
 
-    for idx, testcase in enumerate(testcases, start=1):
-        input_file = os.path.join(UPLOADS_FOLDER, testcase.input_path)
-        expected_output_file = os.path.join(UPLOADS_FOLDER, testcase.output_path)
+        local_input_file = os.path.join(test_case_folder, os.path.basename(input_file))
+        local_output_file = os.path.join(test_case_folder, os.path.basename(expected_output_file))
 
-        if not os.path.exists(input_file) or not os.path.exists(expected_output_file):
-            print(f"❌ Lỗi: Không tìm thấy file test case {input_file} hoặc {expected_output_file}")
-            continue
-
-        local_input_file = os.path.join(submission_dir, testcase.input_path)
         shutil.copy(input_file, local_input_file)
-
-        local_output_file = os.path.join(submission_dir, os.path.basename(expected_output_file))
+        shutil.copy(expected_output_file, local_output_file)
 
         print(f"🔹 Test case {idx}:")
+        print(f"   📂 Thư mục test case: {test_case_folder}")
         print(f"   📂 File input sử dụng: {local_input_file}")
-        print(f"   📂 File output chuẩn: {expected_output_file}")
-        print(f"   📂 File output sinh viên sinh ra: {local_output_file}")
+        print(f"   📂 File output chuẩn: {local_output_file}")
 
         start_time = time.time()
 
@@ -119,24 +136,24 @@ def grade_task_submission(submission_id): #c++
             
             
             with open(local_output_file, "w", encoding="utf-8") as output_file:  
-                execution_result = subprocess.run(
-                    [os.path.join(submission_dir, "submission")],
-                    stdin=open(local_input_file, "r"),
-                    stdout=output_file,  # Ghi output vào file đúng cách
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    timeout=task.execution_time_limit,
-                    cwd=submission_dir  
-                )
+                    execution_result = subprocess.run(
+                        [os.path.join(submission_dir, "submission")],  # Chạy chương trình đã biên dịch
+                        stdin=open(local_input_file, "r"),
+                        stdout=output_file,  # Ghi output vào file đúng cách
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=task.execution_time_limit,
+                        cwd=test_case_folder  # 📌 Đảm bảo chạy trong thư mục của test case
+                    )
 
             execution_time = time.time() - start_time
             total_execution_time += execution_time
 
             if os.path.exists(local_output_file):
                 with open(local_output_file, "r", encoding="utf-8") as f:
-                    output = f.read().strip()  # Đọc output từ file
+                    output = f.read().strip()
             else:
-                output = ""  # Nếu không có file output, đặt output rỗng
+                output = ""
 
             submission_output += output + "\n"
 
@@ -155,7 +172,9 @@ def grade_task_submission(submission_id): #c++
             passed_testcases += 1
 
     if total_testcases > 0:
-        final_score = (passed_testcases / total_testcases) * correct_score 
+        final_score = (passed_testcases / total_testcases) * correct_score
+
+    print(f"📌 Điểm số tính được: {final_score}/{correct_score} - Đúng {passed_testcases}/{total_testcases} test case")
 
     if total_execution_time > task.execution_time_limit:
         final_score = max(final_score - penalty_time, 0)

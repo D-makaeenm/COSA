@@ -182,16 +182,16 @@ function ExamQuestion() {
         setCompileOutput(null); // Xóa output cũ trước khi compile
         try {
             const token = localStorage.getItem("token");
-    
+
             const payload = {
                 code: encodeURIComponent(code),
                 language: "cpp",
             };
-    
+
             const response = await axios.post(`${backendUrl}/submission/compile`, payload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-    
+
             if (response.status === 200) {
                 // Kiểm tra lỗi biên dịch hoặc runtime
                 if (response.data.error) {
@@ -201,7 +201,7 @@ function ExamQuestion() {
                     // Lấy kết quả từ output object (tên file có thể khác nhau)
                     const outputData = response.data.output;
                     const outputValues = outputData ? Object.values(outputData).join("\n") : "Không có output";
-    
+
                     setCompileOutput(outputValues);
                     notify("ok");
                 }
@@ -215,7 +215,7 @@ function ExamQuestion() {
             notify("notok");
         }
     };
-    
+
 
     if (loading) return <p>Đang tải câu hỏi...</p>;
     if (error) return <p>{error}</p>;
@@ -233,17 +233,17 @@ function ExamQuestion() {
                             className={styles.questionImage}
                         />
                     )}
-                    {question?.testcases?.map((testcase, index) => (
-                        <div key={index}>
-                            <p><strong>Thời gian giới hạn:</strong> {testcase.time_limit}s</p>
+                    {question?.testcases?.length > 0 && (
+                        <div>
+                            <p><strong>Thời gian giới hạn:</strong> {question.testcases[0].time_limit}s</p>
                             <p>
                                 <strong>Input:</strong>{" "}
-                                <a href={testcase.input_path} download>
+                                <a href={question.testcases[0].input_path} download>
                                     Tải file input
                                 </a>
                             </p>
                         </div>
-                    ))}
+                    )}
                 </div>
                 <div>
                     <h4>Phần viết code</h4>

@@ -16,9 +16,23 @@ def extract_filenames_from_code(code):
 
     return input_files, output_files
 
+def find_test1_input_paths():
+    """Tìm tất cả các file .INP nằm trong thư mục có 'Test1'."""
+    test1_input_files = {}
+
+    for root, _, files in os.walk(UPLOADS_FOLDER):
+        if "Test1" in root:  # Chỉ lấy thư mục chứa "Test1"
+            for file in files:
+                if file.endswith(".INP"):
+                    test1_input_files[file] = os.path.join(root, file)
+
+    return test1_input_files
+
 def compile_and_run_cpp(code):
     if not code.strip():
         return {"error": "Code không được để trống", "output": None}
+
+    temp_work_dir = None  
 
     try:
         # ✅ Tạo thư mục làm việc tạm thời
@@ -30,15 +44,17 @@ def compile_and_run_cpp(code):
         if not input_files:
             return {"error": "Không tìm thấy file input (.INP) trong code", "output": None}
 
+        # ✅ Tìm các đường dẫn của file input trong thư mục "Test1"
+        test1_input_paths = find_test1_input_paths()
+
         # ✅ Copy từng file input vào thư mục tạm
         for inp_file in input_files:
-            source_path = os.path.join(UPLOADS_FOLDER, inp_file)
-            temp_input_path = os.path.join(temp_work_dir, inp_file)
-
-            if os.path.exists(source_path):
+            if inp_file in test1_input_paths:
+                source_path = test1_input_paths[inp_file]
+                temp_input_path = os.path.join(temp_work_dir, inp_file)
                 shutil.copy(source_path, temp_input_path)
             else:
-                return {"error": f"File input '{inp_file}' không tồn tại.", "output": None}
+                return {"error": f"File input '{inp_file}' không tồn tại trong thư mục Test1.", "output": None}
 
         # ✅ Lưu code thí sinh vào file trong thư mục tạm
         temp_cpp_path = os.path.join(temp_work_dir, "solution.cpp")
@@ -47,12 +63,12 @@ def compile_and_run_cpp(code):
 
         executable_path = os.path.join(temp_work_dir, "solution")
 
-        # ✅ Biên dịch code C++ (chạy trong thư mục tạm)
+        # ✅ Biên dịch code C++
         compile_result = subprocess.run(
             ["g++", "-o", executable_path, temp_cpp_path],
             capture_output=True,
             text=True,
-            cwd=temp_work_dir  # Chạy trong thư mục tạm
+            cwd=temp_work_dir
         )
 
         if compile_result.returncode != 0:
@@ -64,13 +80,17 @@ def compile_and_run_cpp(code):
             capture_output=True,
             text=True,
             timeout=5,
-            cwd=temp_work_dir  # Đảm bảo chương trình tìm thấy file input
+            cwd=temp_work_dir
         )
 
         error = run_result.stderr.strip()
 
-        # ✅ Đọc output từ các file .OUT nếu tồn tại
+        # ✅ Đọc output từ các file .OUT
         output_data = {}
+
+        if not output_files:
+            output_files = [f for f in os.listdir(temp_work_dir) if f.endswith(".OUT")]
+
         for out_file in output_files:
             temp_output_path = os.path.join(temp_work_dir, out_file)
             if os.path.exists(temp_output_path):
@@ -92,7 +112,8 @@ def compile_and_run_cpp(code):
 
     finally:
         # ✅ Dọn dẹp thư mục làm việc tạm
-        try:
-            shutil.rmtree(temp_work_dir)
-        except Exception as cleanup_error:
-            print(f"Lỗi khi xóa thư mục tạm: {cleanup_error}")  # Ghi log nếu cần
+        if temp_work_dir:
+            try:
+                shutil.rmtree(temp_work_dir)
+            except Exception as cleanup_error:
+                print(f"Lỗi khi xóa thư mục tạm: {cleanup_error}")  

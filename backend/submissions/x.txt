@@ -157,7 +157,70 @@ int main() {
 
 
 
-Bài 5:
+Bài 5: (chuẩn giây - 1 testcase)
+#include <iostream>
+#include <fstream>
+#include <stack>
+#include <set>
+#include <sstream>
+
+using namespace std;
+
+// Hàm tách cụm dấu ngoặc nhanh hơn
+set<pair<int, int>> extractGroups(const string &expr) {
+    stack<int> stk;
+    set<pair<int, int>> positions;
+
+    for (int i = 0; i < expr.size(); i++) {
+        if (expr[i] == '(') {
+            stk.push(i);
+        } else if (expr[i] == ')') {
+            if (stk.empty()) {
+                return {{-1, -1}}; // Lỗi cú pháp
+            }
+            int start = stk.top();
+            stk.pop();
+            positions.insert({start, i});
+        }
+    }
+
+    if (!stk.empty()) return {{-1, -1}}; // Lỗi cú pháp
+
+    return positions;
+}
+
+int main() {
+    ifstream infile("CUM.INP");
+    ofstream outfile("CUM.OUT");
+
+    if (!infile || !outfile) {
+        return 1; // Lỗi mở file
+    }
+
+    string line;
+    getline(infile, line);
+    infile.close();
+
+    set<pair<int, int>> groups = extractGroups(line);
+
+    ostringstream output;
+    if (groups.begin()->first == -1) {
+        output << "-1\n"; // Lỗi cú pháp
+    } else {
+        output << groups.size() << "\n";
+        for (auto p : groups) {
+            output << line.substr(p.first, p.second - p.first + 1) << "\n";
+        }
+    }
+
+    outfile << output.str();
+    outfile.close();
+    return 0;
+}
+
+
+
+b5 c2: (2 test đúng - chậm time)
 #include <iostream>
 #include <fstream>
 #include <stack>
@@ -176,7 +239,7 @@ vector<string> extractGroups(const string &expr) {
             stk.push(i);
         } else if (expr[i] == ')') {
             if (stk.empty()) {
-                return {"-1"}; // Lỗi cú pháp nếu có dấu đóng ngoặc thừa
+                return {"-1"}; // Lỗi cú pháp
             }
             int start = stk.top();
             stk.pop();
@@ -184,9 +247,8 @@ vector<string> extractGroups(const string &expr) {
         }
     }
 
-    if (!stk.empty()) return {"-1"}; // Lỗi cú pháp nếu còn dấu '(' chưa đóng
+    if (!stk.empty()) return {"-1"}; // Lỗi cú pháp
 
-    // Lấy các cụm từ vị trí đã tìm được
     for (auto p : positions) {
         groups.push_back(expr.substr(p.first, p.second - p.first + 1));
     }
@@ -198,15 +260,80 @@ int main() {
     ifstream infile("CUM.INP");
     ofstream outfile("CUM.OUT");
 
-    if (!infile || !outfile) return 1; // Kiểm tra nếu mở file thất bại
+    if (!infile || !outfile) {
+        return 1; // Lỗi mở file
+    }
 
     string line;
-    getline(infile, line); // Đọc toàn bộ biểu thức từ file
+    getline(infile, line);
     infile.close();
 
     vector<string> groups = extractGroups(line);
 
-    // Ghi kết quả ra file
+    if (groups[0] == "-1") {
+        outfile << "-1" << endl; // Lỗi cú pháp
+    } else {
+        outfile << groups.size() << endl;
+        for (const auto &g : groups) {
+            outfile << g << endl;
+        }
+    }
+
+    outfile.close();
+    return 0;
+}
+
+c3 test: (chậm time)
+#include <iostream>
+#include <fstream>
+#include <stack>
+#include <vector>
+#include <set>
+
+using namespace std;
+
+// Hàm tách các cụm trong ngoặc từ trong ra ngoài
+vector<string> extractInnerGroups(const string &expr) {
+    vector<string> groups;
+    stack<int> stk;
+    set<pair<int, int>> positions;  // Sử dụng set để đảm bảo thứ tự duy nhất
+
+    for (int i = 0; i < expr.size(); i++) {
+        if (expr[i] == '(') {
+            stk.push(i);
+        } else if (expr[i] == ')') {
+            if (stk.empty()) {
+                return {"-1"}; // Lỗi cú pháp
+            }
+            int start = stk.top();
+            stk.pop();
+            positions.insert({start, i});
+        }
+    }
+
+    if (!stk.empty()) return {"-1"}; // Lỗi cú pháp
+
+    for (auto p : positions) {
+        groups.push_back(expr.substr(p.first, p.second - p.first + 1));
+    }
+
+    return groups;
+}
+
+int main() {
+    ifstream infile("CUM.INP");
+    ofstream outfile("CUM.OUT");
+
+    if (!infile || !outfile) {
+        return 1; // Lỗi mở file
+    }
+
+    string line;
+    getline(infile, line);
+    infile.close();
+
+    vector<string> groups = extractInnerGroups(line);
+
     if (groups[0] == "-1") {
         outfile << "-1" << endl; // Lỗi cú pháp
     } else {
