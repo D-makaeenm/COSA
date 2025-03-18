@@ -283,7 +283,7 @@ int main() {
     return 0;
 }
 
-c3 test: (chậm time)
+c3 test: (1 dung - chậm time)
 #include <iostream>
 #include <fstream>
 #include <stack>

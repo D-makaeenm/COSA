@@ -223,30 +223,30 @@ function ContestDetails() {
         setTasksChanged(true);
     };
 
-    const handleTestCaseFileChange = (e, taskId, testCaseId, field) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // const handleTestCaseFileChange = (e, taskId, testCaseId, field) => {
+    //     const file = e.target.files[0];
+    //     if (!file) return;
 
-        setTasks(prevTasks =>
-            prevTasks.map(task =>
-                task.id === taskId
-                    ? {
-                        ...task,
-                        testcases: task.testcases.map(tc =>
-                            tc.id === testCaseId
-                                ? {
-                                    ...tc,
-                                    [field]: file,
-                                    [`${field}_name`]: file.name // Lưu tên file để hiển thị
-                                }
-                                : tc
-                        )
-                    }
-                    : task
-            )
-        );
-        setTasksChanged(true);
-    };
+    //     setTasks(prevTasks =>
+    //         prevTasks.map(task =>
+    //             task.id === taskId
+    //                 ? {
+    //                     ...task,
+    //                     testcases: task.testcases.map(tc =>
+    //                         tc.id === testCaseId
+    //                             ? {
+    //                                 ...tc,
+    //                                 [field]: file,
+    //                                 [`${field}_name`]: file.name // Lưu tên file để hiển thị
+    //                             }
+    //                             : tc
+    //                     )
+    //                 }
+    //                 : task
+    //         )
+    //     );
+    //     setTasksChanged(true);
+    // };
 
 
     return (
