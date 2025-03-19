@@ -2,7 +2,7 @@ from models import User, Exam, ExamParticipant, ExamTask, Submission, db, Testca
 from sqlalchemy import and_, func
 from datetime import datetime, timedelta
 import subprocess
-from ip import ip as localip
+from ip import host_ip
 from services.submission_service import save_task_submission, grade_task_submission
 
 def get_ongoing_exam_service(user_id):
@@ -151,6 +151,7 @@ def start_exam_service(user_id, exam_id):
     }
 
 def get_question_details(user_id, exam_id, question_id):
+
     # Kiểm tra quyền truy cập
     participant = ExamParticipant.query.filter_by(exam_id=exam_id, user_id=user_id).first()
     if not participant:
@@ -165,8 +166,8 @@ def get_question_details(user_id, exam_id, question_id):
     testcases = Testcase.query.filter_by(exam_task_id=question_id).all()
     testcase_data = [
         {
-            "input_path": f"http://{localip()}:5000/student/uploads/testcases/{testcase.input_path}",
-            "output_path": f"http://{localip()}:5000/student/uploads/testcases/{testcase.output_path}",
+            "input_path": f"http://{host_ip}:5000/student/uploads/testcases/{testcase.input_path}",
+            "output_path": f"http://{host_ip}:5000/student/uploads/testcases/{testcase.output_path}",
             "time_limit": testcase.time_limit
         }
         for testcase in testcases
@@ -194,7 +195,7 @@ def get_question_details(user_id, exam_id, question_id):
     return {
         "task_title": question.task_title,
         "task_description": question.task_description,
-        "image_url": f"http://{localip()}:5000/student/uploads/images/{question.image_path}" if question.image_path else None,
+        "image_url": f"http://{host_ip}:5000/student/uploads/images/{question.image_path}" if question.image_path else None,
         "max_score": question.max_score,
         "execution_time_limit": question.execution_time_limit,
         "is_submitted": is_submitted,

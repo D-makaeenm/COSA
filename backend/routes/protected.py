@@ -15,6 +15,6 @@ def get_users():
 @protected_bp.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
-    current_user_id = get_jwt_identity()
+    current_user_id = str(get_jwt_identity())
     user = User.query.get(current_user_id)
     return jsonify({'message': f'Welcome {user.username}!'}), 200

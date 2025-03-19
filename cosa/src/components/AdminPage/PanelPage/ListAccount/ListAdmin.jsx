@@ -10,24 +10,31 @@ function ListAdmin() {
     const [admins, setAdmins] = useState([]);
     const navigate = useNavigate();
 
-    // Gọi API để lấy danh sách admin
     useEffect(() => {
         const fetchAdmins = async () => {
             try {
+                const token = localStorage.getItem("token");
+                console.log("Token từ localStorage:", token); // Debug
+    
+                if (!token) {
+                    throw new Error("Không tìm thấy token trong localStorage!");
+                }
+    
                 const response = await axios.get(`${config.apiBaseUrl}/admin/list-admins`, {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
+    
                 setAdmins(response.data);
             } catch (error) {
-                console.error("Error fetching admins:", error.response?.data || error.message);
+                console.error("Lỗi khi lấy danh sách admin:", error.response?.data || error.message);
             }
         };
-
+    
         fetchAdmins();
     }, []);
-
+    
     const handleEditClick = (admin) => {
         navigate("/admin/createUser/edit-account-admin", { state: { admin } });
     };

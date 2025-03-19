@@ -22,7 +22,7 @@ def login():
         return jsonify({"error": "Invalid username or password!"}), 401
 
     # Tạo access token
-    access_token = create_access_token(identity=user.id, expires_delta=False)
+    access_token = create_access_token(identity=str(user.id), expires_delta=False)
     return jsonify({"access_token": access_token, "role": user.role, "id": user.id}), 200
 
 
@@ -30,7 +30,7 @@ def login():
 @auth_bp.route("/register-student", methods=["POST"])
 @jwt_required()
 def register_student():
-    current_user_id = get_jwt_identity()
+    current_user_id = str(get_jwt_identity())
     current_user = User.query.get(current_user_id)
 
     # Chỉ admin mới được phép tạo tài khoản
@@ -53,7 +53,7 @@ def register_student():
 @auth_bp.route("/register-teacher", methods=["POST"])
 @jwt_required()
 def register_teacher():
-    current_user_id = get_jwt_identity()
+    current_user_id = str(get_jwt_identity())
     current_user = User.query.get(current_user_id)
 
     # Chỉ admin mới được phép tạo tài khoản
@@ -76,7 +76,7 @@ def register_teacher():
 @auth_bp.route("/register-admin", methods=["POST"])
 @jwt_required()
 def register_admin():
-    current_user_id = get_jwt_identity()
+    current_user_id = str(get_jwt_identity())
     current_user = User.query.get(current_user_id)
 
     # Chỉ admin mới được phép tạo tài khoản

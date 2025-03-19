@@ -10,19 +10,24 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def check_access(required_roles):
     """
     Kiểm tra xem user có quyền truy cập theo vai trò được yêu cầu.
-    required_roles: List chứa các quyền được phép truy cập (VD: ['admin', 'teacher'])
     """
-    current_user_id = get_jwt_identity()
-    current_user = User.query.get(current_user_id)
+    try:
+        current_user_id = str(get_jwt_identity())
 
-    if not current_user:
-        return {"error": "User not found"}, 401
+        current_user = User.query.get(current_user_id)
 
-    if current_user.role not in required_roles:
-        return {"error": f"Access denied. Required roles: {', '.join(required_roles)}"}, 403
+        if not current_user:
+            print("❌ User không tồn tại trong DB!")
+            return {"error": "User not found"}, 401
 
-    return current_user
+        if current_user.role not in required_roles:
+            print(f"❌ User {current_user_id} không có quyền: {required_roles}")
+            return {"error": f"Access denied. Required roles: {', '.join(required_roles)}"}, 403
 
+        return current_user
+    except Exception as e:
+        print(f"🔥 Lỗi khi check access: {e}")
+        return {"error": "Server Error"}, 500
 
 @dashboard_bp.route('/latest-contest-summary', methods=['GET'])
 @jwt_required()
@@ -33,7 +38,7 @@ def latest_contest_summary():
         return jsonify(access_check[0]), access_check[1]
     current_user = access_check  # Nếu hợp lệ
 
-    # Lấy dữ liệu từ service
+    #Lấy dữ liệu từ service
     contest_summary = get_latest_contest_summary()
     if not contest_summary:
         return jsonify({'error': 'No contests found'}), 404

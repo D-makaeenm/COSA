@@ -29,4 +29,7 @@ print("Root path:", os.getcwd())
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Tạo bảng nếu chưa tồn tại
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    host = os.getenv("BACKEND_HOST", "0.0.0.0")
+    port = int(os.getenv("BACKEND_PORT", 5000))
+    app.run(host=host, port=port, debug=True)
+

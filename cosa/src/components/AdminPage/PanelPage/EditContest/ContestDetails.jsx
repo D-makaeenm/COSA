@@ -69,7 +69,7 @@ function ContestDetails() {
 
     const handleAddTask = () => {
         const defaultTask = {
-            id: `new-${Date.now()}`, // ID tạm, sẽ thay thế bằng ID thực từ backend
+            id: `new-${Date.now()}`,
             exam_id: examId,
             task_title: "",
             task_description: "",
@@ -79,6 +79,7 @@ function ContestDetails() {
             input_file: null,
             output_file: null,
             delete: false,
+            testcases: []  // 🔹 Đảm bảo testcases không undefined
         };
 
         setTasks((prevTasks) => [...prevTasks, defaultTask]);
@@ -97,10 +98,10 @@ function ContestDetails() {
                         ...task,
                         input_file_name: task.input_file ? task.input_file.name : task.input_file_name,
                         output_file_name: task.output_file ? task.output_file.name : task.output_file_name,
-                        testcases: task.testcases.map(tc => ({
+                        testcases: (task.testcases || []).map(tc => ({
                             ...tc,
                             input_file_name: tc.input_file ? tc.input_file.name : tc.input_file_name,
-                            output_file_name: tc.output_file ? tc.output_file.name : tc.output_file_name // 🔹 Sửa chỗ này
+                            output_file_name: tc.output_file ? tc.output_file.name : tc.output_file_name
                         }))
                     }
                     : task

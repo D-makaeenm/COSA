@@ -22,7 +22,10 @@ def get_task_folder(task_id, task_title):
 # ✅ **Lấy danh sách bài tập**
 @exam_tasks_bp.route("/<int:exam_id>", methods=["GET"])
 def get_exam_tasks(exam_id):
-    tasks = ExamTask.query.filter(ExamTask.exam_id == exam_id, ExamTask.delete_at == None).all()
+    tasks = ExamTask.query.filter(
+        ExamTask.exam_id == exam_id, 
+        ExamTask.delete_at.is_(None)  # Chỉ lấy bài chưa bị xóa mềm
+    ).all()
 
     return jsonify([
         {
@@ -139,17 +142,17 @@ def update_exam_task(task_id):
     return jsonify({"message": "Task updated successfully", "updated_fields": updated_fields}), 200
 
 
-# ✅ **Xóa mềm bài tập**
+# ✅ **Xóa vĩnh viễn bài tập**
 @exam_tasks_bp.route("/<int:task_id>", methods=["DELETE"])
 def delete_exam_task(task_id):
     task = ExamTask.query.get(task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
-    task.delete_at = datetime.datetime.utcnow()
+    db.session.delete(task)  # Xóa hoàn toàn khỏi DB
     db.session.commit()
 
-    return jsonify({"message": "Task deleted successfully"}), 200
+    return jsonify({"message": "Task permanently deleted"}), 200
 
 # ✅ Thêm test case mới
 @exam_tasks_bp.route("/add-testcase", methods=["POST"])

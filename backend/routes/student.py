@@ -25,7 +25,7 @@ def get_upload_folder_testcases():
 @jwt_required()
 def get_ongoing_exam():
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = str(get_jwt_identity())
         result = get_ongoing_exam_service(current_user_id)
         return jsonify(result), 200
     except ValueError as e:
@@ -51,7 +51,7 @@ def get_exam_questions(exam_id):
 @jwt_required()
 def submit_exam_task(exam_id):
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = str(get_jwt_identity())
         data = request.json
         result = submit_exam_task_service(current_user_id, exam_id, data)
         return jsonify(result), 200
@@ -64,7 +64,7 @@ def submit_exam_task(exam_id):
 @jwt_required()
 def start_exam():
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = str(get_jwt_identity())
         data = request.json
         exam_id = data.get("exam_id")
         result = start_exam_service(current_user_id, exam_id)
@@ -80,7 +80,7 @@ def get_question(exam_id, question_id):
     """
     API để lấy chi tiết câu hỏi cụ thể.
     """
-    current_user_id = get_jwt_identity()
+    current_user_id = str(get_jwt_identity())
     try:
         question = get_question_details(current_user_id, exam_id, question_id)
         return jsonify(question), 200
@@ -110,7 +110,7 @@ def submit_code(exam_id, question_id):
     API để nộp bài làm và chấm điểm.
     """
     try:
-        current_user_id = get_jwt_identity()  # Lấy ID thí sinh từ JWT
+        current_user_id = str(get_jwt_identity())  # Lấy ID thí sinh từ JWT
         data = request.get_json()
         code = data.get("code", "")
 
@@ -133,7 +133,7 @@ def submit_code(exam_id, question_id):
 def get_submitted_tasks(exam_id, user_id):
     try:
         # ✅ Kiểm tra người dùng hiện tại có quyền truy vấn dữ liệu không
-        current_user_id = get_jwt_identity()
+        current_user_id = str(get_jwt_identity())
         if current_user_id != user_id:
             return jsonify({"error": "Bạn không có quyền truy cập dữ liệu này."}), 403
 

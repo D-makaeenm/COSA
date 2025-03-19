@@ -50,6 +50,7 @@ function LoginPage() {
             localStorage.setItem("role", role);
             localStorage.setItem("id", id);
 
+            console.log(token, username, role, id);
             setLoginError("");
 
             // Chuyển hướng dựa vào vai trò của người dùng

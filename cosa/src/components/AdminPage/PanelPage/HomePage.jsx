@@ -24,7 +24,7 @@ function HomePage() {
     useEffect(() => {
         // Lấy JWT token từ localStorage
         const token = localStorage.getItem("token");
-
+        console.log(token);
         // Gọi API để lấy thông tin cuộc thi gần nhất
         axios
             .get(`${config.apiBaseUrl}/dashboard/latest-contest-summary`, {
