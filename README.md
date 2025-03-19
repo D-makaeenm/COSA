@@ -24,13 +24,13 @@ COSA gồm:
 
 ### 🔥 **Bước 1:** Clone project
 ```bash
-git clone https://github.com/your-username/COSA.git
+git clone https://github.com/D-makaeenm/COSA.git
 cd COSA
 ```
 ### 🔥 **Bước 2:** Build và chạy bằng Docker Compose
 - ⚠️ Trước khi chạy, đặt biến môi trường HOST_IP (dùng PowerShell trên Windows):
 ```bash
-$env:HOST_IP="192.168.1.3"
+$env:HOST_IP="192.168.1.3" #ví dụ là 192.168.1.3 còn máy bạn như nào thì check bằng window + R sau đó điền ipconfig
 ```
 - Sau đó chạy:
 ```bash
