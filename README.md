@@ -23,20 +23,20 @@ COSA gồm:
 ## 🚀 Hướng dẫn chạy dự án
 
 ### 🔥 **Bước 1:** Clone project
-bash
+```bash
 git clone https://github.com/your-username/COSA.git
 cd COSA
 ### 🔥 **Bước 2:** Build và chạy bằng Docker Compose
-⚠️ Trước khi chạy, đặt biến môi trường HOST_IP (dùng PowerShell trên Windows):
+- ⚠️ Trước khi chạy, đặt biến môi trường HOST_IP (dùng PowerShell trên Windows):
 $env:HOST_IP="192.168.1.3"
-Sau đó chạy:
+- Sau đó chạy:
 docker-compose up --build
-💻 Một số lệnh Docker tham khảo
+- 💻 Một số lệnh Docker tham khảo
 docker ps -a	Liệt kê tất cả các container
 docker exec -it cosa_db mysql -u root -p	Truy cập vào container MySQL
 docker-compose up -d	Khởi động container (không build lại, code giữ nguyên)
 docker-compose up --build	Build lại từ Dockerfile rồi chạy (áp dụng khi thay đổi code hoặc Dockerfile)
-💾 Database
+- 💾 Database
 User: root
 Password: makaeenm1
 Database: cosa
