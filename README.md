@@ -26,29 +26,34 @@ COSA gồm:
 ```bash
 git clone https://github.com/your-username/COSA.git
 cd COSA
+```
 ### 🔥 **Bước 2:** Build và chạy bằng Docker Compose
 - ⚠️ Trước khi chạy, đặt biến môi trường HOST_IP (dùng PowerShell trên Windows):
+```bash
 $env:HOST_IP="192.168.1.3"
+```
 - Sau đó chạy:
+```bash
 docker-compose up --build
-- 💻 Một số lệnh Docker tham khảo
-docker ps -a	Liệt kê tất cả các container
-docker exec -it cosa_db mysql -u root -p	Truy cập vào container MySQL
-docker-compose up -d	Khởi động container (không build lại, code giữ nguyên)
-docker-compose up --build	Build lại từ Dockerfile rồi chạy (áp dụng khi thay đổi code hoặc Dockerfile)
-- 💾 Database
-User: root
-Password: makaeenm1
+```
+## 💻 Một số lệnh Docker tham khảo
+```bash
+docker ps -a    #Liệt kê tất cả các container
+docker exec -it cosa_db mysql -u root -p    #Truy cập vào container MySQL
+docker-compose up -d    #Khởi động container (không build lại, code giữ nguyên)
+docker-compose up --build   #Build lại từ Dockerfile rồi chạy (áp dụng khi thay đổi code hoặc Dockerfile)
+```
+## 💾 Database
+
 Database: cosa
 📌 Import database (nếu cần):
 
-bash
-Sao chép
-Chỉnh sửa
-docker exec -it cosa_db mysql -u root -p
+```bash
+docker exec -it cosa_db mysql -u root -p 
 mysql> source /path/to/database.sql;
-💡 Ghi chú
+```
+## 💡 Ghi chú
 Docker volume lưu database => Không mất dữ liệu khi stop container.
 Frontend tự động kết nối API theo biến môi trường REACT_APP_API_BASE_URL.
-🤝 Đóng góp
+## 🤝 Đóng góp
 Mọi đóng góp hoặc ý kiến xây dựng vui lòng tạo Issue hoặc Pull Request!
