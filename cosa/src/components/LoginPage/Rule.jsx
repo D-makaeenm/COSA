@@ -10,9 +10,8 @@ function Rules() {
                 <ul>
                     <p>Nội dung</p>
                     <ol>
-                        <li>Hình thức thi: Cá nhân thực hiện lập trình trên máy tính với ngôn ngữ Python</li>
+                        <li>Hình thức thi: Cá nhân thực hiện lập trình trên máy tính với ngôn ngữ C++</li>
                         <li>Đề thi: Do Ban tổ chức cung cấp</li>
-                        <li>Thời gian thi: 60 phút </li>
                     </ol>
                     <p>Quy định</p>
                     <ol>

@@ -24,6 +24,7 @@ function TestPage() {
     const updateScore = (score) => {
         setCurrentScore(score);
         localStorage.setItem("currentScore", score);
+        console.log(score)
         showAlert(score);
         setIsLoadingScore(false);
     };
@@ -205,7 +206,7 @@ function TestPage() {
                             <p>Thời gian còn lại</p>
                             <p>{formatTime(remainingTime)}</p>
                         </div>
-                        {isLoadingScore && <p>Đang cập nhật điểm...</p>}
+                        {isLoadingScore ? <p>Đang cập nhật điểm...</p> : <p>Điểm của bạn là: {currentScore}</p>}
                     </div>
                 </div>
             </div>

@@ -22,38 +22,69 @@ function ContestInfo1() {
         return format(date, "HH:mm:ss EEEE dd/MM/yyyy", { locale: vi });
     };
 
-    // 🛑 Hàm xuất Excel
+    // 🟢 Export Excel bao gồm điểm từng bài
     const handleExportDataContest = () => {
         if (!contestInfo || !contestInfo.participants.length) {
             alert("Không có dữ liệu để xuất!");
             return;
         }
-
-        // 1️⃣ Chuẩn bị dữ liệu xuất
-        const exportData = contestInfo.participants.map((participant, index) => ({
-            "STT": index + 1,
-            "Username": participant.username,
-            "Họ và tên": participant.name,
-            "Điện thoại": participant.phone,
-            "Email": participant.email,
-            "Số điểm": participant.score,
-            "Thứ hạng": participant.rank,
-        }));
-
-        // 2️⃣ Tạo worksheet và workbook
-        const ws = XLSX.utils.json_to_sheet(exportData);
+    
+        const maxBai = contestInfo.participants.reduce(
+            (max, p) => Math.max(max, p.submissions?.length || 0),
+            0
+        );
+    
+        const exportData = contestInfo.participants.map((participant, index) => {
+            let row = {
+                "STT": index + 1,
+                "Username": participant.username || "",
+                "Họ và tên": participant.name || "",
+                "Thứ hạng": participant.rank || "",
+            };
+    
+            for (let i = 0; i < maxBai; i++) {
+                row[`Bài ${i + 1}`] = participant.submissions?.[i] ?? "-";
+            }
+    
+            row["Tổng điểm"] = participant.score ?? 0;
+            row["Ghi chú"] = "";
+            return row;
+        });
+    
         const wb = XLSX.utils.book_new();
+    
+        // ✅ Tạo sheet từ data, bắt đầu từ A2 để trống dòng 1
+        const ws = XLSX.utils.json_to_sheet(exportData, { origin: "A2" });
+    
+        // ✅ Chèn tiêu đề vào A1
+        XLSX.utils.sheet_add_aoa(ws, [["Danh sách kết quả thi"]], { origin: "A1" });
+    
+        // ✅ Merge ô từ A1 đến cột cuối cùng (ví dụ: G1)
+        const totalColumns = Object.keys(exportData[0]).length;
+        const lastColumn = String.fromCharCode(65 + totalColumns - 1); // Chuyển số sang chữ (A, B, ..., Z)
+    
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }  // Merge từ A1 đến lastColumn1
+        ];
+    
         XLSX.utils.book_append_sheet(wb, ws, "Danh sách");
-
-        // 3️⃣ Xuất file Excel
         XLSX.writeFile(wb, `Danh_sach_ThiSinh_${contestInfo.title}.xlsx`);
     };
+    
+    
+    
+
+    const maxSubmissions = contestInfo.participants.reduce(
+        (max, p) => Math.max(max, p.submissions?.length || 0),
+        0
+    );
 
     return (
         <div>
             <div className={styles.header}>
                 <div className={styles.title}>
                     <h1>{contestInfo.title}</h1>
+
                     <div id="edit-contest" className={styles.editContest} onClick={handleEditContestClick}>
                         <FontAwesomeIcon icon={icons.pen} />
                     </div>
@@ -69,42 +100,50 @@ function ContestInfo1() {
                     </div>
                     <Tooltip anchorId="add-student-contest" content="Thêm thí sinh" />
 
-                    <div id="export-data" className={styles.editContest} onClick={handleExportDataContest}>
-                        <FontAwesomeIcon icon={icons.chart} />
-                    </div>
+                    <button id="export-data" className={styles.editContest} onClick={handleExportDataContest}><FontAwesomeIcon icon={icons.chart} /></button>
                     <Tooltip anchorId="export-data" content="Xuất báo cáo" />
                 </div>
+
                 <div className={styles.author}>
                     <p>Người tạo: {contestInfo.creator_name}</p>
                     <p>Thời gian bắt đầu: {formatDateTime(contestInfo.start_time)}</p>
                     <p>Thời gian kết thúc: {formatDateTime(contestInfo.end_time)}</p>
                 </div>
             </div>
+
             <table className={styles.table}>
                 <thead>
                     <tr>
                         <th>Username</th>
                         <th>Họ và tên</th>
-                        <th>Điện thoại</th>
-                        <th>Email</th>
-                        <th>Số điểm</th>
                         <th>Thứ hạng</th>
+                        {Array.from({ length: maxSubmissions }).map((_, index) => (
+                            <th key={index}>Bài {index + 1}</th>
+                        ))}
+                        <th>Tổng điểm</th>
+                        <th>Ghi chú</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {contestInfo.participants.map((participant, index) => (
                         <tr key={index}>
                             <td>{participant.username}</td>
                             <td>{participant.name}</td>
-                            <td>{participant.phone}</td>
-                            <td>{participant.email}</td>
-                            <td>{participant.score}</td>
                             <td>{participant.rank}</td>
+
+                            {Array.from({ length: maxSubmissions }).map((_, subIndex) => (
+                                <td key={subIndex}>
+                                    {participant.submissions?.[subIndex] ?? "-"}
+                                </td>
+                            ))}
+                            <td>{participant.score}</td>
+                            <td></td>
                             <td>
                                 <button
-                                    onClick={() => handleRemoveParticipant(participant.username)}
                                     className={styles.remove_button}
+                                    onClick={() => handleRemoveParticipant(participant.username)}
                                 >
                                     Xóa
                                 </button>

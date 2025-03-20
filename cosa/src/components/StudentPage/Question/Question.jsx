@@ -13,10 +13,11 @@ function Questions() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchQuestions = async () => {
+        const fetchQuestionsWithSubmissionStatus = async () => {
             try {
                 const token = localStorage.getItem("token");
 
+                // Fetch danh sách câu hỏi
                 const response = await axios.get(
                     `${config.apiBaseUrl}/student/exam/${examId}/questions`,
                     {
@@ -24,8 +25,32 @@ function Questions() {
                     }
                 );
 
-                setExamInfo(response.data.exam || {});
-                setQuestions(response.data.tasks || []);
+                const examData = response.data.exam || {};
+                const tasks = response.data.tasks || [];
+
+                // Gọi API từng câu hỏi để lấy is_submitted
+                const tasksWithSubmission = await Promise.all(
+                    tasks.map(async (task) => {
+                        try {
+                            const questionRes = await axios.get(
+                                `${config.apiBaseUrl}/student/exam/${examId}/question/${task.id}`,
+                                {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                }
+                            );
+                            return {
+                                ...task,
+                                is_submitted: questionRes.data.is_submitted,
+                            };
+                        } catch (err) {
+                            console.error(`Error fetching question ${task.id}:`, err);
+                            return { ...task, is_submitted: false }; // fallback nếu lỗi
+                        }
+                    })
+                );
+
+                setExamInfo(examData);
+                setQuestions(tasksWithSubmission);
                 setLoading(false);
             } catch (err) {
                 console.error("Error fetching questions:", err);
@@ -34,7 +59,7 @@ function Questions() {
             }
         };
 
-        fetchQuestions();
+        fetchQuestionsWithSubmissionStatus();
     }, [examId]);
 
     const handleSelectQuestion = (questionId) => {
@@ -50,7 +75,6 @@ function Questions() {
     const calculateTotalMinutes = (start, end) => {
         const [hStart, mStart] = formatTime(start).split(":").map(Number);
         const [hEnd, mEnd] = formatTime(end).split(":").map(Number);
-
         return (hEnd - hStart) * 60 + (mEnd - mStart);
     };
 
@@ -88,18 +112,16 @@ function Questions() {
                         <p>Thời gian kết thúc: {examInfo.end_time}</p>
                         <p>
                             Tổng thời gian:{" "}
-                            {calculateTotalMinutes(
-                                examInfo.start_time,
-                                examInfo.end_time
-                            )}{" "}
-                            phút
+                            {calculateTotalMinutes(examInfo.start_time, examInfo.end_time)} phút
                         </p>
                     </div>
                 )}
+
+                {/* Đánh dấu câu nào đã nộp */}
                 {questions.map((question) => (
                     <div
                         key={question.id}
-                        className={styles.questionsItem}
+                        className={`${styles.questionsItem} ${question.is_submitted ? styles.done : ''}`}
                         onClick={() => handleSelectQuestion(question.id)}
                     >
                         <div className={styles.truoc}>
@@ -108,10 +130,8 @@ function Questions() {
                         </div>
                         <div className={styles.sau}>
                             <p>Điểm tối đa: {question.max_score}</p>
-                            <p>
-                                Giới hạn thời gian chạy:{" "}
-                                {question.execution_time_limit}s
-                            </p>
+                            <p>Giới hạn thời gian chạy: {question.execution_time_limit}s</p>
+                            {question.is_submitted && <p className={styles.submitted}>Đã nộp</p>}
                         </div>
                     </div>
                 ))}

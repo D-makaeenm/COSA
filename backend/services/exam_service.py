@@ -1,4 +1,4 @@
-from models import Exam, Submission, User, db, Score, ExamParticipant
+from models import Exam, Submission, User, db, Score, ExamParticipant, Submission, ExamTask
 from sqlalchemy import func, case, distinct, and_
 from datetime import datetime
 
@@ -123,9 +123,6 @@ def get_exams(page=1, per_page=10, sort_by='start_time', order='desc', status=No
     return exams
 
 def get_exam_details(exam_id):
-    """
-    Lấy thông tin kỳ thi và danh sách thí sinh (bao gồm cả những người chưa nộp bài).
-    """
     # Lấy thông tin kỳ thi
     exam = Exam.query.get(exam_id)
     if not exam:
@@ -139,46 +136,75 @@ def get_exam_details(exam_id):
     )
     creator_name = creator.name if creator else "Không rõ"
 
-    # Lấy danh sách thí sinh từ bảng ExamParticipant
+    # Lấy tất cả các task của kỳ thi để đảm bảo đúng thứ tự Bài 1, Bài 2,...
+    exam_tasks = db.session.query(ExamTask).filter_by(exam_id=exam_id).order_by(ExamTask.id.asc()).all()
+
+    # Lấy danh sách thí sinh
     participants = (
         db.session.query(
+            User.id.label('user_id'),
             User.username,
             User.name,
             User.email,
             User.phone,
-            func.coalesce(Score.total_score, 0).label("score"),  # Điểm, nếu chưa có sẽ là 0
-            func.rank().over(order_by=Score.total_score.desc()).label("rank")  # Xếp hạng dựa trên điểm
+            func.coalesce(Score.total_score, 0).label("score"),
+            func.rank().over(order_by=Score.total_score.desc()).label("rank")
         )
-        .join(ExamParticipant, ExamParticipant.user_id == User.id)  # Kết nối bảng ExamParticipant và User
-        .outerjoin(Score, and_(Score.user_id == User.id, Score.exam_id == exam_id))  # Kết nối bảng Score (nếu có)
+        .join(ExamParticipant, ExamParticipant.user_id == User.id)
+        .outerjoin(Score, and_(Score.user_id == User.id, Score.exam_id == exam_id))
         .filter(
-            ExamParticipant.exam_id == exam_id,  # Lọc theo exam_id
-            User.role == 'student',             # Chỉ lấy thí sinh
-            ExamParticipant.delete_at.is_(None)            # Bỏ qua tài khoản bị xóa
+            ExamParticipant.exam_id == exam_id,
+            User.role == 'student',
+            ExamParticipant.delete_at.is_(None)
         )
-        .order_by(Score.total_score.desc())  # Sắp xếp theo điểm số giảm dần
+        .order_by(Score.total_score.desc())
         .all()
     )
 
-    # Định dạng kết quả
-    return {
+    # Chuẩn bị data trả về
+    result = {
         "title": exam.title,
         "status": exam.status,
         "start_time": exam.start_time,
         "end_time": exam.end_time,
         "creator_name": creator_name,
-        "participants": [
-            {
-                "username": participant.username,
-                "name": participant.name,
-                "email": participant.email,
-                "phone": participant.phone,
-                "score": participant.score,
-                "rank": participant.rank if participant.score > 0 else "Chưa thi",  # Xếp hạng hoặc trạng thái "Chưa thi"
-            }
-            for participant in participants
-        ],
+        "participants": []
     }
+
+    # Lặp từng thí sinh để bổ sung điểm từng bài nộp theo đúng từng task
+    for participant in participants:
+        submission_scores = []
+
+        for task in exam_tasks:
+            # Lấy bài nộp cuối cùng theo submitted_at của từng task
+            latest_submission = db.session.query(Submission.score).filter(
+                Submission.exam_id == exam_id,
+                Submission.user_id == participant.user_id,
+                Submission.exam_task_id == task.id
+            ).order_by(Submission.submitted_at.desc()).first()
+
+            # Nếu muốn lấy điểm cao nhất, thay đoạn trên bằng:
+            # latest_submission = db.session.query(func.max(Submission.score)).filter(
+            #     Submission.exam_id == exam_id,
+            #     Submission.user_id == participant.user_id,
+            #     Submission.exam_task_id == task.id
+            # ).scalar()
+
+            submission_scores.append(latest_submission.score if latest_submission else 0)
+
+        result['participants'].append({
+            "username": participant.username,
+            "name": participant.name,
+            "email": participant.email,
+            "phone": participant.phone,
+            "score": participant.score,
+            "rank": participant.rank if participant.score > 0 else "Chưa thi",
+            "submissions": submission_scores  # Danh sách điểm theo từng task
+        })
+
+    return result
+
+
 
 def get_latest_exams(limit=5):
     """

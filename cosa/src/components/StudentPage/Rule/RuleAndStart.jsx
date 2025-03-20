@@ -59,6 +59,8 @@ function RuleAndStart() {
         navigate(`exam/${exam.id}/questions`, {
             state: { remainingTime, startTimestamp }, // ✅ Truyền timestamp qua state
         });
+        const examId = exam.id;
+        localStorage.setItem("examId", examId);
     };
 
     if (loading) return <p>Đang tải dữ liệu...</p>;

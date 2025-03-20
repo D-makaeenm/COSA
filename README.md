@@ -30,9 +30,9 @@ cd COSA
 ### 🔥 **Bước 2:** Build và chạy bằng Docker Compose
 - ⚠️ Trước khi chạy, đặt biến môi trường HOST_IP (dùng PowerShell trên Windows):
 ```bash
-$env:HOST_IP="192.168.1.3" #ví dụ là 192.168.1.3 còn máy bạn như nào thì check bằng window + R sau đó điền ipconfig
+$env:HOST_IP="10.48.146.215" #ví dụ là 192.168.1.3 còn máy bạn như nào thì check bằng window + R sau đó điền ipconfig 192.168.184.151
 ```
-- Sau đó chạy:
+- Sau đó chạy: 10.48.146.215
 ```bash
 docker-compose up --build
 ```
