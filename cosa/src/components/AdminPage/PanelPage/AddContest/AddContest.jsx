@@ -16,6 +16,17 @@ function AddContest() {
         try {
             const token = localStorage.getItem("token");
             const id = localStorage.getItem("id");
+
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+            const durationInMinutes = Math.floor((end - start) / (1000 * 60)); // đổi ra phút
+
+            if (durationInMinutes <= 0) {
+                setMessage("Thời gian kết thúc phải sau thời gian bắt đầu!");
+                setLoading(false);
+                return;
+            }
+
             await axios.post(
                 "http://localhost:5000/management/exams/create",
                 {
@@ -24,6 +35,7 @@ function AddContest() {
                     start_time: startTime,
                     end_time: endTime,
                     status,
+                    duration: durationInMinutes,
                     id: id,
                 },
                 {

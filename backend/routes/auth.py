@@ -74,14 +74,14 @@ def register_teacher():
 
 # Endpoint: Tạo tài khoản admin
 @auth_bp.route("/register-admin", methods=["POST"])
-@jwt_required()
+# @jwt_required()
 def register_admin():
-    current_user_id = str(get_jwt_identity())
-    current_user = User.query.get(current_user_id)
+    # current_user_id = str(get_jwt_identity())
+    # current_user = User.query.get(current_user_id)
 
-    # Chỉ admin mới được phép tạo tài khoản
-    if not current_user or current_user.role != "admin":
-        return jsonify({"error": "Admin access only"}), 403
+    # # Chỉ admin mới được phép tạo tài khoản
+    # if not current_user or current_user.role != "admin":
+    #     return jsonify({"error": "Admin access only"}), 403
 
     # Lấy dữ liệu từ request
     data = request.json
