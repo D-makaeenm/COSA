@@ -77,7 +77,6 @@ function Student() {
                                 name="exam_id"
                                 value={examId}
                                 onChange={(e) => setExamId(e.target.value)}
-                                required
                             >
                                 <option value="">Chọn cuộc thi</option>
                                 {contests.map((contest) => (

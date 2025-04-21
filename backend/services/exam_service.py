@@ -240,6 +240,7 @@ def create_new_exam(data, user):
     # Lấy các trường cần thiết từ dữ liệu
     title = data.get('title')
     description = data.get('description')
+    duration = data.get('duration')
     start_time = data.get('start_time')
     end_time = data.get('end_time')
     status = data.get('status', 'scheduled')  # Mặc định là "scheduled" nếu không cung cấp
@@ -264,6 +265,7 @@ def create_new_exam(data, user):
         title=title,
         description=description,
         start_time=start_time,
+        duration = duration,
         end_time=end_time,
         status=status,
         created_by=user.id
